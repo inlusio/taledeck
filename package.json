@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --kill-others 'npm run watch' 'npx netlify-cms-proxy-server' 'npm run dev:netlify'",
+    "dev": "concurrently --kill-others 'npm run dev:netlify'",
     "dev:netlify": "npx netlify dev --command 'npm run dev:vite'",
     "dev:vite": "vite",
     "prebuild": "npm run scripts:install && npm run scripts:use",
@@ -15,8 +15,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "scripts:install": "npm --prefix ./scripts install",
     "scripts:use": "npm --prefix ./scripts run use",
-    "watch": "npm run watch:locales",
-    "watch:locales": "npx watch 'npm --prefix ./scripts run execute:locales' ./content/cms/translation",
+    "watch": "echo 'nothing to watch'",
     "prepare": "husky install",
     "test": "npm run lint && npm run type-check"
   },

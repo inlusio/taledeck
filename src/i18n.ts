@@ -1,3 +1,6 @@
+// I18N LAZY LOADING
+// https://vue-i18n.intlify.dev/guide/advanced/lazy.html
+
 // import { nextTick } from 'vue'
 // import { createI18n } from 'vue-i18n'
 
