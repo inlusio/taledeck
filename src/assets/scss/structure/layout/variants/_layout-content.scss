@@ -1,0 +1,29 @@
+@use '@/assets/scss/util/color/color' as col;
+@use '@/assets/scss/util/layer' as layer;
+@use '@/assets/scss/util/global' as global;
+
+.s-layout-content {
+  --s-layout--sidebar-width: #{global.$sidebar-width};
+  --s-layout--header-height: 0px;
+  color: col.$brand-yellow;
+  background-color: col.$monochrome-lead;
+
+  &.s-layout-content--has-header {
+    --s-layout--header-height: #{global.$header-height};
+  }
+}
+
+.s-layout-content__header {
+  z-index: layer.z-index('header');
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.s-layout-content__main {
+  flex: 1 0 100%;
+  display: flex;
+  flex-flow: row nowrap;
+  padding-top: var(--s-layout--header-height);
+}

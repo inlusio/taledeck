@@ -1,0 +1,91 @@
+@use 'sass:color';
+@use '@/assets/scss/structure/btn/btn-util' as util;
+@use '@/assets/scss/base/font/font' as font;
+@use '@/assets/scss/util/color/color' as col;
+@use '@/assets/scss/util/transition' as trs;
+
+/// Primary
+///
+@mixin highlight {
+  @include trs.common-props;
+  z-index: 0;
+  position: relative;
+  text-align: center;
+
+  @include util.apply-states(()) {
+    @include highlight-base;
+  }
+
+  // Focus
+  @include util.apply-states(('focus')) {
+    @include highlight-focus;
+
+    @include util.apply-states(('disabled')) {
+      @include highlight-disabled;
+    }
+  }
+
+  // Active
+  @include util.apply-states(('focus', 'active')) {
+    @include highlight-active;
+  }
+
+  // Disabled
+  @include util.apply-states(('disabled')) {
+    @include highlight-disabled;
+  }
+
+  // Toggled
+  @include util.apply-states(('toggled')) {
+    @include highlight-toggled;
+  }
+  @include util.apply-states(('focus', 'toggled')) {
+    @include highlight-toggled-focused;
+  }
+}
+
+/// Base
+///
+@mixin highlight-base {
+  color: col.$brand-yellow-dark;
+  border: 2px solid transparent;
+  background-color: col.$monochrome-white;
+}
+
+/// Focus
+///
+@mixin highlight-focus {
+  color: col.$monochrome-black;
+  border-color: col.$brand-yellow;
+  //background-color: col.$brand-yellow-light;
+}
+
+/// Active
+///
+@mixin highlight-active {
+  color: col.$monochrome-black;
+  background-color: col.$brand-yellow;
+}
+
+/// Disabled
+///
+@mixin highlight-disabled {
+  color: col.$monochrome-steel;
+  border-color: col.$monochrome-tornado;
+  background-color: col.$monochrome-tornado;
+}
+
+/// Toggled
+///
+@mixin highlight-toggled {
+  color: col.$brand-yellow-dark;
+  border-color: col.$brand-yellow-light;
+  background-color: col.$brand-yellow-light;
+}
+
+/// Toggled & focused
+///
+@mixin highlight-toggled-focused {
+  color: col.$monochrome-black;
+  border-color: col.$brand-yellow-dark;
+}

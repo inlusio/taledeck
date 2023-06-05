@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "types": ["vite/client", "@intlify/unplugin-vue-i18n/messages"],
+    "lib": ["esnext"]
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.config.json"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.vitest.json"
+    }
+  ],
+  "parserOptions": {}
+}
