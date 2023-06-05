@@ -1,0 +1,19 @@
+{
+  "name": "auxiliary-scripts",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "use": "npm run build && npm-run-all execute:*",
+    "build": "tsc -p tsconfig.json",
+    "execute:enums": "node dist/dummy.mjs --es-module-specifier-resolution=node"
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.6",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^4.7.4"
+  },
+  "dependencies": {
+    "lodash-es": "^4.17.21"
+  }
+}
