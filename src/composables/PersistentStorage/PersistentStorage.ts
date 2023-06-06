@@ -3,6 +3,7 @@ import { useStorage } from '@vueuse/core'
 import type { StoreId } from '@/models/Store'
 import { parse, stringify } from 'superjson'
 import useStorageKey from '@/composables/StorageKey/StorageKey'
+import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
 
 export const enum CustomSerializerId {
   Set = 'SetSerializer',
@@ -16,6 +17,8 @@ export interface PersistentRefOptions {
   useDefaultValueShim?: boolean
   storage?: 'localStorage' | 'sessionStorage'
 }
+
+const STORAGE_PREFIX = 'TaleDeck'
 
 const getSerializer = <TValue>(customSerializerId: CustomSerializerId | undefined): Serializer<TValue> | undefined => {
   switch (customSerializerId) {
@@ -33,7 +36,13 @@ const getSerializer = <TValue>(customSerializerId: CustomSerializerId | undefine
 }
 
 export default function usePersistentStorage(storeId: StoreId) {
-  const { compose } = useStorageKey()
+  const { storyParam } = useRouteRecord()
+
+  if (!storyParam.value) {
+    throw new Error(`No active story param in url! Unable to save data!`)
+  }
+
+  const { compose } = useStorageKey([STORAGE_PREFIX, storyParam.value])
 
   const persistentRef = <TValue>(
     key: string,

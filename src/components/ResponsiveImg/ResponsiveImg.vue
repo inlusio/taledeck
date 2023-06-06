@@ -14,9 +14,9 @@
   }
 
   interface Props {
-    api: 'netlify' | 'sharp'
     src: string
     width: number
+    api?: 'netlify' | 'sharp'
     loading?: LoadingStrategy
     resolutions?: Array<number>
   }

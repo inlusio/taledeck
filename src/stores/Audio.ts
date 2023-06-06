@@ -13,8 +13,11 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
   const { getFile } = useTaleDeckApi()
 
   const allowAudio = persistentRef<boolean>('allowAudio', true)
+
   const audioChannels = ref<AudioChannelDict>({})
   const audioFiles = ref<AudioFileContentDict>({})
+
+  const audioContentLoaded = ref<boolean>(false)
   const interactionOccured = ref<boolean | undefined>(undefined)
 
   const load = async () => {
@@ -29,5 +32,5 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
     audioChannels.value = {}
   }
 
-  return { allowAudio, audioChannels, audioFiles, interactionOccured, load, reset }
+  return { allowAudio, audioChannels, audioFiles, audioContentLoaded, interactionOccured, load, reset }
 })

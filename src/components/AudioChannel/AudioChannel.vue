@@ -12,7 +12,7 @@
   }
 
   const props = defineProps<Props>()
-  const { allowAudio, interactionOccured } = useAudioController()
+  const { audioContentLoaded, allowAudio, interactionOccured } = useAudioController()
 
   const audioPlayerEl = ref<typeof AudioPlayer | null>(null)
   const transitionEl = ref<typeof AudioTransitionSeamless | null>(null)
@@ -27,6 +27,7 @@
   const isAllowedToRepeat = computed<boolean>(() => repeatCount.value < props.channel.repeat)
   const isAllowedToPlay = computed<boolean>(() => {
     return (
+      audioContentLoaded.value &&
       allowAudio.value &&
       isScheduled.value &&
       !props.channel.stop &&
@@ -35,7 +36,7 @@
     )
   })
   const identifierKey = computed<string>(() => {
-    return `${props.channel.label}::${props.channel.file}::${isAllowedToPlay.value}`
+    return `${props.channel.label}::${props.channel.file}::allowed:${isAllowedToPlay.value}`
   })
 
   const scheduleNextPlayback = () => {

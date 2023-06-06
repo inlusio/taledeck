@@ -1,6 +1,6 @@
 <template>
   <audio ref="audioEl" class="c-audio-player">
-    <source :src="channelSrc" type="audio/mp3" />
+    <source v-if="channelSrc" :src="channelSrc" type="audio/mp3" />
   </audio>
 </template>
 
@@ -25,7 +25,13 @@
   const { audioFiles } = useAudioController()
 
   const audioEl = ref<HTMLAudioElement | null>(null)
-  const channelSrc = computed<string>(() => audioFiles.value[props.channel.file].file)
+  const channelSrc = computed<string | null>(() => {
+    if (audioFiles.value[props.channel.file]) {
+      return audioFiles.value[props.channel.file].file
+    }
+
+    return null
+  })
 
   // Volume data changed
   watch(

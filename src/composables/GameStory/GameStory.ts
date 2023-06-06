@@ -5,11 +5,10 @@ import type { TaleDeckAudioOverview, TaleDeckSceneOverview, TaleDeckStory } from
 
 export default function useGameStory() {
   const gameDataStore = useGameDataStore()
-  const { audioOverviewList, sceneOverviewList, storyEntry, storyId } = storeToRefs(gameDataStore)
+  const { audioOverviewList, sceneOverviewList, storyEntry } = storeToRefs(gameDataStore)
 
   return {
     storyEntry: storyEntry as Ref<TaleDeckStory | null>,
-    storyId: storyId as Ref<number | null>,
     sceneOverviewList: sceneOverviewList as Ref<Array<TaleDeckSceneOverview>>,
     audioOverviewList: audioOverviewList as Ref<Array<TaleDeckAudioOverview>>,
   }

@@ -70,7 +70,7 @@
       </li>
       <li class="c-main-actions-nav__entry">
         <RouterLink
-          :to="{ name: RouteRecordId.Home }"
+          :to="{ name: RouteRecordId.Story }"
           class="c-main-actions-nav__btn btn btn--icon-medium btn--bubble btn--highlight"
         >
           <UiIcon :id="UiIconId.QuestionMark" :colorize="true" :size="UiIconSizeId.Medium" />

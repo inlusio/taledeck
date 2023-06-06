@@ -1,22 +1,28 @@
-import { ref } from 'vue'
+import { watch } from 'vue'
 import { useToggle } from '@vueuse/core'
 import { useAudioStore } from '@/stores/Audio'
 import { storeToRefs } from 'pinia'
-
-const audioContentLoaded = ref<boolean>(false)
+import useGameStory from '@/composables/GameStory/GameStory'
 
 export default function useAudioController() {
   const audioStore = useAudioStore()
   const { load, reset } = audioStore
-  const { allowAudio, audioChannels, audioFiles, interactionOccured } = storeToRefs(audioStore)
+  const { allowAudio, audioChannels, audioFiles, audioContentLoaded, interactionOccured } = storeToRefs(audioStore)
 
   const toggleAllowAudio = useToggle(allowAudio)
+  const { audioOverviewList } = useGameStory()
 
-  // TODO: watch audioOverviewList
-
-  load().then(() => {
-    audioContentLoaded.value = true
-  })
+  watch(
+    () => audioOverviewList.value,
+    (nV) => {
+      if (Object.keys(nV).length > 0) {
+        load().then(() => {
+          audioContentLoaded.value = true
+        })
+      }
+    },
+    { deep: true, immediate: true },
+  )
 
   return {
     allowAudio,

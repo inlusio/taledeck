@@ -22,12 +22,17 @@ export default function useRouteRecord() {
     return router.resolve(routeRecord)
   }
 
+  const storyParam = computed<string | undefined>(() => {
+    return bootstrapStore.route.params[RouteRecordParam.Story] as string | undefined
+  })
+
   const sceneParam = computed<string | undefined>(() => {
     return bootstrapStore.route.params[RouteRecordParam.Scene] as string | undefined
   })
 
   return {
     sceneParam,
+    storyParam,
     toRoute,
     resolveRoute,
   }

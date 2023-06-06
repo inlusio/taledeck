@@ -1,12 +1,10 @@
-const STORAGE_PREFIX = 'Crossroads'
 const STORAGE_SEPARATOR = '::'
 
 const join = (...list: Array<string>): string => list.join(STORAGE_SEPARATOR)
-const compose = (...list: Array<string>) => join(STORAGE_PREFIX, ...list)
 
-export default function useStorageKey() {
+export default function useStorageKey(presetList: Array<string> = []) {
   return {
     join,
-    compose,
+    compose: (...list: Array<string>) => join(...[...presetList, ...list]),
   }
 }

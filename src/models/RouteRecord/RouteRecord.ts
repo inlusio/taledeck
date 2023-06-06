@@ -2,6 +2,7 @@ import type { RouteParams } from 'vue-router'
 
 export enum RouteRecordId {
   Home = 'home',
+  Story = 'story',
   Scene = 'scene',
 }
 
@@ -12,5 +13,6 @@ export interface RouteRecordAsName {
 }
 
 export const enum RouteRecordParam {
+  Story = 'story',
   Scene = 'scene',
 }

@@ -11,11 +11,10 @@ import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
 import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
 
 export const useGameDataStore = defineStore(StoreId.GameData, () => {
-  const { sceneParam } = useRouteRecord()
-  const { getStoryEntry, getSceneList, getAudioList, getSceneEntryBySlug } = useTaleDeckApi()
+  const { storyParam, sceneParam } = useRouteRecord()
+  const { getAudioList, getSceneList, getStoryEntryBySlug, getSceneEntryBySlug } = useTaleDeckApi()
   // const { persistentRef } = usePersistentStorage(StoreId.TaleDeck)
 
-  const storyId = ref<number | null>(null)
   const storyEntry = ref<TaleDeckStory | null>(null)
   const sceneOverviewList = ref<Array<TaleDeckSceneOverview>>([])
   const sceneEntry = ref<TaleDeckScene | null>(null)
@@ -24,19 +23,6 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   // With persistent ref
   // const storyEntry = persistentRef<TaleDeckStory | null>('storyEntry', null, { customSerializerId: CustomSerializerId.Object })
   // const sceneOverviewList = persistentRef<Array<TaleDeckSceneOverview>>('sceneOverviewList', [], { customSerializerId: CustomSerializerId.Object })
-
-  watch(
-    () => storyId.value,
-    async () => {
-      if (typeof storyId.value != 'number') {
-        return
-      }
-
-      const result = await getStoryEntry(storyId.value)
-      storyEntry.value = result as TaleDeckStory
-    },
-    { immediate: true },
-  )
 
   watch(
     () => storyEntry.value,
@@ -55,6 +41,25 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   )
 
   watch(
+    storyParam,
+    async () => {
+      if (storyParam.value != null) {
+        const { data } = await getStoryEntryBySlug(storyParam.value)
+
+        if (Array.isArray(data) && data.length > 0) {
+          storyEntry.value = data[0] as TaleDeckStory
+        } else {
+          // TODO: Handle no entries error
+          storyEntry.value = null
+        }
+      } else {
+        storyEntry.value = null
+      }
+    },
+    { immediate: true },
+  )
+
+  watch(
     sceneParam,
     async () => {
       if (sceneParam.value != null) {
@@ -63,6 +68,7 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
         if (Array.isArray(data) && data.length > 0) {
           sceneEntry.value = data[0] as TaleDeckScene
         } else {
+          // TODO: Handle no entries error
           sceneEntry.value = null
         }
       } else {
@@ -74,7 +80,6 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
 
   return {
     storyEntry,
-    storyId,
     sceneOverviewList,
     sceneEntry,
     audioOverviewList,

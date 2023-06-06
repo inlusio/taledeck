@@ -3,15 +3,12 @@
   import { useBootstrapStore } from '@/stores/Bootstrap'
   import useAudioController from '@/composables/AudioController/AudioController'
   import { onBeforeUnmount, onMounted } from 'vue'
-  import useGameStory from '@/composables/GameStory/GameStory'
 
   useBootstrapStore()
-  const { storyId } = useGameStory()
-  const { interactionOccured } = useAudioController()
-
-  storyId.value = Number(import.meta.env.VITE_TALE_DECK_STORY_ID)
 
   const setInteractionOccured = () => {
+    const { interactionOccured } = useAudioController()
+
     interactionOccured.value = true
     document.removeEventListener('click', setInteractionOccured)
   }

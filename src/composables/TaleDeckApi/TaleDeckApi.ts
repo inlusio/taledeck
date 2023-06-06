@@ -22,6 +22,14 @@ async function getStoryEntry(tjId: number) {
   return await directus.items('tj_stories').readOne(tjId)
 }
 
+async function getStoryEntryBySlug(slug: string) {
+  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetStory]
+  return await directus.items('tj_stories').readByQuery({
+    filter: { story_slug: { _eq: slug } },
+    limit: 1,
+  })
+}
+
 async function getSceneList(tjIds: Array<number>): Promise<ManyItems<TaleDeckSceneOverview>> {
   // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetScene]
   return await directus.items('tj_scenes').readByQuery({
@@ -56,6 +64,7 @@ export default function useTaleDeckApi() {
     getFile,
     getStoryList,
     getStoryEntry,
+    getStoryEntryBySlug,
     getSceneList,
     getSceneEntry,
     getSceneEntryBySlug,
