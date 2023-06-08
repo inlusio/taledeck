@@ -19,6 +19,8 @@ export interface TaleDeckStory extends TaleDeckCollection {
   story_tagline: string
   story_slug: string
   story_title: string
+  tj_start_scene_id: number
+  tj_return_scene_id: number
   tj_scenes: Array<number>
   tj_audio: Array<number>
 }

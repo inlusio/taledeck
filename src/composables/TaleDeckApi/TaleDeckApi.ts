@@ -5,69 +5,102 @@ import type { TaleDeckSceneOverview } from '@/models/TaleDeck/TaleDeck'
 
 const directus = new Directus<TaleDeckCollections>(import.meta.env.VITE_TALE_DECK_API_BASE_URL)
 
-function getFile(tjFileId: string): string {
-  return `${import.meta.env.VITE_TALE_DECK_API_BASE_URL}assets/${tjFileId}`
+/**
+ * Get a TaleDeck AUDIO entry by id
+ */
+async function getAudioEntry(tjId: number) {
+  return await directus.items('tj_audio').readOne(tjId)
 }
 
-async function getStoryList(tjIds: Array<number>) {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetStory]
-  return await directus.items('tj_stories').readByQuery({
-    filter: { id: { _in: tjIds } },
-    fields: ['id'],
+/**
+ * Get all TaleDeck AUDIO entries of a certain STORY
+ */
+async function getAudioList(tjIds: Array<number>, storyId: number): Promise<ManyItems<TaleDeckAudioOverview>> {
+  if (tjIds.length === 0) {
+    return { data: [] } as ManyItems<TaleDeckAudioOverview>
+  }
+
+  return await directus.items('tj_audio').readByQuery({
+    filter: { id: { _in: tjIds }, tj_story_id: { _eq: storyId } },
+    fields: ['id', 'audio_file', 'audio_slug'],
   })
 }
 
+/**
+ * Get a TaleDeck FILE entry by id
+ */
+function getFileEntry(tjFileId: string): string {
+  return `${import.meta.env.VITE_TALE_DECK_API_BASE_URL}assets/${tjFileId}`
+}
+
+/**
+ * Get a TaleDeck STORY entry by id
+ */
 async function getStoryEntry(tjId: number) {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetStory]
   return await directus.items('tj_stories').readOne(tjId)
 }
 
+/**
+ * Get a TaleDeck STORY entry by slug
+ */
 async function getStoryEntryBySlug(slug: string) {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetStory]
   return await directus.items('tj_stories').readByQuery({
     filter: { story_slug: { _eq: slug } },
     limit: 1,
   })
 }
 
-async function getSceneList(tjIds: Array<number>): Promise<ManyItems<TaleDeckSceneOverview>> {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetScene]
-  return await directus.items('tj_scenes').readByQuery({
-    filter: { id: { _in: tjIds } },
-    fields: ['id', 'scene_slug'],
+/**
+ * Get all TaleDeck STORY entries
+ */
+async function getStoryList() {
+  return await directus.items('tj_stories').readByQuery({
+    filter: {},
+    fields: ['id'],
   })
 }
 
+/**
+ * Get a TaleDeck SCENE entry by id
+ */
 async function getSceneEntry(tjId: number) {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetScene]
   return await directus.items('tj_scenes').readOne(tjId)
 }
 
-async function getSceneEntryBySlug(slug: string) {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetScene]
+/**
+ * Get a TaleDeck SCENE entry of a certain STORY by slug
+ */
+async function getSceneEntryBySlug(slug: string, storyId: number) {
   return await directus.items('tj_scenes').readByQuery({
-    filter: { scene_slug: { _eq: slug } },
+    filter: { scene_slug: { _eq: slug }, tj_story_id: { _eq: storyId } },
     limit: 1,
   })
 }
 
-async function getAudioList(tjIds: Array<number>): Promise<ManyItems<TaleDeckAudioOverview>> {
-  // const {} = taleDeckApiEndpointDict[TaleDeckApiEndpointId.GetAudio]
-  return await directus.items('tj_audio').readByQuery({
-    filter: { id: { _in: tjIds } },
-    fields: ['id', 'audio_file', 'audio_slug'],
+/**
+ * Get all TaleDeck SCENE entries of a certain STORY
+ */
+async function getSceneList(tjIds: Array<number>, storyId: number): Promise<ManyItems<TaleDeckSceneOverview>> {
+  if (tjIds.length === 0) {
+    return { data: [] } as ManyItems<TaleDeckSceneOverview>
+  }
+
+  return await directus.items('tj_scenes').readByQuery({
+    filter: { id: { _in: tjIds }, tj_story_id: { _eq: storyId } },
+    fields: ['id', 'scene_slug'],
   })
 }
 
 export default function useTaleDeckApi() {
   return {
-    getFile,
-    getStoryList,
+    getAudioEntry,
+    getAudioList,
+    getFileEntry,
     getStoryEntry,
     getStoryEntryBySlug,
-    getSceneList,
+    getStoryList,
     getSceneEntry,
     getSceneEntryBySlug,
-    getAudioList,
+    getSceneList,
   }
 }

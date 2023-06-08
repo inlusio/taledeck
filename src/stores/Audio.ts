@@ -10,7 +10,7 @@ import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
 export const useAudioStore = defineStore(StoreId.Audio, () => {
   const { persistentRef } = usePersistentStorage(StoreId.Audio)
   const { audioOverviewList } = useGameStory()
-  const { getFile } = useTaleDeckApi()
+  const { getFileEntry } = useTaleDeckApi()
 
   const allowAudio = persistentRef<boolean>('allowAudio', true)
 
@@ -22,7 +22,7 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
 
   const load = async () => {
     audioFiles.value = audioOverviewList.value.reduce((acc, { audio_slug, audio_file }) => {
-      acc[audio_slug] = { id: audio_slug, file: getFile(audio_file) }
+      acc[audio_slug] = { id: audio_slug, file: getFileEntry(audio_file) }
       return acc
     }, {} as AudioFileContentDict)
   }

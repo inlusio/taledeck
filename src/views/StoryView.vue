@@ -10,23 +10,23 @@
   import useGameStory from '@/composables/GameStory/GameStory'
   import useTranslation from '@/composables/Translation/Translation'
   import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
-
-  const SCENE_INTRO = 'intro'
-  const SCENE_MAP = 'map'
+  import type { TaleDeckSceneOverview } from '@/models/TaleDeck/TaleDeck'
 
   const router = useRouter()
   const { t } = useTranslation()
   const { toRoute } = useRouteRecord()
   const { dialog, reset: resetDialog } = useDialog()
   const { reset: resetAudio } = useAudioController()
-  const { storyEntry } = useGameStory()
-  const { getFile } = useTaleDeckApi()
+  const { storyEntry, sceneOverviewList } = useGameStory()
+  const { getFileEntry } = useTaleDeckApi()
 
   const isLoaded = ref<boolean>(false)
+  const startScene = ref<TaleDeckSceneOverview>({ id: -1, scene_slug: 'intro' })
+  const returnScene = ref<TaleDeckSceneOverview>({ id: -1, scene_slug: 'map' })
 
   const rootStyles = computed<CSSProperties>(() => {
     const img = storyEntry.value?.story_image
-    const url = img == null ? undefined : getFile(img)
+    const url = img == null ? undefined : getFileEntry(img)
 
     return {
       'background-image': url == null ? undefined : `url(${url})`,
@@ -34,9 +34,15 @@
   })
 
   watch(
-    () => storyEntry.value,
-    (nVal) => {
-      if (nVal != null) {
+    () => [storyEntry.value, sceneOverviewList.value],
+    async () => {
+      if (storyEntry.value != null && sceneOverviewList.value.length > 0) {
+        const startSceneEntry = sceneOverviewList.value.find(({ id }) => id === storyEntry.value?.tj_start_scene_id)
+        const returnSceneEntry = sceneOverviewList.value.find(({ id }) => id === storyEntry.value?.tj_return_scene_id)
+
+        startScene.value = startSceneEntry || startScene.value
+        returnScene.value = returnSceneEntry || returnScene.value
+
         isLoaded.value = true
       }
     },
@@ -50,7 +56,7 @@
     router.push(
       toRoute({
         name: RouteRecordId.Scene,
-        params: { scene: SCENE_INTRO },
+        params: { scene: startScene.value.scene_slug },
       }),
     )
   }
@@ -76,7 +82,7 @@
                 <template v-if="dialog.hasStarted">
                   <RouterLink
                     class="u-reset btn btn--medium btn--highlight"
-                    :to="{ name: 'scene', params: { scene: SCENE_MAP } }"
+                    :to="{ name: 'scene', params: { scene: returnScene?.scene_slug } }"
                   >
                     Story fortsetzen
                   </RouterLink>
@@ -85,16 +91,11 @@
                 <template v-else>
                   <RouterLink
                     class="u-reset btn btn--medium btn--highlight"
-                    :to="{ name: 'scene', params: { scene: SCENE_INTRO } }"
+                    :to="{ name: 'scene', params: { scene: startScene?.scene_slug } }"
                   >
                     Story starten
                   </RouterLink>
                 </template>
-              </div>
-              <div class="p-page-story__actions" v-if="isLoaded && dialog.hasStarted">
-                <a href="https://ww2.unipark.de/uc/crossroads/" class="u-reset btn btn--medium btn--highlight">
-                  Zur Umfrage
-                </a>
               </div>
               <div class="p-page-story__loading" v-if="!isLoaded">
                 <b>

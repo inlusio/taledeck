@@ -31,8 +31,8 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
         return
       }
 
-      const { tj_scenes, tj_audio } = storyEntry.value
-      const [r1, r2] = await Promise.all([getSceneList(tj_scenes), getAudioList(tj_audio)])
+      const { id, tj_scenes, tj_audio } = storyEntry.value
+      const [r1, r2] = await Promise.all([getSceneList(tj_scenes, id), getAudioList(tj_audio, id)])
 
       sceneOverviewList.value = r1.data as Array<TaleDeckSceneOverview>
       audioOverviewList.value = r2.data as Array<TaleDeckAudioOverview>
@@ -60,10 +60,10 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   )
 
   watch(
-    sceneParam,
+    () => [sceneParam.value, storyEntry.value],
     async () => {
-      if (sceneParam.value != null) {
-        const { data } = await getSceneEntryBySlug(sceneParam.value)
+      if (sceneParam.value != null && storyEntry.value != null) {
+        const { data } = await getSceneEntryBySlug(sceneParam.value, storyEntry.value.id)
 
         if (Array.isArray(data) && data.length > 0) {
           sceneEntry.value = data[0] as TaleDeckScene

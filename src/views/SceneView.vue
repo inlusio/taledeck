@@ -19,7 +19,7 @@
   import AudioChannel from '@/components/AudioChannel/AudioChannel.vue'
   import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
 
-  const { getFile } = useTaleDeckApi()
+  const { getFileEntry } = useTaleDeckApi()
   const { hotspots } = useDialogHotspot()
 
   const { t } = useTranslation()
@@ -57,7 +57,7 @@
           <div v-if="content" :key="sceneId" class="s-layout-game__viewer-frame">
             <ViewShell
               :key="sceneId"
-              :background="getFile(content.scene_image)"
+              :background="getFileEntry(content.scene_image)"
               :facets="[ViewShellFacet.Scene]"
               :height="900"
               :width="1600"
