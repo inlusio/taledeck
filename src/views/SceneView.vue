@@ -1,7 +1,6 @@
 <script lang="ts" setup>
   import useGameScene from '@/composables/GameScene/GameScene'
   import { ViewShellFacet } from '@/components/ViewShell/ViewShellFacet'
-  import ViewShell from '@/components/ViewShell/ViewShell.vue'
   import DialogBox from '@/components/DialogBox/DialogBox.vue'
   import useDialog from '@/composables/Dialog/Dialog'
   import useDebug from '@/composables/Debug/Debug'
@@ -18,6 +17,7 @@
   import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'
   import AudioChannel from '@/components/AudioChannel/AudioChannel.vue'
   import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
+  import ViewShellSpherical from '@/components/ViewShell/ViewShellSpherical/ViewShellSpherical.vue'
 
   const { getFileEntry } = useTaleDeckApi()
   const { hotspots } = useDialogHotspot()
@@ -55,7 +55,7 @@
       <div class="s-layout-game__viewer">
         <Transition :mode="transitionMode" :name="transitionName">
           <div v-if="content" :key="sceneId" class="s-layout-game__viewer-frame">
-            <ViewShell
+            <ViewShellSpherical
               :key="sceneId"
               :background="getFileEntry(content.scene_image)"
               :facets="[ViewShellFacet.Scene]"
@@ -100,7 +100,7 @@
                   </div>
                 </div>
               </template>
-            </ViewShell>
+            </ViewShellSpherical>
           </div>
         </Transition>
       </div>

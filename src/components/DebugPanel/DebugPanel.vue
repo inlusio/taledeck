@@ -12,15 +12,15 @@
   <div class="debug-panel">
     <pre class="debug-panel__item"><b>Allow audio:</b> {{ allowAudio ? 'true' : 'false' }}</pre>
     <pre class="debug-panel__item"><b>Interaction occured:</b> {{ interactionOccured ? 'true' : 'false' }}</pre>
-    <details>
+    <details class="debug-panel__details">
       <summary><b>Audio channels:</b></summary>
       <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />
     </details>
-    <details>
+    <details class="debug-panel__details">
       <summary><b>Scene List:</b></summary>
       <pre>{{ sceneOverviewList }}</pre>
     </details>
-    <details>
+    <details class="debug-panel__details">
       <summary><b>Audio List:</b></summary>
       <pre>{{ audioOverviewList }}</pre>
     </details>
@@ -28,6 +28,7 @@
 </template>
 
 <style lang="scss" scoped>
+  @use 'sass:color';
   @use '@/assets/scss/util/color/color' as col;
 
   .debug-panel {
@@ -35,15 +36,18 @@
     position: absolute;
     top: 0;
     left: 0;
-    height: 100%;
+    height: auto;
+    max-height: 100%;
+    width: 320px;
     padding: 4px;
     overflow-y: auto;
     font-size: 1.2rem;
     color: col.$monochrome-white;
-    background-color: col.$monochrome-black;
+    background-color: color.change(col.$monochrome-black, $alpha: 0.9);
   }
 
-  details {
+  .debug-panel__details {
+    overflow: hidden;
     padding: 0.5em 0.5em 0;
   }
 

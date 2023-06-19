@@ -19,7 +19,17 @@ export default defineConfig({
   //     }
   //   }
   // },
-  plugins: [ViteSvgLoader(), vue(), VueI18nPlugin({ runtimeOnly: false })],
+  plugins: [
+    ViteSvgLoader(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => tag.startsWith('Tres') && tag !== 'TresCanvas',
+        },
+      },
+    }),
+    VueI18nPlugin({ runtimeOnly: false }),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
+import tres from '@tresjs/core'
 
 import App from './App.vue'
 import router from './router'
@@ -20,5 +21,6 @@ export const i18n = setupI18n({
 app.use(createPinia())
 app.use(router)
 app.use(i18n)
+app.use(tres)
 
 app.mount('#app')

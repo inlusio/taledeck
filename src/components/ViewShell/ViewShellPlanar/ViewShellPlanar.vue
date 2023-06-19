@@ -16,7 +16,7 @@
     facets: () => [],
     background: '',
   })
-  const { bemAdd, bemFacets } = useBem('c-view-shell', props, {})
+  const { bemAdd, bemFacets } = useBem('c-view-shell-planar', props, {})
 
   const isBackgroundLoaded = ref<boolean>(false)
 
@@ -34,10 +34,10 @@
 </script>
 
 <template>
-  <div :class="bemFacets" class="c-view-shell">
-    <div v-if="background" class="c-view-shell__background-wrap">
-      <ResponsiveShell :outer-width="width" :outer-height="height" class="c-view-shell__background-shell">
-        <div class="c-view-shell__background-element" />
+  <div :class="bemFacets" class="c-view-shell-planar">
+    <div v-if="background" class="c-view-shell-planar__background-wrap">
+      <ResponsiveShell :outer-width="width" :outer-height="height" class="c-view-shell-planar__background-shell">
+        <div class="c-view-shell-planar__background-element" />
       </ResponsiveShell>
       <ResponsiveImg
         @load="onLoad"
@@ -46,7 +46,7 @@
         :src="background"
         :width="width"
         alt=""
-        class="c-view-shell__blur-image"
+        class="c-view-shell-planar__blur-image"
       />
       <ResponsiveImg
         @load="onLoad"
@@ -55,13 +55,13 @@
         :src="background"
         :width="width"
         alt=""
-        class="c-view-shell__main-image"
+        class="c-view-shell-planar__main-image"
       />
     </div>
-    <div class="c-view-shell__content">
+    <div class="c-view-shell-planar__content">
       <slot :height="height" :width="width" name="content" />
     </div>
-    <div class="c-view-shell__debug">
+    <div class="c-view-shell-planar__debug">
       <slot name="debug" />
     </div>
   </div>
@@ -76,13 +76,13 @@
 
   $blur: 40px;
 
-  .c-view-shell {
+  .c-view-shell-planar {
     position: relative;
     width: 100%;
     height: 100%;
   }
 
-  .c-view-shell__background-wrap {
+  .c-view-shell-planar__background-wrap {
     pointer-events: none;
     z-index: 1;
     position: absolute;
@@ -96,15 +96,15 @@
     height: 100%;
   }
 
-  .c-view-shell__background-shell {
+  .c-view-shell-planar__background-shell {
     @include utils.overlay;
   }
 
-  .c-view-shell__background-element {
+  .c-view-shell-planar__background-element {
     @include utils.overlay;
   }
 
-  .c-view-shell__blur-image {
+  .c-view-shell-planar__blur-image {
     z-index: 1;
     position: absolute;
     top: 50%;
@@ -117,16 +117,16 @@
     max-height: unset;
   }
 
-  .c-view-shell__blur-image {
+  .c-view-shell-planar__blur-image {
     opacity: 0;
     transition: 200ms trs.$default-fn opacity;
 
-    &.c-view-shell__blur-image--is-shown {
+    &.c-view-shell-planar__blur-image--is-shown {
       opacity: 1;
     }
   }
 
-  .c-view-shell__main-image {
+  .c-view-shell-planar__main-image {
     z-index: 2;
     position: relative;
     display: block;
@@ -137,12 +137,12 @@
     opacity: 0;
     transition: 1600ms trs.$default-fn opacity;
 
-    &.c-view-shell__main-image--is-shown {
+    &.c-view-shell-planar__main-image--is-shown {
       opacity: 1;
     }
   }
 
-  .c-view-shell__content {
+  .c-view-shell-planar__content {
     z-index: 2;
     position: relative;
     width: 100%;
@@ -150,12 +150,12 @@
     padding-right: var(--scroll-lock);
   }
 
-  .c-view-shell--scene {
+  .c-view-shell-planar--scene {
     $image-w: 1600px;
     $image-h: 900px;
     $image-ratio: math.div($image-h, $image-w);
 
-    .c-view-shell__main-image {
+    .c-view-shell-planar__main-image {
       max-width: $image-w;
       max-height: $image-h;
     }
