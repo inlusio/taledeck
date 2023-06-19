@@ -18,7 +18,6 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
   const audioFiles = ref<AudioFileContentDict>({})
 
   const audioContentLoaded = ref<boolean>(false)
-  const interactionOccured = ref<boolean | undefined>(undefined)
 
   const load = async () => {
     audioFiles.value = audioOverviewList.value.reduce((acc, { audio_slug, audio_file }) => {
@@ -32,5 +31,5 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
     audioChannels.value = {}
   }
 
-  return { allowAudio, audioChannels, audioFiles, audioContentLoaded, interactionOccured, load, reset }
+  return { allowAudio, audioChannels, audioFiles, audioContentLoaded, load, reset }
 })

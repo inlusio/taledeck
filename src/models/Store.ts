@@ -5,4 +5,5 @@ export const enum StoreId {
   DialogHotspots = 'DialogHotspots',
   DialogVariables = 'DialogVariables',
   GameData = 'GameData',
+  Ui = 'Ui',
 }

@@ -19,13 +19,7 @@ export default defineConfig({
   //     }
   //   }
   // },
-  plugins: [
-    ViteSvgLoader(),
-    vue(),
-    VueI18nPlugin({
-      include: fileURLToPath(new URL('./src/generated/locales/*.json', import.meta.url)),
-    }),
-  ],
+  plugins: [ViteSvgLoader(), vue(), VueI18nPlugin({ runtimeOnly: false })],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

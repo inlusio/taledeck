@@ -1,41 +1,57 @@
 // I18N LAZY LOADING
 // https://vue-i18n.intlify.dev/guide/advanced/lazy.html
 
-// import { nextTick } from 'vue'
-// import { createI18n } from 'vue-i18n'
+import { nextTick } from 'vue'
+import { createI18n } from 'vue-i18n'
+import type { I18n, I18nOptions } from 'vue-i18n'
+import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
+import { PageLocale } from '@/models/Translation/Translation'
+import type { CmsTranslationFile, TranslationRegistry } from '@/models/Translation/Translation'
 
-export const SUPPORT_LOCALES = ['en', 'de']
+type I18nInstance = I18n<{}, {}, {}, string, false>
 
-// export function setupI18n(options = { locale: 'en' }) {
-//   const i18n = createI18n(options)
-//   setI18nLanguage(i18n, options.locale)
-//   return i18n
-// }
-//
-// export function setI18nLanguage(i18n, locale) {
-//   if (i18n.mode === 'legacy') {
-//     i18n.global.locale = locale
-//   } else {
-//     i18n.global.locale.value = locale
-//   }
-//   /**
-//    * NOTE:
-//    * If you need to specify the language setting for headers, such as the `fetch` API, set it here.
-//    * The following is an example for axios.
-//    *
-//    * axios.defaults.headers.common['Accept-Language'] = locale
-//    */
-//   document.querySelector('html').setAttribute('lang', locale)
-// }
-//
-// export async function loadLocaleMessages(i18n, locale) {
-//   // load locale messages with dynamic import
-//   const messages = await import(
-//     /* webpackChunkName: "locale-[request]" */ `./locales/${locale}.json`
-//     )
-//
-//   // set locale and locale message
-//   i18n.global.setLocaleMessage(locale, messages.default)
-//
-//   return nextTick()
-// }
+export const SUPPORT_LOCALES = [PageLocale.DE, PageLocale.EN]
+export const DEFAULT_LOCALE = PageLocale.DE
+
+const transformCmsTranslationFile = (
+  acc: TranslationRegistry,
+  locale: PageLocale,
+  { slug, items, itemsMarkdown, itemsPlural }: CmsTranslationFile,
+): TranslationRegistry => {
+  items?.forEach((item) => (acc[`${slug}.${item.key}`] = item[`value_${locale}`]))
+  itemsMarkdown?.forEach((item) => (acc[`MD.${slug}.${item.key}`] = item[`value_${locale}`]))
+  itemsPlural?.forEach((item) => (acc[`PL.${slug}.${item.key}`] = item[`value_${locale}`]))
+
+  return acc
+}
+
+export function setupI18n(options: I18nOptions) {
+  const i18n: I18nInstance = createI18n(options)
+  setLocale(i18n, (options.locale as PageLocale) || DEFAULT_LOCALE)
+  return i18n
+}
+
+export function setLocale(i18n: I18nInstance, locale: PageLocale) {
+  const htmlEl = window.document.querySelector('html') as HTMLHtmlElement
+
+  i18n.global.locale.value = locale
+  htmlEl.setAttribute('lang', locale)
+}
+
+export async function loadMessages(i18n: I18nInstance, locale: PageLocale) {
+  const { getTranslationList } = useTaleDeckApi()
+  const { data } = await getTranslationList()
+
+  if (Array.isArray(data) && data.length > 0) {
+    const messages = data.reduce((acc: TranslationRegistry, entryContent) => {
+      return transformCmsTranslationFile(acc, locale, entryContent)
+    }, {})
+
+    // set locale and locale message
+    i18n.global.setLocaleMessage(locale, messages)
+  } else {
+    // TODO: Handle no entries error
+  }
+
+  return nextTick()
+}

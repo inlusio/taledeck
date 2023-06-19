@@ -91,6 +91,16 @@ async function getSceneList(tjIds: Array<number>, storyId: number): Promise<Many
   })
 }
 
+/**
+ * Get all TaleDeck TRANSLATION entries
+ */
+async function getTranslationList() {
+  return await directus.items('tj_translations').readByQuery({
+    filter: {},
+    fields: ['id', 'slug', 'items'],
+  })
+}
+
 export default function useTaleDeckApi() {
   return {
     getAudioEntry,
@@ -102,5 +112,6 @@ export default function useTaleDeckApi() {
     getSceneEntry,
     getSceneEntryBySlug,
     getSceneList,
+    getTranslationList,
   }
 }

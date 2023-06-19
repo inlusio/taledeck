@@ -12,10 +12,10 @@
           <div class="p-page-home__content u-typography-root">
             <div class="p-page-home__top">
               <h1 class="p-page-home__title">
-                {{ t('home_view.title') }}
+                {{ t('general.home.title') }}
               </h1>
               <span class="p-page-home__subtitle">
-                {{ t('home_view.description') }}
+                {{ t('general.home.description') }}
               </span>
             </div>
           </div>

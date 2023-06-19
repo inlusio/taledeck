@@ -7,7 +7,7 @@ import useGameStory from '@/composables/GameStory/GameStory'
 export default function useAudioController() {
   const audioStore = useAudioStore()
   const { load, reset } = audioStore
-  const { allowAudio, audioChannels, audioFiles, audioContentLoaded, interactionOccured } = storeToRefs(audioStore)
+  const { allowAudio, audioChannels, audioFiles, audioContentLoaded } = storeToRefs(audioStore)
 
   const toggleAllowAudio = useToggle(allowAudio)
   const { audioOverviewList } = useGameStory()
@@ -27,7 +27,6 @@ export default function useAudioController() {
   return {
     allowAudio,
     audioContentLoaded,
-    interactionOccured,
     audioChannels,
     audioFiles,
     toggleAllowAudio,

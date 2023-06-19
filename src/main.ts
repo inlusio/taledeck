@@ -5,15 +5,16 @@ import App from './App.vue'
 import router from './router'
 
 import './assets/scss/main.scss'
-import { createI18n } from 'vue-i18n'
+import { DEFAULT_LOCALE, setupI18n } from '@/i18n'
 
 const app = createApp(App)
 
-const i18n = createI18n({
+export const i18n = setupI18n({
   legacy: false,
-  globalInjection: false,
-  locale: 'de',
-  messages: { de: {}, en: {} },
+  globalInjection: true,
+  locale: DEFAULT_LOCALE,
+  fallbackLocale: DEFAULT_LOCALE,
+  messages: {},
 })
 
 app.use(createPinia())

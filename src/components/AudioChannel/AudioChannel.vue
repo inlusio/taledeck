@@ -4,6 +4,7 @@
   import { computed, defineAsyncComponent, ref, watch } from 'vue'
   import AudioPlayer from '@/components/AudioPlayer/AudioPlayer.vue'
   import type AudioTransitionSeamless from '@/components/AudioTransitionSeamless/AudioTransitionSeamless.vue'
+  import useUiController from '@/composables/UiController/UiController'
 
   type AudioTransitionComponentType = typeof AudioTransitionSeamless
 
@@ -12,7 +13,8 @@
   }
 
   const props = defineProps<Props>()
-  const { audioContentLoaded, allowAudio, interactionOccured } = useAudioController()
+  const { interactionOccured } = useUiController()
+  const { audioContentLoaded, allowAudio } = useAudioController()
 
   const audioPlayerEl = ref<typeof AudioPlayer | null>(null)
   const transitionEl = ref<typeof AudioTransitionSeamless | null>(null)

@@ -1,13 +1,13 @@
 <script lang="ts" setup>
   import { RouterView } from 'vue-router'
   import { useBootstrapStore } from '@/stores/Bootstrap'
-  import useAudioController from '@/composables/AudioController/AudioController'
   import { onBeforeUnmount, onMounted } from 'vue'
+  import useUiController from '@/composables/UiController/UiController'
 
   useBootstrapStore()
 
   const setInteractionOccured = () => {
-    const { interactionOccured } = useAudioController()
+    const { interactionOccured } = useUiController()
 
     interactionOccured.value = true
     document.removeEventListener('click', setInteractionOccured)
