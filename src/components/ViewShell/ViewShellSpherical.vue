@@ -2,6 +2,11 @@
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useBem from '@/composables/Bem/Bem'
   import { computed, onMounted, ref } from 'vue'
+  import { TresCanvas } from '@tresjs/core'
+  import { OrbitControls } from '@tresjs/cientos'
+  import { useRoute } from 'vue-router'
+  import { sleep } from '@/util/sleep'
+  import type { Vector3 } from 'three'
 
   interface Props extends UseBemProps {
     facets?: Array<string>
@@ -15,6 +20,7 @@
     background: '',
   })
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
+  const route = useRoute()
 
   const isBackgroundLoaded = ref<boolean>(false)
 
@@ -23,17 +29,25 @@
   })
 
   // TODO: Change to sensible/useful event
-  onMounted(() => {
+  onMounted(async () => {
+    await sleep(0)
     isBackgroundLoaded.value = true
   })
 </script>
 
 <template>
   <div :class="bemFacets" class="c-view-shell-spherical">
-    <div v-if="background" class="c-view-shell-spherical__background-wrap">
+    <div class="c-view-shell-spherical__background-wrap">
       <div class="c-view-shell-spherical__background-element" />
-      <TresCanvas clear-color="#82dbc5" :class="mainImageClasses" class="c-view-shell-spherical__main-image">
-        <TresPerspectiveCamera :position="[3, 3, 3]" :fov="45" :look-at="[0, 0, 0]" />
+      <TresCanvas
+        window-size
+        :key="route.fullPath"
+        clear-color="#82dbc5"
+        :class="mainImageClasses"
+        class="c-view-shell-spherical__main-image"
+      >
+        <TresPerspectiveCamera :position="[3, 3, 3] as unknown as Vector3" :fov="45" :look-at="() => [0, 0, 0]" />
+        <OrbitControls />
         <TresMesh>
           <TresTorusGeometry :args="[1, 0.5, 16, 32]" />
           <TresMeshBasicMaterial color="orange" />

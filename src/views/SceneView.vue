@@ -17,12 +17,15 @@
   import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'
   import AudioChannel from '@/components/AudioChannel/AudioChannel.vue'
   import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
-  import ViewShellSpherical from '@/components/ViewShell/ViewShellSpherical/ViewShellSpherical.vue'
+  import { computed, defineAsyncComponent } from 'vue'
+  import useGameStory from '@/composables/GameStory/GameStory'
+  import { TaleDeckStoryType } from '@/models/TaleDeck/TaleDeck'
 
   const { getFileEntry } = useTaleDeckApi()
   const { hotspots } = useDialogHotspot()
 
   const { t } = useTranslation()
+  const { storyEntry } = useGameStory()
   const { content, sceneId } = useGameScene()
   const { dialog } = useDialog()
   const { isDebug } = useDebug()
@@ -31,6 +34,21 @@
   const { transitionName, transitionMode } = useSceneTransition()
 
   const { audioChannels } = useAudioController()
+
+  const viewShellType = computed<string>(() => {
+    switch (storyEntry.value?.story_type) {
+      case TaleDeckStoryType.Planar:
+        return 'ViewShellPlanar'
+      case TaleDeckStoryType.Spherical:
+        return 'ViewShellSpherical'
+      default:
+        throw new Error('Unknown story type!')
+    }
+  })
+
+  const viewShellComponent = computed(() => {
+    return defineAsyncComponent(() => import(`../components/ViewShell/${viewShellType.value}.vue`))
+  })
 
   const getChannelKey = (channel: AudioChannelEntry) => {
     return `${channel.label}::${channel.behaviour}`
@@ -55,7 +73,8 @@
       <div class="s-layout-game__viewer">
         <Transition :mode="transitionMode" :name="transitionName">
           <div v-if="content" :key="sceneId" class="s-layout-game__viewer-frame">
-            <ViewShellSpherical
+            <component
+              :is="viewShellComponent"
               :key="sceneId"
               :background="getFileEntry(content.scene_image)"
               :facets="[ViewShellFacet.Scene]"
@@ -100,7 +119,7 @@
                   </div>
                 </div>
               </template>
-            </ViewShellSpherical>
+            </component>
           </div>
         </Transition>
       </div>

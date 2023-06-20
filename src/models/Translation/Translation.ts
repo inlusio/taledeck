@@ -3,22 +3,20 @@ export const enum PageLocale {
   EN = 'en',
 }
 
-export const enum CmsTranslationLocaleKey {
+export const enum TranslationLocaleKey {
   DE = 'value_de',
   EN = 'value_en',
 }
 
-export interface CmsTranslationEntry {
+export interface TranslationEntry {
   key: string
-  [CmsTranslationLocaleKey.DE]: string
-  [CmsTranslationLocaleKey.EN]: string
+  [TranslationLocaleKey.DE]: string
+  [TranslationLocaleKey.EN]: string
 }
 
-export interface CmsTranslationFile {
+export interface TranslationFile {
   slug: string
-  items: Array<CmsTranslationEntry> | undefined
-  itemsMarkdown: Array<CmsTranslationEntry> | undefined
-  itemsPlural: Array<CmsTranslationEntry> | undefined
+  items: Array<TranslationEntry> | undefined
 }
 
 export interface TranslationRegistry {

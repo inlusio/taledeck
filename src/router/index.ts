@@ -25,6 +25,12 @@ const router = createRouter({
       path: '/admin',
       redirect: '/admin/index.html',
     },
+    {
+      path: '/:catchall(.*)*',
+      redirect: (to: any) => {
+        return `/${DEFAULT_LOCALE}${to.path}`
+      },
+    },
   ],
 })
 
@@ -36,9 +42,9 @@ export default router
 router.beforeEach(async (to, from, next) => {
   const paramsLocale = to.params.locale as PageLocale
 
-  // use locale if paramsLocale is not in SUPPORT_LOCALES
+  // NOTE: This path is handled by the last router directive (catch-all)
   if (!SUPPORT_LOCALES.includes(paramsLocale)) {
-    return next(`/${DEFAULT_LOCALE}`)
+    return next()
   }
 
   // load locale messages

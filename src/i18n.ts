@@ -6,7 +6,7 @@ import { createI18n } from 'vue-i18n'
 import type { I18n, I18nOptions } from 'vue-i18n'
 import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
 import { PageLocale } from '@/models/Translation/Translation'
-import type { CmsTranslationFile, TranslationRegistry } from '@/models/Translation/Translation'
+import type { TranslationFile, TranslationRegistry } from '@/models/Translation/Translation'
 
 type I18nInstance = I18n<{}, {}, {}, string, false>
 
@@ -16,11 +16,11 @@ export const DEFAULT_LOCALE = PageLocale.DE
 const transformCmsTranslationFile = (
   acc: TranslationRegistry,
   locale: PageLocale,
-  { slug, items, itemsMarkdown, itemsPlural }: CmsTranslationFile,
+  { slug, items }: TranslationFile,
 ): TranslationRegistry => {
   items?.forEach((item) => (acc[`${slug}.${item.key}`] = item[`value_${locale}`]))
-  itemsMarkdown?.forEach((item) => (acc[`MD.${slug}.${item.key}`] = item[`value_${locale}`]))
-  itemsPlural?.forEach((item) => (acc[`PL.${slug}.${item.key}`] = item[`value_${locale}`]))
+  // itemsMarkdown?.forEach((item) => (acc[`MD.${slug}.${item.key}`] = item[`value_${locale}`]))
+  // itemsPlural?.forEach((item) => (acc[`PL.${slug}.${item.key}`] = item[`value_${locale}`]))
 
   return acc
 }

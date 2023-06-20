@@ -1,3 +1,10 @@
+import type { TranslationFile } from '@/models/Translation/Translation'
+
+export enum TaleDeckStoryType {
+  Planar = 'Planar',
+  Spherical = 'Spherical',
+}
+
 export interface TaleDeckCollection {
   id: number
   status: string
@@ -11,6 +18,8 @@ export interface TaleDeckCollection {
 export type TaleDeckCollections = {
   tj_stories: TaleDeckStory
   tj_scenes: TaleDeckScene
+  tj_audio: TaleDeckAudio
+  tj_translations: TaleDeckTranslation
 }
 
 export interface TaleDeckStory extends TaleDeckCollection {
@@ -19,6 +28,7 @@ export interface TaleDeckStory extends TaleDeckCollection {
   story_tagline: string
   story_slug: string
   story_title: string
+  story_type: TaleDeckStoryType
   tj_start_scene_id: number
   tj_return_scene_id: number
   tj_scenes: Array<number>
@@ -40,6 +50,8 @@ export interface TaleDeckAudio extends TaleDeckCollection {
   audio_slug: string
   tj_story_id: number
 }
+
+export interface TaleDeckTranslation extends TaleDeckCollection, TranslationFile {}
 
 export type TaleDeckSceneOverview = Pick<TaleDeckScene, 'id' | 'scene_slug'>
 export type TaleDeckAudioOverview = Pick<TaleDeckAudio, 'id' | 'audio_file' | 'audio_slug'>
