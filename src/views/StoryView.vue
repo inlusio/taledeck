@@ -17,7 +17,7 @@
   const { toRoute } = useRouteRecord()
   const { dialog, reset: resetDialog } = useDialog()
   const { reset: resetAudio } = useAudioController()
-  const { storyEntry, sceneOverviewList } = useGameStory()
+  const { story, sceneOverviewList } = useGameStory()
   const { getFileEntry } = useTaleDeckApi()
 
   const isLoaded = ref<boolean>(false)
@@ -25,7 +25,7 @@
   const returnScene = ref<TaleDeckSceneOverview>({ id: -1, scene_slug: 'map' })
 
   const rootStyles = computed<CSSProperties>(() => {
-    const img = storyEntry.value?.story_image
+    const img = story.value?.story_image
     const url = img == null ? undefined : getFileEntry(img)
 
     return {
@@ -34,11 +34,11 @@
   })
 
   watch(
-    () => [storyEntry.value, sceneOverviewList.value],
+    () => [story.value, sceneOverviewList.value],
     async () => {
-      if (storyEntry.value != null && sceneOverviewList.value.length > 0) {
-        const startSceneEntry = sceneOverviewList.value.find(({ id }) => id === storyEntry.value?.tj_start_scene_id)
-        const returnSceneEntry = sceneOverviewList.value.find(({ id }) => id === storyEntry.value?.tj_return_scene_id)
+      if (story.value != null && sceneOverviewList.value.length > 0) {
+        const startSceneEntry = sceneOverviewList.value.find(({ id }) => id === story.value?.tj_start_scene_id)
+        const returnSceneEntry = sceneOverviewList.value.find(({ id }) => id === story.value?.tj_return_scene_id)
 
         startScene.value = startSceneEntry || startScene.value
         returnScene.value = returnSceneEntry || returnScene.value
@@ -70,10 +70,10 @@
           <div class="p-page-story__content u-typography-root">
             <div class="p-page-story__top" v-if="isLoaded">
               <h1 class="p-page-story__title">
-                {{ storyEntry?.story_title }}
+                {{ story?.story_title }}
               </h1>
               <span class="p-page-story__subtitle">
-                {{ storyEntry?.story_tagline }}
+                {{ story?.story_tagline }}
               </span>
             </div>
             <div class="p-page-story__details">

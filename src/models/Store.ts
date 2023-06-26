@@ -6,4 +6,5 @@ export const enum StoreId {
   DialogVariables = 'DialogVariables',
   GameData = 'GameData',
   Ui = 'Ui',
+  WebXR = 'WebXR',
 }

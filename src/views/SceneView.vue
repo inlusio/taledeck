@@ -25,8 +25,8 @@
   const { hotspots } = useDialogHotspot()
 
   const { t } = useTranslation()
-  const { storyEntry } = useGameStory()
-  const { content, sceneId } = useGameScene()
+  const { story } = useGameStory()
+  const { scene, sceneSlug } = useGameScene()
   const { dialog } = useDialog()
   const { isDebug } = useDebug()
   const { handleCommand } = useDialogCommand(dialog)
@@ -36,11 +36,15 @@
   const { audioChannels } = useAudioController()
 
   const viewShellType = computed<string>(() => {
-    switch (storyEntry.value?.story_type) {
+    switch (story.value?.story_type) {
       case TaleDeckStoryType.Planar:
         return 'ViewShellPlanar'
       case TaleDeckStoryType.Spherical:
-        return 'ViewShellSpherical'
+        if (scene.value && scene.value['360active']) {
+          return 'ViewShellSpherical'
+        }
+
+        return 'ViewShellPlanar'
       default:
         throw new Error('Unknown story type!')
     }
@@ -72,11 +76,11 @@
     <div class="s-layout-game__main">
       <div class="s-layout-game__viewer">
         <Transition :mode="transitionMode" :name="transitionName">
-          <div v-if="content" :key="sceneId" class="s-layout-game__viewer-frame">
+          <div v-if="scene" :key="sceneSlug" class="s-layout-game__viewer-frame">
             <component
               :is="viewShellComponent"
-              :key="sceneId"
-              :background="getFileEntry(content.scene_image)"
+              :key="sceneSlug"
+              :background="getFileEntry(scene.scene_image)"
               :facets="[ViewShellFacet.Scene]"
               :height="900"
               :width="1600"
@@ -110,11 +114,11 @@
                 </ResponsiveShell>
                 <div v-if="isDebug" class="s-container s-container--full-width">
                   <div class="s-container__container">
-                    <span>scene: {{ sceneId }}</span>
+                    <span>scene: {{ sceneSlug }}</span>
                     <br />
                     <details>
                       <summary>Raw content</summary>
-                      <pre>{{ content }}</pre>
+                      <pre>{{ scene }}</pre>
                     </details>
                   </div>
                 </div>
@@ -124,7 +128,7 @@
         </Transition>
       </div>
       <div class="s-layout-game__dialog-box">
-        <DialogBox v-if="dialog.isReady" :key="dialog.sceneId" :runner="dialog.runner!" />
+        <DialogBox v-if="dialog.isReady" :key="dialog.sceneSlug" :runner="dialog.runner!" />
       </div>
     </div>
   </main>

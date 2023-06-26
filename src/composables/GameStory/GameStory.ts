@@ -8,7 +8,7 @@ export default function useGameStory() {
   const { audioOverviewList, sceneOverviewList, storyEntry } = storeToRefs(gameDataStore)
 
   return {
-    storyEntry: storyEntry as Ref<TaleDeckStory | null>,
+    story: storyEntry as Ref<TaleDeckStory | null>,
     sceneOverviewList: sceneOverviewList as Ref<Array<TaleDeckSceneOverview>>,
     audioOverviewList: audioOverviewList as Ref<Array<TaleDeckAudioOverview>>,
   }

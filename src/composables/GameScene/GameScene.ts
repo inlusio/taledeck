@@ -21,8 +21,8 @@ export default function useGameScene() {
   }
 
   return {
-    content: sceneEntry as Ref<TaleDeckScene | null>,
-    sceneId: sceneParam,
+    scene: sceneEntry as Ref<TaleDeckScene | null>,
+    sceneSlug: sceneParam,
     toGameScene,
   }
 }

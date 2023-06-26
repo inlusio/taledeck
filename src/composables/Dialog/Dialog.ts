@@ -21,12 +21,12 @@ export default function useDialog() {
   const { variables } = storeToRefs(dialogVariablesStore)
   const { hotspots } = storeToRefs(dialogHotspotsStore)
 
-  const { content } = useGameScene()
+  const { scene } = useGameScene()
 
   const dialog = reactive<Dialog>({
     hotspots,
     isReady: false,
-    sceneId: undefined,
+    sceneSlug: undefined,
     runner: null,
     hasStarted,
     variables,
@@ -36,7 +36,7 @@ export default function useDialog() {
 
   const createDialog = ({ scene_slug, script }: TaleDeckScene) => {
     dialog.hotspots = []
-    dialog.sceneId = scene_slug
+    dialog.sceneSlug = scene_slug
     dialog.isReady = true
     dialog.hasStarted = true
     dialog.runner = createRunner(dialog, storage, script)
@@ -51,15 +51,15 @@ export default function useDialog() {
   }
 
   watch(
-    content,
+    scene,
     () => {
       dialog.isReady = false
 
-      if (!content.value?.script) {
+      if (!scene.value?.script) {
         return
       }
 
-      createDialog(content.value)
+      createDialog(scene.value)
     },
     { immediate: true },
   )

@@ -7,7 +7,7 @@ import type { Ref, UnwrapNestedRefs } from 'vue'
 export interface Dialog {
   hotspots: Ref<Array<DialogHotspot>>
   isReady: boolean
-  sceneId: string | undefined
+  sceneSlug: string | undefined
   runner: YarnBound | null
   hasStarted: Ref<boolean>
   variables: Ref<DialogVariableStorage>

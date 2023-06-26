@@ -2,8 +2,10 @@
   import useAudioController from '@/composables/AudioController/AudioController'
   import useGameStory from '@/composables/GameStory/GameStory'
   import useUiController from '@/composables/UiController/UiController'
+  import useWebXRController from '@/composables/WebXRController/WebXRController'
 
   const { interactionOccured } = useUiController()
+  const { hasXR, hasImmersiveAR } = useWebXRController()
   const { allowAudio, audioChannels } = useAudioController()
   const { audioOverviewList, sceneOverviewList } = useGameStory()
 </script>
@@ -12,6 +14,8 @@
   <div class="debug-panel">
     <pre class="debug-panel__item"><b>Allow audio:</b> {{ allowAudio ? 'true' : 'false' }}</pre>
     <pre class="debug-panel__item"><b>Interaction occured:</b> {{ interactionOccured ? 'true' : 'false' }}</pre>
+    <pre class="debug-panel__item"><b>WebXR supported:</b> {{ hasXR ? 'true' : 'false' }}</pre>
+    <pre class="debug-panel__item"><b>Immersive AR supported:</b> {{ hasImmersiveAR ? 'true' : 'false' }}</pre>
     <details class="debug-panel__details">
       <summary><b>Audio channels:</b></summary>
       <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />

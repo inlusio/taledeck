@@ -2,11 +2,12 @@
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useBem from '@/composables/Bem/Bem'
   import { computed, onMounted, ref } from 'vue'
-  import { TresCanvas } from '@tresjs/core'
+  import type { PBRTextureMaps } from '@tresjs/core'
+  import { TresCanvas, useTexture } from '@tresjs/core'
   import { OrbitControls } from '@tresjs/cientos'
   import { useRoute } from 'vue-router'
-  import { sleep } from '@/util/sleep'
   import type { Vector3 } from 'three'
+  import { BackSide } from 'three'
 
   interface Props extends UseBemProps {
     facets?: Array<string>
@@ -22,6 +23,7 @@
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
   const route = useRoute()
 
+  const texture = ref<PBRTextureMaps | null>(null)
   const isBackgroundLoaded = ref<boolean>(false)
 
   const mainImageClasses = computed<Array<string>>(() => {
@@ -30,7 +32,7 @@
 
   // TODO: Change to sensible/useful event
   onMounted(async () => {
-    await sleep(0)
+    texture.value = (await useTexture({ map: props.background })) as PBRTextureMaps
     isBackgroundLoaded.value = true
   })
 </script>
@@ -40,19 +42,20 @@
     <div class="c-view-shell-spherical__background-wrap">
       <div class="c-view-shell-spherical__background-element" />
       <TresCanvas
-        window-size
         :key="route.fullPath"
         clear-color="#82dbc5"
         :class="mainImageClasses"
         class="c-view-shell-spherical__main-image"
       >
-        <TresPerspectiveCamera :position="[3, 3, 3] as unknown as Vector3" :fov="45" :look-at="() => [0, 0, 0]" />
+        <TresPerspectiveCamera :position="[-1, 0, 0] as unknown as Vector3" :fov="45" :look-at="() => [0, 0, 0]" />
         <OrbitControls />
         <TresMesh>
-          <TresTorusGeometry :args="[1, 0.5, 16, 32]" />
-          <TresMeshBasicMaterial color="orange" />
+          <TresSphereGeometry :args="[100, 25, 25]" />
+          <TresMeshStandardMaterial v-if="texture" v-bind="texture" :side="BackSide" />
+          <!--<TresTorusGeometry :args="[1, 0.5, 16, 32]" />-->
+          <!--<TresMeshBasicMaterial color="orange" />-->
         </TresMesh>
-        <TresAmbientLight :intensity="1" />
+        <TresAmbientLight :intensity="2" />
       </TresCanvas>
     </div>
     <div class="c-view-shell-spherical__content">
