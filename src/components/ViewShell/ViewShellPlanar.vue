@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useBem from '@/composables/Bem/Bem'
   import ResponsiveShell from '@/components/ResponsiveShell/ResponsiveShell.vue'

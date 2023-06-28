@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import useTranslation from '@/composables/Translation/Translation'
 
   const { t } = useTranslation()

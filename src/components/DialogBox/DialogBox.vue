@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   // @ts-ignore
   import YarnBound from 'yarn-bound/src'
   import { cloneDeep } from 'lodash-es'

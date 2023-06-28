@@ -1,13 +1,14 @@
-<script lang="ts" setup>
-  import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
+<script setup lang="ts">
+  import XrControls from '@/components/XrControls/XrControls.vue'
   import useBem from '@/composables/Bem/Bem'
-  import { computed, onMounted, ref } from 'vue'
+  import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
+  import useIsMounted from '@/composables/IsMounted/IsMounted'
+  import useXrImmersiveSessionController from '@/composables/XrImmersiveSessionController/XrImmersiveSessionController'
+  import useXrScene from '@/composables/XrScene/XrScene'
   import type { PBRTextureMaps } from '@tresjs/core'
-  import { TresCanvas, useTexture } from '@tresjs/core'
-  import { OrbitControls } from '@tresjs/cientos'
+  import { useTexture } from '@tresjs/core'
+  import { computed, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
-  import type { Vector3 } from 'three'
-  import { BackSide } from 'three'
 
   interface Props extends UseBemProps {
     facets?: Array<string>
@@ -20,49 +21,81 @@
     facets: () => [],
     background: '',
   })
-  const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
+
+  const { context, session, refSpace, hasActiveSession, requestSession, endSession } = useXrImmersiveSessionController()
+
   const route = useRoute()
+  const { isMounted } = useIsMounted()
+  const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
+  const { debugPosition, initScene } = useXrScene(true, context, session, refSpace)
 
+  const overlayEl = ref<HTMLDivElement | null>(null)
+  const canvasEl = ref<HTMLCanvasElement | null>(null)
   const texture = ref<PBRTextureMaps | null>(null)
-  const isBackgroundLoaded = ref<boolean>(false)
 
+  const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const mainImageClasses = computed<Array<string>>(() => {
     return [bemAdd(isBackgroundLoaded.value ? 'is-shown' : '', 'main-image')]
   })
 
-  // TODO: Change to sensible/useful event
-  onMounted(async () => {
-    texture.value = (await useTexture({ map: props.background })) as PBRTextureMaps
-    isBackgroundLoaded.value = true
-  })
+  const onRequestSession = () => {
+    requestSession(overlayEl.value as HTMLDivElement)
+  }
+
+  const onEndSession = () => {
+    endSession()
+  }
+
+  // React to `props.background` change (load new texture).
+  watch(
+    () => props.background,
+    async (nV) => {
+      texture.value = null
+
+      if (nV == null) {
+        return
+      }
+
+      texture.value = (await useTexture({ map: nV })) as PBRTextureMaps
+    },
+    { immediate: true },
+  )
+
+  // React to a new `session` being initted (init scene).
+  watch(
+    () => [isMounted.value, hasActiveSession.value, isBackgroundLoaded.value],
+    (nV) => {
+      if (nV.every(Boolean)) {
+        initScene(canvasEl.value!, texture.value!)
+      }
+    },
+    { immediate: true },
+  )
 </script>
 
 <template>
   <div :class="bemFacets" class="c-view-shell-spherical">
     <div class="c-view-shell-spherical__background-wrap">
       <div class="c-view-shell-spherical__background-element" />
-      <TresCanvas
+      <canvas
         :key="route.fullPath"
-        clear-color="#82dbc5"
         :class="mainImageClasses"
         class="c-view-shell-spherical__main-image"
-      >
-        <TresPerspectiveCamera :position="[-1, 0, 0] as unknown as Vector3" :fov="45" :look-at="() => [0, 0, 0]" />
-        <OrbitControls />
-        <TresMesh>
-          <TresSphereGeometry :args="[100, 25, 25]" />
-          <TresMeshStandardMaterial v-if="texture" v-bind="texture" :side="BackSide" />
-          <!--<TresTorusGeometry :args="[1, 0.5, 16, 32]" />-->
-          <!--<TresMeshBasicMaterial color="orange" />-->
-        </TresMesh>
-        <TresAmbientLight :intensity="2" />
-      </TresCanvas>
+        ref="canvasEl"
+      />
     </div>
     <div class="c-view-shell-spherical__content">
+      <XrControls @request-session="onRequestSession" @end-session="onEndSession" />
       <!--<slot :height="height" :width="width" name="content" />-->
     </div>
     <div class="c-view-shell-spherical__debug">
       <slot name="debug" />
+      <div ref="overlayEl">
+        overlay2
+        <pre>x: {{ debugPosition.x }}</pre>
+        <pre>y: {{ debugPosition.y }}</pre>
+        <pre>z: {{ debugPosition.z }}</pre>
+      </div>
     </div>
   </div>
 </template>

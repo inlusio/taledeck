@@ -1,6 +1,7 @@
 import { fileURLToPath, URL } from 'node:url'
-import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
+import VueI18n from '@intlify/unplugin-vue-i18n/vite'
 import ViteSvgLoader from 'vite-svg-loader'
+import ViteMkcert from 'vite-plugin-mkcert'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
@@ -20,6 +21,7 @@ export default defineConfig({
   //   }
   // },
   plugins: [
+    ...(process.env.NODE_ENV === 'development' ? [ViteMkcert()] : []),
     ViteSvgLoader(),
     vue({
       template: {
@@ -28,7 +30,7 @@ export default defineConfig({
         },
       },
     }),
-    VueI18nPlugin({ runtimeOnly: false }),
+    VueI18n({ runtimeOnly: false }),
   ],
   resolve: {
     alias: {
@@ -36,4 +38,5 @@ export default defineConfig({
       'node:path': 'path-browserify',
     },
   },
+  server: { https: true },
 })

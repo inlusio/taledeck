@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import { useElementSize } from '@vueuse/core'
   import { computed, ref } from 'vue'
   import type { CSSProperties } from 'vue'

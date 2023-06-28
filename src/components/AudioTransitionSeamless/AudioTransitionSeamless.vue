@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import type { UseAudioTransitionEmits } from '@/composables/AudioTransition/AudioTransition'
   import useAudioTransition from '@/composables/AudioTransition/AudioTransition'
   import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'

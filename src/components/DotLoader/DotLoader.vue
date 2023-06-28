@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import { computed } from 'vue'

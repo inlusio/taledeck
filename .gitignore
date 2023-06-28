@@ -35,8 +35,5 @@ lerna-debug.log*
 # project files
 yarn-tests/ysc
 
-# Local Netlify folder
-.netlify
-
 # generated files
 /src/generated/

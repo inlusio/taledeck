@@ -4,7 +4,7 @@
   </audio>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
   import { computed, ref, watch } from 'vue'
   import useAudioController from '@/composables/AudioController/AudioController'
   import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'

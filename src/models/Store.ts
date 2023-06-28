@@ -5,6 +5,7 @@ export const enum StoreId {
   DialogHotspots = 'DialogHotspots',
   DialogVariables = 'DialogVariables',
   GameData = 'GameData',
+  XrImmersiveSession = 'XrImmersiveSession',
   Ui = 'Ui',
-  WebXR = 'WebXR',
+  XrApi = 'XrApi',
 }

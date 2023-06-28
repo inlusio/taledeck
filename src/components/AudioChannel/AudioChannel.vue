@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'
   import useAudioController from '@/composables/AudioController/AudioController'
   import { computed, defineAsyncComponent, ref, watch } from 'vue'

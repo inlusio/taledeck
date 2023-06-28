@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import useGameScene from '@/composables/GameScene/GameScene'
   import { ViewShellFacet } from '@/components/ViewShell/ViewShellFacet'
   import DialogBox from '@/components/DialogBox/DialogBox.vue'

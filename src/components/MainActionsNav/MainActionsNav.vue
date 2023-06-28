@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import { UiIconId, UiIconSizeId } from '@/models/UiIcon/UiIcon'
   import { RouteRecordId } from '@/models/RouteRecord/RouteRecord'
   import UiIcon from '@/components/UiIcon/UiIcon.vue'
@@ -43,10 +43,10 @@
           <UiIcon :key="audioIcon" :id="audioIcon" :colorize="true" :size="UiIconSizeId.Medium" />
           <span class="s-tooltip-label c-main-actions-nav__btn-tooltip">
             <template v-if="allowAudio">
-              {{ t('main_actions_nav.audio_on') }}
+              {{ t('main_nav.audio_on') }}
             </template>
             <template v-else>
-              {{ t('main_actions_nav.audio_off') }}
+              {{ t('main_nav.audio_off') }}
             </template>
           </span>
         </button>
@@ -60,10 +60,10 @@
           <UiIcon :key="fullscreenIcon" :id="fullscreenIcon" :colorize="true" :size="UiIconSizeId.Medium" />
           <span class="s-tooltip-label c-main-actions-nav__btn-tooltip">
             <template v-if="showFullscreen">
-              {{ t('main_actions_nav.fullscreen_on') }}
+              {{ t('main_nav.fullscreen_on') }}
             </template>
             <template v-else>
-              {{ t('main_actions_nav.fullscreen_off') }}
+              {{ t('main_nav.fullscreen_off') }}
             </template>
           </span>
         </button>
@@ -75,7 +75,7 @@
         >
           <UiIcon :id="UiIconId.QuestionMark" :colorize="true" :size="UiIconSizeId.Medium" />
           <span class="s-tooltip-label c-main-actions-nav__btn-tooltip">
-            {{ t('main_actions_nav.to_home') }}
+            {{ t('main_nav.to_home') }}
           </span>
         </RouterLink>
       </li>

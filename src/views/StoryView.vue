@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import useDialog from '@/composables/Dialog/Dialog'
   import { useRouter } from 'vue-router'
   import useRouteRecord from '@/composables/RouteRecord/RouteRecord'

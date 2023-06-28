@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import { computed, nextTick, onMounted, ref, watch } from 'vue'
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'

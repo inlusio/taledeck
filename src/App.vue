@@ -1,4 +1,4 @@
-<script lang="ts" setup>
+<script setup lang="ts">
   import { RouterView } from 'vue-router'
   import { useBootstrapStore } from '@/stores/Bootstrap'
   import { onBeforeUnmount, onMounted } from 'vue'
