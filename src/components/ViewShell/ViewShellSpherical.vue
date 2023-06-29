@@ -4,6 +4,7 @@
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
   import useXrImmersiveSessionController from '@/composables/XrImmersiveSessionController/XrImmersiveSessionController'
+  import useXrInlineSessionController from '@/composables/XrInlineSessionController/XrInlineSessionController'
   import useXrScene from '@/composables/XrScene/XrScene'
   import type { PBRTextureMaps } from '@tresjs/core'
   import { useTexture } from '@tresjs/core'
@@ -22,51 +23,68 @@
     background: '',
   })
 
-  const { context, session, refSpace, hasActiveSession, requestSession, endSession } = useXrImmersiveSessionController()
+  const immersiveSCtrl = useXrImmersiveSessionController()
+  const inlineSCtrl = useXrInlineSessionController()
 
   const route = useRoute()
   const { isMounted } = useIsMounted()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
-  const { debugPosition, initScene } = useXrScene(true, context, session, refSpace)
+  const immersiveScene = useXrScene(true, immersiveSCtrl.context, immersiveSCtrl.session, immersiveSCtrl.refSpace)
+  const inlineScene = useXrScene(false, inlineSCtrl.context, inlineSCtrl.session, inlineSCtrl.refSpace)
 
   const overlayEl = ref<HTMLDivElement | null>(null)
   const canvasEl = ref<HTMLCanvasElement | null>(null)
   const texture = ref<PBRTextureMaps | null>(null)
 
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
+  const isImmersiveScenePrepared = computed<boolean>(() => {
+    return isMounted.value && isBackgroundLoaded.value && immersiveSCtrl.hasActiveSession.value
+  })
+  const isInlineScenePrepared = computed<boolean>(() => {
+    return isMounted.value && isBackgroundLoaded.value && inlineSCtrl.hasActiveSession.value
+  })
   const mainImageClasses = computed<Array<string>>(() => {
     return [bemAdd(isBackgroundLoaded.value ? 'is-shown' : '', 'main-image')]
   })
 
-  const onRequestSession = () => {
-    requestSession(overlayEl.value as HTMLDivElement)
+  const onRequestImmersiveSession = () => {
+    immersiveSCtrl.requestSession(undefined, overlayEl.value)
   }
 
-  const onEndSession = () => {
-    endSession()
+  const onEndImmersiveSession = () => {
+    immersiveSCtrl.endSession()
   }
 
   // React to `props.background` change (load new texture).
   watch(
     () => props.background,
-    async (nV) => {
+    async (map) => {
       texture.value = null
 
-      if (nV == null) {
-        return
+      if (map != null) {
+        texture.value = (await useTexture({ map })) as PBRTextureMaps
       }
-
-      texture.value = (await useTexture({ map: nV })) as PBRTextureMaps
     },
     { immediate: true },
   )
 
-  // React to a new `session` being initted (init scene).
+  // React to a new immersive session.
   watch(
-    () => [isMounted.value, hasActiveSession.value, isBackgroundLoaded.value],
-    (nV) => {
-      if (nV.every(Boolean)) {
-        initScene(canvasEl.value!, texture.value!)
+    () => isInlineScenePrepared.value,
+    (nValue) => {
+      if (nValue) {
+        inlineScene.initScene(texture.value!)
+      }
+    },
+    { immediate: true },
+  )
+
+  // React to a new inline session.
+  watch(
+    () => isImmersiveScenePrepared.value,
+    (nValue) => {
+      if (nValue) {
+        immersiveScene.initScene(texture.value!)
       }
     },
     { immediate: true },
@@ -85,16 +103,16 @@
       />
     </div>
     <div class="c-view-shell-spherical__content">
-      <XrControls @request-session="onRequestSession" @end-session="onEndSession" />
+      <XrControls @request-session="onRequestImmersiveSession" @end-session="onEndImmersiveSession" />
       <!--<slot :height="height" :width="width" name="content" />-->
     </div>
     <div class="c-view-shell-spherical__debug">
       <slot name="debug" />
       <div ref="overlayEl">
-        overlay2
-        <pre>x: {{ debugPosition.x }}</pre>
-        <pre>y: {{ debugPosition.y }}</pre>
-        <pre>z: {{ debugPosition.z }}</pre>
+        XR OVERLAY:
+        <pre>x: {{ immersiveScene.debugPosition.x }}</pre>
+        <pre>y: {{ immersiveScene.debugPosition.y }}</pre>
+        <pre>z: {{ immersiveScene.debugPosition.z }}</pre>
       </div>
     </div>
   </div>

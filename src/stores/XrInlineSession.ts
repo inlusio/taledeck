@@ -5,13 +5,13 @@ import { defineStore, storeToRefs } from 'pinia'
 import type { Ref } from 'vue'
 import { computed, ref, watch } from 'vue'
 
-const sessionMode: XRSessionMode = 'immersive-vr'
+const sessionMode: XRSessionMode = 'inline'
 const sessionOptions: XRSessionInit = {
-  optionalFeatures: ['dom-overlay'],
-  requiredFeatures: ['local'],
+  optionalFeatures: [],
+  requiredFeatures: ['viewer'],
 }
 
-export const useXrImmersiveSessionStore = defineStore(StoreId.XrImmersiveSession, () => {
+export const useXrInlineSessionStore = defineStore(StoreId.XrInlineSession, () => {
   const xrApiStore = useXrApiStore()
   const { createWebGLContext } = xrApiStore
   const { api } = storeToRefs(xrApiStore)
@@ -38,16 +38,14 @@ export const useXrImmersiveSessionStore = defineStore(StoreId.XrImmersiveSession
     { immediate: true },
   )
 
-  const requestSession = async (canvasEl: HTMLCanvasElement | undefined, overlayEl: HTMLDivElement | null) => {
-    if (overlayEl == null) {
+  const requestSession = async (canvasEl: HTMLCanvasElement) => {
+    if (canvasEl == null) {
       throw new Error('XR Session could not be initiated (DOM elements not found).')
     }
 
-    const options: XRSessionInit = { ...sessionOptions, domOverlay: { root: overlayEl } }
-
     context.value = createWebGLContext(canvasEl, { xrCompatible: true })
-    session.value = (await api.value?.requestSession(sessionMode, options)) || null
-    refSpace.value = await session.value!.requestReferenceSpace('local')
+    session.value = (await api.value?.requestSession(sessionMode, sessionOptions)) || null
+    refSpace.value = await session.value!.requestReferenceSpace('viewer')
 
     session.value!.addEventListener('end', onSessionEnded)
     addResizeObserver()

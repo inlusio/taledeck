@@ -48,7 +48,7 @@
 ///
 @mixin highlight-base {
   color: col.$brand-yellow-dark;
-  border: 2px solid transparent;
+  border: 2px solid col.$monochrome-super-silver;
   background-color: col.$monochrome-white;
 }
 

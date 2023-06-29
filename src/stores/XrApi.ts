@@ -31,11 +31,20 @@ export const useXrApiStore = defineStore(StoreId.XrApi, () => {
     hasImmersiveVr.value = await api.value?.isSessionSupported('immersive-vr')
   }
 
-  const createWebGLContext = (glAttribs: WebGLContextAttributes = {}): WebGL2RenderingContext => {
+  const createWebGLCanvas = () => {
+    const result = document.createElement('canvas')
+    result.classList.add('xr-canvas')
+
+    return result
+  }
+
+  const createWebGLContext = (
+    canvasEl = createWebGLCanvas(),
+    glAttribs: WebGLContextAttributes = {},
+  ): WebGL2RenderingContext => {
     glAttribs = glAttribs || { alpha: false }
 
-    const webglCanvas = document.createElement('canvas')
-    const result = webglCanvas.getContext('webgl2', glAttribs)
+    const result = canvasEl.getContext('webgl2', glAttribs)
 
     if (!result) {
       throw new Error(`This browser does not support WebGL 2.`)
