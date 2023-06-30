@@ -1,7 +1,9 @@
 <script setup lang="ts">
+  import UiIcon from '@/components/UiIcon/UiIcon.vue'
   import useXrApiController from '@/composables/XrApiController/XrApiController'
   import useTranslation from '@/composables/Translation/Translation'
   import useXrImmersiveSessionController from '@/composables/XrImmersiveSessionController/XrImmersiveSessionController'
+  import { UiIconId, UiIconSizeId } from '@/models/UiIcon/UiIcon'
   import { computed } from 'vue'
 
   interface Emits {
@@ -39,7 +41,12 @@
 
 <template>
   <div class="xr-controls">
-    <button @click="onClick" :disabled="disabled" class="xr-controls__action btn btn--small btn--highlight">
+    <button
+      @click="onClick"
+      :disabled="disabled"
+      class="xr-controls__action btn btn--small btn--highlight btn--has-grid"
+    >
+      <UiIcon :id="UiIconId.PanoramaHorizontal" :colorize="true" :size="UiIconSizeId.Medium" />
       {{ t(text) }}
     </button>
   </div>
@@ -52,12 +59,12 @@
     width: 100%;
     height: 100%;
     flex-flow: column nowrap;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center;
+    padding: (24px /* DialogBox offset */ + 48px) 0;
   }
 
   .xr-controls__action {
     pointer-events: auto;
-    display: block;
   }
 </style>

@@ -1,9 +1,10 @@
+import useXrInlineViewerHelper from '@/composables/XrInlineViewerHelper/XrInlineViewerHelper'
+import useXrScene from '@/composables/XrScene/XrScene'
 import useXrSessionController from '@/composables/XrSessionController/XrSessionController'
 import { StoreId } from '@/models/Store'
 import { useXrApiStore } from '@/stores/XrApi'
 import { defineStore, storeToRefs } from 'pinia'
-import type { Ref } from 'vue'
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 
 const sessionMode: XRSessionMode = 'inline'
 const sessionOptions: XRSessionInit = {
@@ -20,36 +21,50 @@ export const useXrInlineSessionStore = defineStore(StoreId.XrInlineSession, () =
   const session = ref<XRSession | null>(null)
   const refSpace = ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>(undefined)
 
-  const { addResizeObserver, endSession, onSessionEnded } = useXrSessionController(context, session, refSpace)
+  const { refSpace: rotatedRefSpace } = useXrInlineViewerHelper(context, refSpace)
+  const { camera, debugPosition, initScene } = useXrScene(false, context, session, refSpace)
+  const { hasActiveSession, addResizeObserver, endSession, onSessionEnded } = useXrSessionController(
+    context,
+    session,
+    refSpace,
+    camera,
+  )
 
-  const hasActiveSession = computed<boolean>(() => {
-    return [session, context, refSpace].every(({ value }: Ref<unknown>) => value != null)
-  })
+  const requestSession = async (targetEl: HTMLDivElement) => {
+    if (targetEl == null) {
+      throw new Error('XR Session could not be initiated (DOM elements not found).')
+    }
+
+    try {
+      context.value = createWebGLContext(targetEl, undefined, { xrCompatible: true })
+      session.value = (await api.value?.requestSession(sessionMode, sessionOptions)) || null
+      refSpace.value = await session.value!.requestReferenceSpace('viewer')
+
+      session.value!.addEventListener('end', onSessionEnded)
+      addResizeObserver()
+    } catch (e) {
+      console.error(e)
+    }
+  }
 
   watch(
-    () => [session.value, context.value],
-    async (nValue) => {
-      const [nSession, nContext] = nValue as [XRSession | null, WebGL2RenderingContext | null]
-
-      if (nSession != null && nContext != null) {
-        await nSession.updateRenderState({ baseLayer: new XRWebGLLayer(nSession, nContext) })
+    () => rotatedRefSpace.value,
+    () => {
+      if (rotatedRefSpace.value != null) {
+        refSpace.value = rotatedRefSpace.value
       }
     },
     { immediate: true },
   )
 
-  const requestSession = async (canvasEl: HTMLCanvasElement) => {
-    if (canvasEl == null) {
-      throw new Error('XR Session could not be initiated (DOM elements not found).')
-    }
-
-    context.value = createWebGLContext(canvasEl, { xrCompatible: true })
-    session.value = (await api.value?.requestSession(sessionMode, sessionOptions)) || null
-    refSpace.value = await session.value!.requestReferenceSpace('viewer')
-
-    session.value!.addEventListener('end', onSessionEnded)
-    addResizeObserver()
+  return {
+    context,
+    session,
+    refSpace,
+    hasActiveSession,
+    requestSession,
+    endSession,
+    debugPosition,
+    initScene,
   }
-
-  return { context, session, refSpace, hasActiveSession, requestSession, endSession }
 })

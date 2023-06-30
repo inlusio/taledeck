@@ -5,10 +5,9 @@
   import useIsMounted from '@/composables/IsMounted/IsMounted'
   import useXrImmersiveSessionController from '@/composables/XrImmersiveSessionController/XrImmersiveSessionController'
   import useXrInlineSessionController from '@/composables/XrInlineSessionController/XrInlineSessionController'
-  import useXrScene from '@/composables/XrScene/XrScene'
   import type { PBRTextureMaps } from '@tresjs/core'
   import { useTexture } from '@tresjs/core'
-  import { computed, ref, watch } from 'vue'
+  import { computed, onMounted, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
 
   interface Props extends UseBemProps {
@@ -29,11 +28,9 @@
   const route = useRoute()
   const { isMounted } = useIsMounted()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
-  const immersiveScene = useXrScene(true, immersiveSCtrl.context, immersiveSCtrl.session, immersiveSCtrl.refSpace)
-  const inlineScene = useXrScene(false, inlineSCtrl.context, inlineSCtrl.session, inlineSCtrl.refSpace)
 
+  const targetEl = ref<HTMLDivElement | null>(null)
   const overlayEl = ref<HTMLDivElement | null>(null)
-  const canvasEl = ref<HTMLCanvasElement | null>(null)
   const texture = ref<PBRTextureMaps | null>(null)
 
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
@@ -48,7 +45,7 @@
   })
 
   const onRequestImmersiveSession = () => {
-    immersiveSCtrl.requestSession(undefined, overlayEl.value)
+    immersiveSCtrl.requestSession(overlayEl.value)
   }
 
   const onEndImmersiveSession = () => {
@@ -73,7 +70,7 @@
     () => isInlineScenePrepared.value,
     (nValue) => {
       if (nValue) {
-        inlineScene.initScene(texture.value!)
+        inlineSCtrl.initScene(texture.value!)
       }
     },
     { immediate: true },
@@ -84,23 +81,22 @@
     () => isImmersiveScenePrepared.value,
     (nValue) => {
       if (nValue) {
-        immersiveScene.initScene(texture.value!)
+        immersiveSCtrl.initScene(texture.value!)
       }
     },
     { immediate: true },
   )
+
+  onMounted(() => {
+    inlineSCtrl.requestSession(targetEl.value!)
+  })
 </script>
 
 <template>
   <div :class="bemFacets" class="c-view-shell-spherical">
     <div class="c-view-shell-spherical__background-wrap">
       <div class="c-view-shell-spherical__background-element" />
-      <canvas
-        :key="route.fullPath"
-        :class="mainImageClasses"
-        class="c-view-shell-spherical__main-image"
-        ref="canvasEl"
-      />
+      <div class="c-view-shell-spherical__main-image" :class="mainImageClasses" :key="route.fullPath" ref="targetEl" />
     </div>
     <div class="c-view-shell-spherical__content">
       <XrControls @request-session="onRequestImmersiveSession" @end-session="onEndImmersiveSession" />
@@ -110,9 +106,9 @@
       <slot name="debug" />
       <div ref="overlayEl">
         XR OVERLAY:
-        <pre>x: {{ immersiveScene.debugPosition.x }}</pre>
-        <pre>y: {{ immersiveScene.debugPosition.y }}</pre>
-        <pre>z: {{ immersiveScene.debugPosition.z }}</pre>
+        <pre>x: {{ immersiveSCtrl.debugPosition.value.x }}</pre>
+        <pre>y: {{ immersiveSCtrl.debugPosition.value.y }}</pre>
+        <pre>z: {{ immersiveSCtrl.debugPosition.value.z }}</pre>
       </div>
     </div>
   </div>

@@ -31,15 +31,20 @@ export const useXrApiStore = defineStore(StoreId.XrApi, () => {
     hasImmersiveVr.value = await api.value?.isSessionSupported('immersive-vr')
   }
 
-  const createWebGLCanvas = () => {
+  const createWebGLCanvas = (targetEl: HTMLDivElement | undefined) => {
     const result = document.createElement('canvas')
     result.classList.add('xr-canvas')
+
+    if (targetEl != null) {
+      targetEl.appendChild(result)
+    }
 
     return result
   }
 
   const createWebGLContext = (
-    canvasEl = createWebGLCanvas(),
+    targetEl: HTMLDivElement | undefined = undefined,
+    canvasEl: HTMLCanvasElement | undefined = createWebGLCanvas(targetEl),
     glAttribs: WebGLContextAttributes = {},
   ): WebGL2RenderingContext => {
     glAttribs = glAttribs || { alpha: false }

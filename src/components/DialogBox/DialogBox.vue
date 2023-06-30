@@ -116,6 +116,8 @@
   @use 'sass:color';
   @use '@/assets/scss/util/color/color' as col;
 
+  $dialog-box-offset: 24px;
+
   .c-dialog-box {
     display: flex;
     height: 100%;
