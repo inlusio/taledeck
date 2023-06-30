@@ -1,17 +1,16 @@
-import type { PBRTextureMaps } from '@tresjs/core'
 import {
   AmbientLight,
   BackSide,
   Mesh,
   MeshStandardMaterial,
   PerspectiveCamera,
-  Quaternion,
   Scene,
   SphereGeometry,
+  Texture,
   WebGLRenderer,
 } from 'three'
 import type { Ref } from 'vue'
-import { reactive } from 'vue'
+import { reactive, toRaw } from 'vue'
 
 const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
 
@@ -28,7 +27,7 @@ export default function useXrScene(
   session: Ref<XRSession | null>,
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
 ) {
-  const initScene = (texture: PBRTextureMaps) => {
+  const initScene = async (texture: Texture) => {
     if (context.value == null || session.value == null || refSpace.value == null) {
       throw new Error('Scene could not be initialized!')
     }
@@ -36,7 +35,7 @@ export default function useXrScene(
     light = new AmbientLight(0xffffff, 2)
     scene.add(light)
 
-    sky = new Mesh(new SphereGeometry(1, 25, 25), new MeshStandardMaterial({ ...texture, side: BackSide }))
+    sky = new Mesh(new SphereGeometry(1, 25, 25), new MeshStandardMaterial({ map: texture, side: BackSide }))
     scene.add(sky)
 
     // Create and configure  three.js renderer with XR support
@@ -46,12 +45,20 @@ export default function useXrScene(
       context: context.value,
       canvas: context.value.canvas,
     })
+    renderer.autoClear = false
     renderer.setPixelRatio(window.devicePixelRatio)
     renderer.xr.enabled = true
     renderer.xr.setReferenceSpace(refSpace.value)
     renderer.xr.setReferenceSpaceType(isImmersive ? 'local' : 'viewer')
-    renderer.xr.setSession(session.value as XRSession)
-    renderer.setAnimationLoop(onXRAnimationFrame)
+    renderer.xr.setSession(toRaw(session.value) as XRSession)
+    renderer.xr.setAnimationLoop(onXRAnimationFrame)
+
+    const baseLayer = new XRWebGLLayer(session.value, context.value)
+    await session.value.updateRenderState({ baseLayer })
+
+    renderer.xr.addEventListener('sessionStarted', () => {
+      console.log('asdfasdfasdf')
+    })
   }
 
   const renderScene = (s: Scene, c: PerspectiveCamera) => {
@@ -78,29 +85,31 @@ export default function useXrScene(
     const layer = session.renderState.baseLayer
 
     if (pose && layer) {
+      const view = pose.views[0]
+
       // debugPosition.x = viewerPose.transform.position.x
       // debugPosition.y = viewerPose.transform.position.y
       // debugPosition.z = viewerPose.transform.position.z
 
       context.value.bindFramebuffer(context.value.FRAMEBUFFER, layer.framebuffer)
+      context.value.clear(context.value.COLOR_BUFFER_BIT | context.value.DEPTH_BUFFER_BIT)
 
-      for (const view of pose.views) {
-        const { x, y, width, height } = layer.getViewport(view) as XRViewport
-        context.value.viewport(x, y, width, height)
+      const { x, y, width, height } = layer.getViewport(view) as XRViewport
+      context.value.viewport(x, y, width, height)
 
-        // scene.draw(view.projectionMatrix, view.transform)
+      // scene.draw(view.projectionMatrix, view.transform)
 
-        if (!isImmersive) {
-          const { x, y, z, w } = pose.transform.orientation
-          camera.rotation.setFromQuaternion(new Quaternion(x, y, z, w))
+      if (!isImmersive) {
+        camera.matrix.fromArray(view.transform.matrix)
+        camera.projectionMatrix.fromArray(view.projectionMatrix)
+        camera.updateMatrixWorld(true)
 
-          debugPosition.x = camera.rotation.x
-          debugPosition.y = camera.rotation.y
-          debugPosition.z = camera.rotation.z
-        }
-
-        renderScene(scene, camera)
+        debugPosition.x = camera.rotation.x
+        debugPosition.y = camera.rotation.y
+        debugPosition.z = camera.rotation.z
       }
+
+      renderScene(scene, camera)
     }
   }
 

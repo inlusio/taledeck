@@ -7,7 +7,5 @@ export const enum StoreId {
   GameData = 'GameData',
   Ui = 'Ui',
   XrApi = 'XrApi',
-  XrImmersiveSession = 'XrImmersiveSession',
-  XrInlineSession = 'XrInlineSession',
   XrSession = 'XrSession',
 }

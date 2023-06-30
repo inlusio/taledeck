@@ -3,13 +3,11 @@
   import useGameStory from '@/composables/GameStory/GameStory'
   import useUiController from '@/composables/UiController/UiController'
   import useXrApiController from '@/composables/XrApiController/XrApiController'
-  import useXrInlineSessionController from '@/composables/XrInlineSessionController/XrInlineSessionController'
 
   const { interactionOccured } = useUiController()
   const { hasXr, hasImmersiveXr } = useXrApiController()
   const { allowAudio, audioChannels } = useAudioController()
   const { audioOverviewList, sceneOverviewList } = useGameStory()
-  const { debugPosition } = useXrInlineSessionController()
 </script>
 
 <template>
@@ -32,9 +30,9 @@
     </details>
     <details class="debug-panel__details">
       <summary><b>WebXR Debug:</b></summary>
-      <pre>{{ debugPosition.x }}</pre>
-      <pre>{{ debugPosition.y }}</pre>
-      <pre>{{ debugPosition.z }}</pre>
+      <!--<pre>{{ debugPosition.x }}</pre>-->
+      <!--<pre>{{ debugPosition.y }}</pre>-->
+      <!--<pre>{{ debugPosition.z }}</pre>-->
     </details>
   </div>
 </template>

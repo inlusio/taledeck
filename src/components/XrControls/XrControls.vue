@@ -2,7 +2,7 @@
   import UiIcon from '@/components/UiIcon/UiIcon.vue'
   import useXrApiController from '@/composables/XrApiController/XrApiController'
   import useTranslation from '@/composables/Translation/Translation'
-  import useXrImmersiveSessionController from '@/composables/XrImmersiveSessionController/XrImmersiveSessionController'
+  import useXrSessionController from '@/composables/XrSessionController/XrSessionController'
   import { UiIconId, UiIconSizeId } from '@/models/UiIcon/UiIcon'
   import { computed } from 'vue'
 
@@ -13,7 +13,7 @@
 
   const { t } = useTranslation()
   const { hasXr, hasImmersiveXr } = useXrApiController()
-  const { hasActiveSession } = useXrImmersiveSessionController()
+  const { hasActiveSession } = useXrSessionController()
 
   const emit = defineEmits<Emits>()
 
@@ -49,6 +49,7 @@
       <UiIcon :id="UiIconId.PanoramaHorizontal" :colorize="true" :size="UiIconSizeId.Medium" />
       {{ t(text) }}
     </button>
+    <slot name="default" />
   </div>
 </template>
 

@@ -3,10 +3,8 @@
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
-  import useXrImmersiveSessionController from '@/composables/XrImmersiveSessionController/XrImmersiveSessionController'
-  import useXrInlineSessionController from '@/composables/XrInlineSessionController/XrInlineSessionController'
-  import type { PBRTextureMaps } from '@tresjs/core'
-  import { useTexture } from '@tresjs/core'
+  import useXrSessionController from '@/composables/XrSessionController/XrSessionController'
+  import { Texture, TextureLoader } from 'three'
   import { computed, onMounted, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
 
@@ -22,23 +20,21 @@
     background: '',
   })
 
-  const immersiveSCtrl = useXrImmersiveSessionController()
-  const inlineSCtrl = useXrInlineSessionController()
+  const immersiveSCtrl = useXrSessionController()
 
   const route = useRoute()
   const { isMounted } = useIsMounted()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
 
-  const targetEl = ref<HTMLDivElement | null>(null)
   const overlayEl = ref<HTMLDivElement | null>(null)
-  const texture = ref<PBRTextureMaps | null>(null)
+  const texture = ref<Texture | null>(null)
 
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const isImmersiveScenePrepared = computed<boolean>(() => {
     return isMounted.value && isBackgroundLoaded.value && immersiveSCtrl.hasActiveSession.value
   })
   const isInlineScenePrepared = computed<boolean>(() => {
-    return isMounted.value && isBackgroundLoaded.value && inlineSCtrl.hasActiveSession.value
+    return isMounted.value && isBackgroundLoaded.value
   })
   const mainImageClasses = computed<Array<string>>(() => {
     return [bemAdd(isBackgroundLoaded.value ? 'is-shown' : '', 'main-image')]
@@ -55,11 +51,11 @@
   // React to `props.background` change (load new texture).
   watch(
     () => props.background,
-    async (map) => {
+    async (url) => {
       texture.value = null
 
-      if (map != null) {
-        texture.value = (await useTexture({ map })) as PBRTextureMaps
+      if (url != null) {
+        texture.value = new TextureLoader().load(url)
       }
     },
     { immediate: true },
@@ -70,7 +66,7 @@
     () => isInlineScenePrepared.value,
     (nValue) => {
       if (nValue) {
-        inlineSCtrl.initScene(texture.value!)
+        // start "inline" scene
       }
     },
     { immediate: true },
@@ -88,7 +84,7 @@
   )
 
   onMounted(() => {
-    inlineSCtrl.requestSession(targetEl.value!)
+    // start "inline" session
   })
 </script>
 
@@ -96,11 +92,15 @@
   <div :class="bemFacets" class="c-view-shell-spherical">
     <div class="c-view-shell-spherical__background-wrap">
       <div class="c-view-shell-spherical__background-element" />
-      <div class="c-view-shell-spherical__main-image" :class="mainImageClasses" :key="route.fullPath" ref="targetEl" />
+      <canvas
+        class="c-view-shell-spherical__main-image"
+        :class="mainImageClasses"
+        :key="route.fullPath"
+        ref="canvasEl"
+      />
     </div>
     <div class="c-view-shell-spherical__content">
       <XrControls @request-session="onRequestImmersiveSession" @end-session="onEndImmersiveSession" />
-      <!--<slot :height="height" :width="width" name="content" />-->
     </div>
     <div class="c-view-shell-spherical__debug">
       <slot name="debug" />
