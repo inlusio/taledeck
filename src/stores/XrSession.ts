@@ -1,4 +1,4 @@
-import useXrScene from '@/composables/XrScene/XrScene'
+import useImmersiveScene from '@/composables/ImmersiveScene/ImmersiveScene'
 import { StoreId } from '@/models/Store'
 import { useXrApiStore } from '@/stores/XrApi'
 import { useResizeObserver } from '@vueuse/core'
@@ -21,7 +21,7 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
   const refSpace = ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>(undefined)
   const removeResizeObserver = ref<(() => void) | null>(null)
 
-  const { camera, debugPosition, initScene } = useXrScene(true, context, session, refSpace)
+  const { camera, debugPosition, initScene } = useImmersiveScene(context, session, refSpace)
 
   const requestSession = async (overlayEl: HTMLDivElement | null) => {
     if (overlayEl == null) {

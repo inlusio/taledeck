@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import XrControls from '@/components/XrControls/XrControls.vue'
+  import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
@@ -7,6 +8,8 @@
   import { Texture, TextureLoader } from 'three'
   import { computed, onMounted, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
+
+  const TL = new TextureLoader()
 
   interface Props extends UseBemProps {
     facets?: Array<string>
@@ -26,8 +29,11 @@
   const { isMounted } = useIsMounted()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
 
+  const canvasEl = ref<HTMLCanvasElement | null>(null)
   const overlayEl = ref<HTMLDivElement | null>(null)
   const texture = ref<Texture | null>(null)
+
+  const { initScene } = useInlineScene(canvasEl)
 
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const isImmersiveScenePrepared = computed<boolean>(() => {
@@ -52,10 +58,9 @@
   watch(
     () => props.background,
     async (url) => {
-      texture.value = null
-
       if (url != null) {
-        texture.value = new TextureLoader().load(url)
+        texture.value = null
+        texture.value = await TL.loadAsync(url)
       }
     },
     { immediate: true },
@@ -66,7 +71,7 @@
     () => isInlineScenePrepared.value,
     (nValue) => {
       if (nValue) {
-        // start "inline" scene
+        initScene(texture.value!)
       }
     },
     { immediate: true },

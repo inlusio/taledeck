@@ -11,15 +11,6 @@ export default defineConfig({
   build: {
     target: 'esnext',
   },
-  // css: {
-  //   preprocessorOptions: {
-  //     scss: {
-  //       additionalData: `
-  //         @import './src/assets/scss/_main.scss';
-  //       `
-  //     }
-  //   }
-  // },
   plugins: [
     ...(process.env.NODE_ENV === 'development' ? [ViteMkcert()] : []),
     ViteSvgLoader(),
