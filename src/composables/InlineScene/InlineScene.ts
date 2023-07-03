@@ -19,8 +19,8 @@ export default function useInlineScene(canvasEl: Ref<HTMLCanvasElement | null>) 
   const scene = new Scene()
   const camera = new PerspectiveCamera(80, undefined, 0.1, 10)
 
-  let light = new AmbientLight(0xffffff, 2)
-  let sky = new Mesh(new SphereGeometry(1, 25, 25))
+  const light = new AmbientLight(0xffffff, 2)
+  const sky = new Mesh(new SphereGeometry(1, 25, 25))
   let renderer: WebGLRenderer | undefined
   let controls: OrbitControls | undefined
 
