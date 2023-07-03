@@ -41,7 +41,7 @@ export default function useInlineScene(canvasEl: Ref<HTMLCanvasElement | null>) 
     })
     renderer.setAnimationLoop(onAnimationFrame)
 
-    camera.position.set(-0.01, 0, 0)
+    camera.position.set(0, 0, 0.01)
 
     controls = new OrbitControls(camera, renderer.domElement)
     controls.update()
