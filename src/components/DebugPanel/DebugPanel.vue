@@ -11,24 +11,24 @@
 </script>
 
 <template>
-  <div class="debug-panel">
-    <pre class="debug-panel__item"><b>Allow audio:</b> {{ allowAudio ? 'true' : 'false' }}</pre>
-    <pre class="debug-panel__item"><b>Interaction occured:</b> {{ interactionOccured ? 'true' : 'false' }}</pre>
-    <pre class="debug-panel__item"><b>XR supported:</b> {{ hasXr ? 'true' : 'false' }}</pre>
-    <pre class="debug-panel__item"><b>Immersive XR supported:</b> {{ hasImmersiveXr ? 'true' : 'false' }}</pre>
-    <details class="debug-panel__details">
+  <div class="c-debug-panel">
+    <pre class="c-debug-panel__item"><b>Allow audio:</b> {{ allowAudio ? 'true' : 'false' }}</pre>
+    <pre class="c-debug-panel__item"><b>Interaction occured:</b> {{ interactionOccured ? 'true' : 'false' }}</pre>
+    <pre class="c-debug-panel__item"><b>XR supported:</b> {{ hasXr ? 'true' : 'false' }}</pre>
+    <pre class="c-debug-panel__item"><b>Immersive XR supported:</b> {{ hasImmersiveXr ? 'true' : 'false' }}</pre>
+    <details class="c-debug-panel__details">
       <summary><b>Audio channels:</b></summary>
       <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />
     </details>
-    <details class="debug-panel__details">
+    <details class="c-debug-panel__details">
       <summary><b>Scene List:</b></summary>
       <pre>{{ sceneOverviewList }}</pre>
     </details>
-    <details class="debug-panel__details">
+    <details class="c-debug-panel__details">
       <summary><b>Audio List:</b></summary>
       <pre>{{ audioOverviewList }}</pre>
     </details>
-    <details class="debug-panel__details">
+    <details class="c-debug-panel__details">
       <summary><b>WebXR Debug:</b></summary>
       <!--<pre>{{ debugPosition.x }}</pre>-->
       <!--<pre>{{ debugPosition.y }}</pre>-->
@@ -41,7 +41,7 @@
   @use 'sass:color';
   @use '@/assets/scss/util/color/color' as col;
 
-  .debug-panel {
+  .c-debug-panel {
     z-index: 1000;
     position: absolute;
     top: 0;
@@ -56,22 +56,22 @@
     background-color: color.change(col.$monochrome-black, $alpha: 0.9);
   }
 
-  .debug-panel__details {
+  .c-debug-panel__details {
     overflow: hidden;
     padding: 0.5em 0.5em 0;
   }
 
-  .debug-panel__item {
+  .c-debug-panel__item {
     padding: 0.5em;
   }
 
   details,
-  .debug-panel__item {
+  .c-debug-panel__item {
     border: 1px solid #aaa;
     border-radius: 4px;
 
     ~ details,
-    ~ .debug-panel__item {
+    ~ .c-debug-panel__item {
       margin-top: 4px;
     }
   }

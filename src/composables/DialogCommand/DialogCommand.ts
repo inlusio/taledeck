@@ -59,14 +59,14 @@ export default function useDialogCommand(dialog: ReactiveDialog) {
     const { _: positional } = parseCommand<DialogCommandSpecGeneric, DialogCommandResultGeneric>(commandResult.command)
     const [command, ...args] = positional
 
-    switch (command as DialogCommandId) {
+    switch (command) {
       case DialogCommandId.AddHint:
         console.warn('Dialog command "hint" is not implemented yet')
         break
       case DialogCommandId.AddHotspot: {
         const parsed = parseCommand<DialogCommandSpecAddHotspot, DialogCommandResultAddHotspot>(commandResult.command)
         const [_, label] = parsed._
-        const { x, y, click } = parsed
+        const { x, y, z, click } = parsed
         const commandData = click.map((instruction) => {
           return {
             command: instruction,
@@ -75,7 +75,7 @@ export default function useDialogCommand(dialog: ReactiveDialog) {
           }
         })
 
-        hotspots.value.push({ x, y, label, commandData })
+        hotspots.value.push({ x, y, z, label, commandData })
         setHotspotShown(label, isHotspotShown(label) ?? true)
         break
       }

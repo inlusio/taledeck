@@ -22,8 +22,6 @@
     "@directus/sdk": "^10.3.3",
     "@nirazul/scss-mq": "^1.2.1",
     "@nirazul/scss-utils": "^1.2.0",
-    "@tresjs/cientos": "^2.1.4",
-    "@tresjs/core": "2.3",
     "@vueuse/core": "^10.2.0",
     "arg": "^5.0.2",
     "gl-matrix": "^3.4.3",

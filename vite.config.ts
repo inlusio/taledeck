@@ -14,13 +14,7 @@ export default defineConfig({
   plugins: [
     ...(process.env.NODE_ENV === 'development' ? [ViteMkcert()] : []),
     ViteSvgLoader(),
-    vue({
-      template: {
-        compilerOptions: {
-          isCustomElement: (tag) => tag.startsWith('Tres') && tag !== 'TresCanvas',
-        },
-      },
-    }),
+    vue(),
     VueI18n({ runtimeOnly: false }),
   ],
   resolve: {

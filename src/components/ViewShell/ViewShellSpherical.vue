@@ -30,10 +30,11 @@
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
 
   const canvasEl = ref<HTMLCanvasElement | null>(null)
+  const wrapperEl = ref<HTMLDivElement | null>(null)
   const overlayEl = ref<HTMLDivElement | null>(null)
   const texture = ref<Texture | null>(null)
 
-  const { initScene } = useInlineScene(canvasEl)
+  const { initScene } = useInlineScene(wrapperEl, canvasEl)
 
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const isImmersiveScenePrepared = computed<boolean>(() => {
@@ -89,13 +90,13 @@
   )
 
   onMounted(() => {
-    // start "inline" session
+    // inline session started
   })
 </script>
 
 <template>
   <div :class="bemFacets" class="c-view-shell-spherical">
-    <div class="c-view-shell-spherical__background-wrap">
+    <div class="c-view-shell-spherical__background-wrap" ref="wrapperEl">
       <div class="c-view-shell-spherical__background-element" />
       <canvas
         class="c-view-shell-spherical__main-image"

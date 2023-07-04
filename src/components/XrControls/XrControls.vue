@@ -40,11 +40,11 @@
 </script>
 
 <template>
-  <div class="xr-controls">
+  <div class="c-xr-controls">
     <button
       @click="onClick"
       :disabled="disabled"
-      class="xr-controls__action btn btn--small btn--highlight btn--has-grid"
+      class="c-xr-controls__action btn btn--small btn--highlight btn--has-grid"
     >
       <UiIcon :id="UiIconId.PanoramaHorizontal" :colorize="true" :size="UiIconSizeId.Medium" />
       {{ t(text) }}
@@ -54,7 +54,7 @@
 </template>
 
 <style scoped lang="scss">
-  .xr-controls {
+  .c-xr-controls {
     pointer-events: none;
     display: flex;
     width: 100%;
@@ -65,7 +65,7 @@
     padding: (24px /* DialogBox offset */ + 48px) 0;
   }
 
-  .xr-controls__action {
+  .c-xr-controls__action {
     pointer-events: auto;
   }
 </style>
