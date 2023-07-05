@@ -23,8 +23,6 @@
     background: '',
   })
 
-  const immersiveSCtrl = useXrSessionController()
-
   const route = useRoute()
   const { isMounted } = useIsMounted()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
@@ -34,11 +32,18 @@
   const overlayEl = ref<HTMLDivElement | null>(null)
   const texture = ref<Texture | null>(null)
 
-  const { initScene } = useInlineScene(wrapperEl, canvasEl)
+  const { initScene: initInlineScene } = useInlineScene(wrapperEl, canvasEl)
+  const {
+    initScene: initImmersiveScene,
+    requestSession,
+    endSession,
+    hasActiveSession,
+    debugPosition,
+  } = useXrSessionController()
 
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const isImmersiveScenePrepared = computed<boolean>(() => {
-    return isMounted.value && isBackgroundLoaded.value && immersiveSCtrl.hasActiveSession.value
+    return isMounted.value && isBackgroundLoaded.value && hasActiveSession.value
   })
   const isInlineScenePrepared = computed<boolean>(() => {
     return isMounted.value && isBackgroundLoaded.value
@@ -48,11 +53,11 @@
   })
 
   const onRequestImmersiveSession = () => {
-    immersiveSCtrl.requestSession(overlayEl.value)
+    requestSession(overlayEl.value)
   }
 
   const onEndImmersiveSession = () => {
-    immersiveSCtrl.endSession()
+    endSession()
   }
 
   // React to `props.background` change (load new texture).
@@ -72,7 +77,7 @@
     () => isInlineScenePrepared.value,
     (nValue) => {
       if (nValue) {
-        initScene(texture.value!)
+        initInlineScene(texture.value!)
       }
     },
     { immediate: true },
@@ -83,7 +88,7 @@
     () => isImmersiveScenePrepared.value,
     (nValue) => {
       if (nValue) {
-        immersiveSCtrl.initScene(texture.value!)
+        initImmersiveScene(texture.value!)
       }
     },
     { immediate: true },
@@ -112,9 +117,9 @@
       <slot name="debug" />
       <div ref="overlayEl">
         XR OVERLAY:
-        <pre>x: {{ immersiveSCtrl.debugPosition.value.x }}</pre>
-        <pre>y: {{ immersiveSCtrl.debugPosition.value.y }}</pre>
-        <pre>z: {{ immersiveSCtrl.debugPosition.value.z }}</pre>
+        <pre>x: {{ debugPosition.x }}</pre>
+        <pre>y: {{ debugPosition.y }}</pre>
+        <pre>z: {{ debugPosition.z }}</pre>
       </div>
     </div>
   </div>
