@@ -14,7 +14,6 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
   const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
 
   let obj: SceneObjects
-
   let renderer: WebGLRenderer | undefined
   let controls: OrbitControls | undefined
 
@@ -52,6 +51,10 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
   }
 
   const createRenderer = () => {
+    if (canvasEl.value == null) {
+      throw new Error('Renderer could not be initialized!')
+    }
+
     renderer = new WebGLRenderer({
       antialias: true,
       alpha: true,
@@ -61,26 +64,16 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
   }
 
   const initScene = async (texture: Texture) => {
-    if (canvasEl.value == null) {
-      throw new Error('Scene could not be initialized!')
-    }
-
     obj = createObjects()
-    updateSkyMaterial(obj.sky, texture)
-
-    obj.scene.add(obj.light)
-    obj.scene.add(obj.sky)
-    obj.scene.add(obj.hotspots)
-
     createRenderer()
     createControls()
-    useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
-    updateHotspots(obj.hotspots, hotspots.value)
-    onControlsChange()
 
-    setTimeout(() => {
-      onRender()
-    }, 0)
+    useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
+
+    updateSkyMaterial(obj.sky, texture)
+    updateHotspots(obj.hotspots, hotspots.value)
+
+    setTimeout(onRender, 0)
   }
 
   return { debugPosition, initScene }

@@ -1,16 +1,7 @@
+import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { SceneObjects } from '@/models/Scene/Scene'
-import {
-  AmbientLight,
-  BackSide,
-  Mesh,
-  MeshStandardMaterial,
-  PerspectiveCamera,
-  Scene,
-  SphereGeometry,
-  Texture,
-  WebGLRenderer,
-} from 'three'
+import { Texture, WebGLRenderer } from 'three'
 import type { Ref } from 'vue'
 import { reactive } from 'vue'
 
@@ -19,59 +10,24 @@ export default function useImmersiveScene(
   session: Ref<XRSession | null>,
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
 ) {
-  const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
-  const { createObjects } = useScene()
-  const scene = new Scene()
-  const camera = new PerspectiveCamera(80, undefined, 0.1, 10)
-
-  const light = new AmbientLight(0xffffff, 2)
-  const sky = new Mesh(new SphereGeometry(1, 25, 25))
-  let renderer: WebGLRenderer | undefined
+  const { hotspots } = useDialogHotspot()
+  const { createObjects, updateHotspots, updateSkyMaterial } = useScene()
 
   let obj: SceneObjects
+  let renderer: WebGLRenderer | undefined
 
-  const initScene = async (texture: Texture) => {
-    if (context.value == null || session.value == null || refSpace.value == null) {
-      throw new Error('Scene could not be initialized!')
-    }
+  const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
 
-    obj = createObjects()
-    sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
-
-    console.log(obj != null)
-
-    scene.add(light)
-    scene.add(sky)
-
-    // Create and configure  three.js renderer with XR support
-    renderer = new WebGLRenderer({
-      antialias: true,
-      alpha: true,
-      context: context.value,
-      canvas: context.value.canvas,
-    })
-    renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.autoClear = false
-    renderer.xr.enabled = true
-    renderer.xr.setReferenceSpace(refSpace.value)
-    renderer.xr.setReferenceSpaceType('local')
-    renderer.xr.setSession(session.value as XRSession)
-    renderer.xr.setAnimationLoop(onAnimationFrame)
-
-    const baseLayer = new XRWebGLLayer(session.value, context.value)
-    await session.value.updateRenderState({ baseLayer })
-
-    renderer.xr.addEventListener('sessionStarted', () => {
-      console.log('XR session started')
-    })
-  }
-
-  const renderScene = (s: Scene, c: PerspectiveCamera) => {
+  const onRender = (doRender: boolean = true) => {
     if (renderer == null || context.value == null || session.value == null) {
       throw new Error('Scene could not be rendered!')
     }
 
-    renderer.render(s, c)
+    if (!doRender) {
+      return
+    }
+
+    renderer.render(obj.scene, obj.camera)
   }
 
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
@@ -92,9 +48,51 @@ export default function useImmersiveScene(
       const { x, y, width, height } = layer.getViewport(view) as XRViewport
       context.value.viewport(x, y, width, height)
 
-      renderScene(scene, camera)
+      onRender()
     }
   }
 
-  return { debugPosition, camera, renderer, initScene }
+  const createRenderer = () => {
+    if (context.value == null || session.value == null || refSpace.value == null) {
+      throw new Error('Renderer could not be initialized!')
+    }
+
+    renderer = new WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      context: context.value,
+      canvas: context.value.canvas,
+    })
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.autoClear = false
+    renderer.xr.enabled = true
+    renderer.xr.setReferenceSpace(refSpace.value)
+    renderer.xr.setReferenceSpaceType('local')
+    renderer.xr.setSession(session.value as XRSession)
+    renderer.xr.setAnimationLoop(onAnimationFrame)
+
+    renderer.xr.addEventListener('sessionStarted', () => {
+      console.log('XR session started')
+    })
+  }
+
+  const createBaseLayer = async () => {
+    if (context.value == null || session.value == null) {
+      throw new Error('Renderer could not be initialized!')
+    }
+
+    const baseLayer = new XRWebGLLayer(session.value, context.value)
+    await session.value.updateRenderState({ baseLayer })
+  }
+
+  const initScene = async (texture: Texture) => {
+    obj = createObjects()
+    createRenderer()
+    await createBaseLayer()
+
+    updateSkyMaterial(obj.sky, texture)
+    updateHotspots(obj.hotspots, hotspots.value)
+  }
+
+  return { debugPosition, initScene }
 }

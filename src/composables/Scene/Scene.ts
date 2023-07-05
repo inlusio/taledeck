@@ -71,13 +71,19 @@ export default function useScene() {
   }
 
   const createObjects = (): SceneObjects => {
-    return {
+    const result = {
       camera: createCamera(),
       hotspots: createHotspots(),
       light: createLight(),
       scene: createScene(),
       sky: createSky(),
     }
+
+    result.scene.add(result.light)
+    result.scene.add(result.sky)
+    result.scene.add(result.hotspots)
+
+    return result
   }
 
   const updateHotspots = (el: Object3D, hotspots: Array<DialogHotspot>) => {
