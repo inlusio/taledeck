@@ -15,9 +15,8 @@ import {
   SpriteMaterial,
   Texture,
 } from 'three'
-import type { Ref } from 'vue'
 
-export default function useScene(texture: Ref<Texture | null> | null) {
+export default function useScene() {
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
 
   const hotspotTexture = new CanvasTexture(hotspotEl)
@@ -26,12 +25,12 @@ export default function useScene(texture: Ref<Texture | null> | null) {
     return new Scene()
   }
 
-  const createSkyMaterial = () => {
-    if (texture != null && texture.value == null) {
+  const updateSkyMaterial = (sky: Mesh, texture: Texture) => {
+    if (sky == null || texture == null) {
       throw new Error('Failed to load sky texture!')
     }
 
-    return new MeshStandardMaterial({ map: texture?.value, side: BackSide })
+    sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
   }
 
   const createHotspotMaterial = () => {
@@ -68,8 +67,7 @@ export default function useScene(texture: Ref<Texture | null> | null) {
   }
   const createSky = () => {
     const geometry = new SphereGeometry(100, 25, 25)
-    const material = createSkyMaterial()
-    return new Mesh(geometry, material)
+    return new Mesh(geometry)
   }
 
   const createObjects = (): SceneObjects => {
@@ -92,5 +90,5 @@ export default function useScene(texture: Ref<Texture | null> | null) {
     })
   }
 
-  return { createObjects, createSkyMaterial, updateHotspots }
+  return { createObjects, updateSkyMaterial, updateHotspots }
 }

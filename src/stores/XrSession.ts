@@ -1,7 +1,6 @@
 import useImmersiveScene from '@/composables/ImmersiveScene/ImmersiveScene'
 import { StoreId } from '@/models/Store'
 import { useXrApiStore } from '@/stores/XrApi'
-import { useResizeObserver } from '@vueuse/core'
 import { defineStore, storeToRefs } from 'pinia'
 import { ref, watch } from 'vue'
 
@@ -21,7 +20,7 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
   const refSpace = ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>(undefined)
   const removeResizeObserver = ref<(() => void) | null>(null)
 
-  const { camera, debugPosition, initScene } = useImmersiveScene(context, session, refSpace)
+  const { debugPosition, initScene } = useImmersiveScene(context, session, refSpace)
 
   const requestSession = async (overlayEl: HTMLDivElement | null) => {
     if (overlayEl == null) {
@@ -35,23 +34,6 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
     refSpace.value = await session.value!.requestReferenceSpace('local')
 
     session.value!.addEventListener('end', onSessionEnded)
-    addResizeObserver()
-  }
-
-  const addResizeObserver = () => {
-    if (context.value != null) {
-      const { stop } = useResizeObserver(context.value!.canvas as HTMLCanvasElement, ([entry]) => {
-        const { width, height } = entry.contentRect
-
-        context.value!.canvas.width = width * window.devicePixelRatio
-        context.value!.canvas.height = height * window.devicePixelRatio
-        camera.aspect = width / height
-
-        camera.updateProjectionMatrix()
-      })
-
-      removeResizeObserver.value = stop
-    }
   }
 
   const endSession = () => {

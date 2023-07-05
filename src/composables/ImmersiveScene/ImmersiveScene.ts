@@ -1,3 +1,5 @@
+import useScene from '@/composables/Scene/Scene'
+import type { SceneObjects } from '@/models/Scene/Scene'
 import {
   AmbientLight,
   BackSide,
@@ -18,7 +20,7 @@ export default function useImmersiveScene(
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
 ) {
   const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
-
+  const { createObjects } = useScene()
   const scene = new Scene()
   const camera = new PerspectiveCamera(80, undefined, 0.1, 10)
 
@@ -26,12 +28,17 @@ export default function useImmersiveScene(
   const sky = new Mesh(new SphereGeometry(1, 25, 25))
   let renderer: WebGLRenderer | undefined
 
+  let obj: SceneObjects
+
   const initScene = async (texture: Texture) => {
     if (context.value == null || session.value == null || refSpace.value == null) {
       throw new Error('Scene could not be initialized!')
     }
 
+    obj = createObjects()
     sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
+
+    console.log(obj != null)
 
     scene.add(light)
     scene.add(sky)
