@@ -64,9 +64,31 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
   }
 
   const createReticulum = (camera: PerspectiveCamera) => {
+    const reticleInnerRadius = 0.02 * 3
+    const reticleOuterRadius = 0.024 * 3
+    const reticleRingWidth = reticleOuterRadius - reticleInnerRadius
+    const fuseInnerRadius = reticleOuterRadius + 4 * reticleRingWidth
+    const fuseOuterRadius = fuseInnerRadius + 4 * reticleRingWidth
+
     reticulum = new Reticulum(camera, {
       proximity: true,
-      reticle: { speed: 3, restPoint: 80 },
+      reticle: {
+        color: 0xcc0000,
+        speed: 4,
+        restPoint: 80,
+        innerRadius: 0.0008,
+        outerRadius: 0.006,
+        hover: {
+          innerRadius: reticleInnerRadius,
+          outerRadius: reticleOuterRadius,
+        },
+      },
+      fuse: {
+        duration: 2,
+        hideAfterEnd: false,
+        innerRadius: fuseInnerRadius,
+        outerRadius: fuseOuterRadius,
+      },
     })
   }
 

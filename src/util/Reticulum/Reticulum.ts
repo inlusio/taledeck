@@ -67,7 +67,7 @@ export default class Reticulum {
 
     //Initiate Fuse
     this.fuse = new Fuse(this.parent, this.reticle, o.fuse)
-    // this.parent.add(this.fuse.mesh)
+    this.parent.add(this.fuse.mesh)
 
     // Add parent to camera
     this.camera.add(this.parent)
@@ -212,7 +212,7 @@ export default class Reticulum {
     if (gazeTime >= this.fuse.duration && !this.fuse.active && !this.fuse.timeDone) {
       // Vibrate
       this.fuse.timeDone = true
-      this.fuse.mesh.visible = false
+      this.fuse.mesh.visible = !this.fuse.options.hideAfterEnd
       this.vibrate(this.fuse.options.vibrate)
 
       // Does object have an action assigned to it?

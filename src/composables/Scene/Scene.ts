@@ -18,7 +18,6 @@ import {
 } from 'three'
 import type Reticulum from '@/util/Reticulum/Reticulum'
 import type { ReticulumTarget } from '@/util/Reticulum/Types'
-import { sleep } from '@/util/Misc/Sleep'
 
 export default function useScene() {
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
@@ -48,10 +47,12 @@ export default function useScene() {
     })
   }
 
-  const createHotspot = (material: SpriteMaterial, { x, y, z }: DialogHotspot) => {
+  const createHotspot = (material: SpriteMaterial, hotspot: DialogHotspot) => {
+    const { x, y, z } = hotspot
     const result = new Sprite(material)
-    result.scale.set(4, 4, 1)
+    result.scale.set(3, 3, 1)
     result.position.set(x, y, z ?? 0)
+    result.userData.hotspot = hotspot
 
     return result
   }
@@ -101,9 +102,14 @@ export default function useScene() {
       reticulum?.remove(child as ReticulumTarget)
     })
 
-    children.forEach((child) => parent.add(child))
-    await sleep(0)
-    children.forEach((child) => reticulum?.add(child, {}))
+    children.forEach((child) => {
+      parent.add(child)
+      reticulum?.add(child, {
+        onGazeLong() {
+          console.log('i gazed into the abyss', child.userData.hotspot as DialogHotspot)
+        },
+      })
+    })
   }
 
   return { createObjects, updateSkyMaterial, updateHotspots }

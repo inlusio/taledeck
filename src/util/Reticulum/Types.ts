@@ -40,6 +40,7 @@ export interface FuseOptions extends ReticleAttributes {
   vibrate?: number
   duration?: number
   clickCancel?: boolean
+  hideAfterEnd?: boolean
 }
 
 export interface ReticulumOptions {
