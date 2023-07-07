@@ -7,7 +7,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { Ref } from 'vue'
 import { reactive } from 'vue'
 import Reticulum from '@/util/Reticulum/Reticulum'
-import { sleep } from '@/util/Misc/Sleep'
 
 export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, canvasEl: Ref<HTMLCanvasElement | null>) {
   const { hotspots } = useDialogHotspot()
@@ -29,20 +28,15 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
   }
 
   const onControlsChange = () => {
-    renderScene()
+    // renderScene()
   }
 
-  const renderScene = (doRender: boolean = true) => {
+  const renderScene = () => {
     if (renderer == null) {
       throw new Error('Scene could not be rendered!')
     }
 
     reticulum!.update()
-
-    if (!doRender && reticulum?.INTERSECTED != null) {
-      return
-    }
-
     renderer.render(obj.scene, obj.camera)
   }
 
@@ -56,7 +50,7 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
       alpha: true,
       canvas: canvasEl.value as HTMLCanvasElement,
     })
-    renderer.setAnimationLoop(() => renderScene(false))
+    renderer.setAnimationLoop(() => renderScene())
   }
 
   const createControls = (camera: PerspectiveCamera) => {
@@ -71,6 +65,7 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
 
   const createReticulum = (camera: PerspectiveCamera) => {
     reticulum = new Reticulum(camera, {
+      proximity: true,
       reticle: { speed: 3, restPoint: 80 },
     })
   }
@@ -85,8 +80,8 @@ export default function useInlineScene(wrapperEl: Ref<HTMLDivElement | null>, ca
 
     updateSkyMaterial(obj.sky, texture)
     await updateHotspots(obj.hotspots, hotspots.value, reticulum!)
-    await sleep(0)
-    renderScene()
+    // await sleep(0)
+    // renderScene()
   }
 
   return { debugPosition, initScene }

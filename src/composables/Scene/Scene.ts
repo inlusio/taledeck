@@ -43,9 +43,8 @@ export default function useScene() {
     return new SpriteMaterial({
       map: hotspotTexture,
       alphaTest: 0.5,
+      fog: false,
       transparent: false,
-      depthTest: false,
-      depthWrite: false,
     })
   }
 

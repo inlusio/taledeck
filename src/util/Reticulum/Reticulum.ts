@@ -10,7 +10,7 @@ import type { PerspectiveCamera } from 'three'
 import { Clock, Color, Frustum, Matrix4, Mesh, MeshBasicMaterial, Object3D, Raycaster, Vector2 } from 'three'
 
 export default class Reticulum {
-  public INTERSECTED: ReticulumTarget | null = null
+  private INTERSECTED: ReticulumTarget | null = null
   private options: ReticulumOptions = {
     proximity: false,
     clickEvents: true,
@@ -320,21 +320,22 @@ export default class Reticulum {
     this.frustum.setFromProjectionMatrix(this.cameraViewProjectionMatrix)
 
     for (let i = 0, l = this.collisionList.length; i < l; i++) {
-      const newObj = this.collisionList[i]
+      const target = this.collisionList[i]
 
-      if (!newObj.userData.reticulum.gazeable) {
+      if (!target.userData.reticulum.gazeable) {
         continue
       }
 
-      if (this.reticle.options.ignoreInvisible && !newObj.visible) {
+      if (this.reticle.options.ignoreInvisible && !target.visible) {
         continue
       }
 
-      if (this.frustum.intersectsObject(newObj)) {
+      if (this.frustum.intersectsObject(target)) {
         showReticle = true
         break
       }
     }
+
     this.reticle.mesh.visible = showReticle
   }
 }
