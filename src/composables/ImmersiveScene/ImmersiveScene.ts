@@ -1,9 +1,10 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { SceneObjects } from '@/models/Scene/Scene'
-import { Texture, WebGLRenderer } from 'three'
+import { PerspectiveCamera, Texture, WebGLRenderer } from 'three'
 import type { Ref } from 'vue'
 import { reactive } from 'vue'
+import Reticulum from '@/util/Reticulum/Reticulum'
 
 export default function useImmersiveScene(
   context: Ref<WebGL2RenderingContext | null>,
@@ -15,6 +16,7 @@ export default function useImmersiveScene(
 
   let obj: SceneObjects
   let renderer: WebGLRenderer | undefined
+  let reticulum: Reticulum | undefined
 
   const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
 
@@ -40,15 +42,12 @@ export default function useImmersiveScene(
     }
   }
 
-  const renderScene = (doRender: boolean = true) => {
+  const renderScene = () => {
     if (renderer == null || context.value == null || session.value == null) {
       throw new Error('Scene could not be rendered!')
     }
 
-    if (!doRender) {
-      return
-    }
-
+    reticulum!.update()
     renderer.render(obj.scene, obj.camera)
   }
 
@@ -76,6 +75,35 @@ export default function useImmersiveScene(
     })
   }
 
+  const createReticulum = (camera: PerspectiveCamera) => {
+    const reticleInnerRadius = 0.02 * 3
+    const reticleOuterRadius = 0.024 * 3
+    const reticleRingWidth = reticleOuterRadius - reticleInnerRadius
+    const fuseInnerRadius = reticleOuterRadius + 4 * reticleRingWidth
+    const fuseOuterRadius = fuseInnerRadius + 4 * reticleRingWidth
+
+    reticulum = new Reticulum(camera, {
+      proximity: true,
+      reticle: {
+        color: 0xcc0000,
+        speed: 4,
+        restPoint: 80,
+        innerRadius: 0.0008,
+        outerRadius: 0.006,
+        hover: {
+          innerRadius: reticleInnerRadius,
+          outerRadius: reticleOuterRadius,
+        },
+      },
+      fuse: {
+        duration: 2,
+        hideAfterEnd: false,
+        innerRadius: fuseInnerRadius,
+        outerRadius: fuseOuterRadius,
+      },
+    })
+  }
+
   const createBaseLayer = async () => {
     if (context.value == null || session.value == null) {
       throw new Error('Renderer could not be initialized!')
@@ -88,10 +116,11 @@ export default function useImmersiveScene(
   const initScene = async (texture: Texture) => {
     obj = createObjects()
     createRenderer()
+    createReticulum(obj.camera)
     await createBaseLayer()
 
     updateSkyMaterial(obj.sky, texture)
-    updateHotspots(obj.hotspots, hotspots.value)
+    await updateHotspots(obj.hotspots, hotspots.value, reticulum)
   }
 
   return { debugPosition, initScene }
