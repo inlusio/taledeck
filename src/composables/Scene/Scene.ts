@@ -5,6 +5,7 @@ import {
   AmbientLight,
   BackSide,
   CanvasTexture,
+  Color,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -15,6 +16,8 @@ import {
   SpriteMaterial,
   Texture,
 } from 'three'
+import type Reticulum from '@/util/Reticulum/Reticulum'
+import type { ReticulumTarget } from '@/util/Reticulum/Types'
 
 export default function useScene() {
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
@@ -22,7 +25,9 @@ export default function useScene() {
   const hotspotTexture = new CanvasTexture(hotspotEl)
 
   const createScene = () => {
-    return new Scene()
+    const result = new Scene()
+    result.background = new Color(0x00ff00)
+    return result
   }
 
   const updateSkyMaterial = (sky: Mesh, texture: Texture) => {
@@ -52,7 +57,7 @@ export default function useScene() {
   }
 
   const createCamera = () => {
-    const result = new PerspectiveCamera(80, undefined, 0.1, 100)
+    const result = new PerspectiveCamera(70, undefined, 0.1, 100)
     result.position.set(0, 0, 0.01)
 
     return result
@@ -80,19 +85,23 @@ export default function useScene() {
     }
 
     result.scene.add(result.light)
-    result.scene.add(result.sky)
+    // result.scene.add(result.sky)
     result.scene.add(result.hotspots)
 
     return result
   }
 
-  const updateHotspots = (el: Object3D, hotspots: Array<DialogHotspot>) => {
+  const updateHotspots = (parent: Object3D, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
     const hotspotMaterial = createHotspotMaterial()
-    el.children.forEach((child) => el.remove(child))
+    parent.children.forEach((child) => {
+      parent.remove(child)
+      reticulum?.remove(child as ReticulumTarget)
+    })
 
     hotspots.forEach((hotspot) => {
-      const sprite = createHotspot(hotspotMaterial, hotspot)
-      el.add(sprite)
+      const child = createHotspot(hotspotMaterial, hotspot)
+      parent.add(child)
+      reticulum?.add(child, {})
     })
   }
 

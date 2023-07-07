@@ -18,18 +18,6 @@ export default function useImmersiveScene(
 
   const debugPosition = reactive<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 })
 
-  const onRender = (doRender: boolean = true) => {
-    if (renderer == null || context.value == null || session.value == null) {
-      throw new Error('Scene could not be rendered!')
-    }
-
-    if (!doRender) {
-      return
-    }
-
-    renderer.render(obj.scene, obj.camera)
-  }
-
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
     if (context.value == null || refSpace.value == null || frame == null) {
       return
@@ -48,8 +36,20 @@ export default function useImmersiveScene(
       const { x, y, width, height } = layer.getViewport(view) as XRViewport
       context.value.viewport(x, y, width, height)
 
-      onRender()
+      renderScene()
     }
+  }
+
+  const renderScene = (doRender: boolean = true) => {
+    if (renderer == null || context.value == null || session.value == null) {
+      throw new Error('Scene could not be rendered!')
+    }
+
+    if (!doRender) {
+      return
+    }
+
+    renderer.render(obj.scene, obj.camera)
   }
 
   const createRenderer = () => {

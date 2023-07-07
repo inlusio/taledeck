@@ -1,12 +1,12 @@
 // I18N LAZY LOADING
 // https://vue-i18n.intlify.dev/guide/advanced/lazy.html
 
-import { nextTick } from 'vue'
-import { createI18n } from 'vue-i18n'
-import type { I18n, I18nOptions } from 'vue-i18n'
 import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
-import { PageLocale } from '@/models/Translation/Translation'
 import type { TranslationFile, TranslationRegistry } from '@/models/Translation/Translation'
+import { PageLocale } from '@/models/Translation/Translation'
+import { nextTick } from 'vue'
+import type { I18n, I18nOptions } from 'vue-i18n'
+import { createI18n } from 'vue-i18n'
 
 type I18nInstance = I18n<{}, {}, {}, string, false>
 
@@ -32,7 +32,7 @@ export function setupI18n(options: I18nOptions) {
 }
 
 export function setLocale(i18n: I18nInstance, locale: PageLocale) {
-  const htmlEl = window.document.querySelector('html') as HTMLHtmlElement
+  const htmlEl = document.querySelector('html') as HTMLHtmlElement
 
   i18n.global.locale.value = locale
   htmlEl.setAttribute('lang', locale)
