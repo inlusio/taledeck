@@ -6,17 +6,16 @@
 import Fuse from '@/util/Reticulum/Fuse'
 import Reticle from '@/util/Reticulum/Reticle'
 import type { ReticulumData, ReticulumOptions, ReticulumTarget, UserData } from '@/util/Reticulum/Types'
-import type { Mesh, MeshBasicMaterial, PerspectiveCamera } from 'three'
-import { Clock, Color, Frustum, Matrix4, Object3D, Raycaster, Vector2 } from 'three'
+import type { PerspectiveCamera } from 'three'
+import { Clock, Color, Frustum, Matrix4, Mesh, MeshBasicMaterial, Object3D, Raycaster, Vector2 } from 'three'
 
 export default class Reticulum {
+  public INTERSECTED: ReticulumTarget | null = null
   private options: ReticulumOptions = {
     proximity: false,
     clickEvents: true,
     lockDistance: false,
   }
-
-  private INTERSECTED: ReticulumTarget | null = null
   private collisionList: Array<ReticulumTarget> = []
 
   private parent = new Object3D()
@@ -68,7 +67,7 @@ export default class Reticulum {
 
     //Initiate Fuse
     this.fuse = new Fuse(this.parent, this.reticle, o.fuse)
-    this.parent.add(this.fuse.mesh)
+    // this.parent.add(this.fuse.mesh)
 
     // Add parent to camera
     this.camera.add(this.parent)
@@ -173,8 +172,8 @@ export default class Reticulum {
     obj.userData.hitTime = this.clock.getElapsedTime()
 
     // Vibrate
-    if (this.reticle.options.hover.vibrate) {
-      this.vibrate(this.reticle.options.hover.vibrate)
+    if (this.reticle.options.vibrate) {
+      this.vibrate(this.reticle.options.vibrate)
     }
 
     // Does object have an action assigned to it?

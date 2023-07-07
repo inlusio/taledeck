@@ -18,6 +18,7 @@ import {
 } from 'three'
 import type Reticulum from '@/util/Reticulum/Reticulum'
 import type { ReticulumTarget } from '@/util/Reticulum/Types'
+import { sleep } from '@/util/Misc/Sleep'
 
 export default function useScene() {
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
@@ -85,24 +86,25 @@ export default function useScene() {
     }
 
     result.scene.add(result.light)
-    // result.scene.add(result.sky)
+    result.scene.add(result.sky)
     result.scene.add(result.hotspots)
+    result.scene.add(result.camera)
 
     return result
   }
 
-  const updateHotspots = (parent: Object3D, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
+  const updateHotspots = async (parent: Object3D, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
     const hotspotMaterial = createHotspotMaterial()
+    const children = hotspots.map((hotspot) => createHotspot(hotspotMaterial, hotspot))
+
     parent.children.forEach((child) => {
       parent.remove(child)
       reticulum?.remove(child as ReticulumTarget)
     })
 
-    hotspots.forEach((hotspot) => {
-      const child = createHotspot(hotspotMaterial, hotspot)
-      parent.add(child)
-      reticulum?.add(child, {})
-    })
+    children.forEach((child) => parent.add(child))
+    await sleep(0)
+    children.forEach((child) => reticulum?.add(child, {}))
   }
 
   return { createObjects, updateSkyMaterial, updateHotspots }

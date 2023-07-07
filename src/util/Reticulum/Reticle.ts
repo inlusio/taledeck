@@ -9,14 +9,14 @@ export default class Reticle {
     innerRadius: 0.0004,
     outerRadius: 0.003,
     visible: true,
+    vibrate: 50,
+    speed: 5,
     restPoint: NaN,
     ignoreInvisible: true,
     hover: {
       color: 0x00fff6,
-      innerRadius: 0.02,
-      outerRadius: 0.024,
-      speed: 5,
-      vibrate: 50,
+      innerRadius: 0.03,
+      outerRadius: 0.036,
     },
   }
 
@@ -39,16 +39,15 @@ export default class Reticle {
     this.options.innerRadius = o.innerRadius ?? this.options.innerRadius
     this.options.outerRadius = o.outerRadius ?? this.options.outerRadius
     this.options.visible = o.visible ?? this.options.visible
+    this.options.vibrate = o?.vibrate ?? this.options.vibrate
+    this.options.speed = o?.speed ?? this.options.speed
     this.options.restPoint = o.restPoint ?? c.far
-    this.options.ignoreInvisible = o.ignoreInvisible ?? this.options.ignoreInvisible
 
+    this.options.ignoreInvisible = o.ignoreInvisible ?? this.options.ignoreInvisible
     this.options.hover.color = o.hover?.color ?? this.options.hover.color
     this.options.hover.innerRadius = o.hover?.innerRadius ?? this.options.hover.innerRadius
     this.options.hover.outerRadius = o.hover?.outerRadius ?? this.options.hover.outerRadius
-    this.options.hover.speed = o.hover?.speed ?? this.options.hover.speed
-    this.options.hover.vibrate = o.hover?.vibrate ?? this.options.hover.vibrate
 
-    this.speed = this.options.hover.speed!
     this.baseColor = new Color(this.options.color)
     this.hoverColor = new Color(this.options.hover.color)
     this.currentBaseColor = this.baseColor.clone()
@@ -74,6 +73,7 @@ export default class Reticle {
       new MeshBasicMaterial({
         color: this.baseColor,
         fog: false,
+        transparent: false,
       }),
     )
 
@@ -108,17 +108,17 @@ export default class Reticle {
       return
     }
 
-    const acceleration = delta * this.speed
+    const acceleration = delta * this.options.speed
 
     if (this.hit) {
       this.speed += acceleration
-      this.speed = Math.min(this.speed, 1)
+      this.speed = Math.ceil(Math.min(this.speed, 1) * 1000) / 1000
     } else {
       this.speed -= acceleration
-      this.speed = Math.max(this.speed, 0)
+      this.speed = Math.floor(Math.max(this.speed, 0) * 1000) / 1000
     }
     // Morph
-    this.mesh.morphTargetInfluences = []
+    this.mesh.morphTargetInfluences = this.mesh.morphTargetInfluences ?? []
     this.mesh.morphTargetInfluences[0] = this.speed
 
     // Set Color

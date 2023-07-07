@@ -26,23 +26,20 @@ export interface ReticleAttributes {
   outerRadius?: number
 }
 
-export interface ReticleHoverOptions extends ReticleAttributes {
-  speed?: number
-  vibrate?: number
-}
-
 export interface ReticleOptions extends ReticleAttributes {
   visible?: boolean
+  vibrate?: number
   restPoint?: number
   ignoreInvisible?: boolean
-  hover?: ReticleHoverOptions
+  speed?: number
+  hover?: ReticleAttributes
 }
 
 export interface FuseOptions extends ReticleAttributes {
   visible?: boolean
+  vibrate?: number
   duration?: number
   clickCancel?: boolean
-  vibrate?: number
 }
 
 export interface ReticulumOptions {
