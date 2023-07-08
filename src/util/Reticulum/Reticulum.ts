@@ -10,22 +10,24 @@ import type { PerspectiveCamera } from 'three'
 import { Clock, Color, Frustum, Matrix4, Mesh, MeshBasicMaterial, Object3D, Raycaster, Vector2 } from 'three'
 
 export default class Reticulum {
-  private INTERSECTED: ReticulumTarget | null = null
   private options: ReticulumOptions = {
     proximity: false,
     clickEvents: true,
     lockDistance: false,
   }
   private collisionList: Array<ReticulumTarget> = []
+  private intersected?: ReticulumTarget
 
+  // Three objects
   private parent = new Object3D()
+  private raycaster = new Raycaster()
   private frustum = new Frustum()
+  private clock = new Clock(true)
+  private screenCenterCoords = new Vector2(0, 0)
   private cameraViewProjectionMatrix = new Matrix4()
   private camera: PerspectiveCamera
-  private raycaster: Raycaster
-  private vector: Vector2
-  private clock: Clock
 
+  // Library parts
   private reticle: Reticle
   private fuse: Fuse
 
@@ -40,10 +42,6 @@ export default class Reticulum {
     // Vibration
     this.vibrate = navigator.vibrate ? navigator.vibrate.bind(navigator) : () => false
 
-    // Raycaster Setup
-    this.raycaster = new Raycaster()
-    this.vector = new Vector2(0, 0)
-
     // Update Raycaster
     if (o.near && o.near >= 0) {
       this.raycaster.near = o.near
@@ -53,13 +51,10 @@ export default class Reticulum {
       this.raycaster.far = o.far
     }
 
-    //Enable Click / Tap Events
+    //Enable click / Tap events
     if (this.options.clickEvents) {
       document.body.addEventListener('click', this.onClick.bind(this), false)
     }
-
-    //Clock Setup
-    this.clock = new Clock(true)
 
     //Initiate Reticle
     this.reticle = new Reticle(this.parent, this.camera, o.reticle)
@@ -73,8 +68,8 @@ export default class Reticulum {
     this.camera.add(this.parent)
   }
 
-  public add(obj: Object3D, o: ReticulumData) {
-    const d = obj.userData as UserData
+  public add(target: Object3D, o: ReticulumData) {
+    const d = target.userData as UserData
     d.reticulum = d.reticulum ?? {}
 
     // Reticle
@@ -92,13 +87,13 @@ export default class Reticulum {
     d.reticulum.onGazeClick = o.onGazeClick ?? undefined
 
     // Add object to list
-    this.collisionList.push(obj as ReticulumTarget)
+    this.collisionList.push(target as ReticulumTarget)
   }
 
-  public remove(obj: ReticulumTarget) {
-    const idx = this.collisionList.indexOf(obj)
-
-    obj.userData.reticulum.gazeable = false
+  public remove(target: ReticulumTarget) {
+    const d = target.userData as UserData
+    const idx = this.collisionList.indexOf(target)
+    d.reticulum.gazeable = false
 
     if (idx > -1) {
       this.collisionList.splice(idx, 1)
@@ -107,69 +102,68 @@ export default class Reticulum {
 
   public update() {
     const delta = this.clock.getDelta()
+
     this.detectHit()
-
-    // Proximity
-    if (this.options.proximity) {
-      this.proximity()
-    }
-
-    // Animation
+    this.proximity()
     this.reticle.update(delta)
   }
 
   private onClick(e: MouseEvent) {
-    if (this.reticle.hit && this.INTERSECTED) {
+    if (this.reticle.hit && this.intersected != null) {
       e.preventDefault()
-      this.gazeClick(this.INTERSECTED)
+      this.gazeClick(this.intersected)
     }
   }
 
-  private gazeClick(obj: ReticulumTarget) {
-    const reticulum: ReticulumData = obj.userData.reticulum as ReticulumData
-    const cancel = reticulum.clickCancelFuse ?? this.fuse.options.clickCancel
+  private gazeClick(target: ReticulumTarget) {
+    const d = target.userData
+    const cancel = d.reticulum.clickCancelFuse ?? this.fuse.options.clickCancel
 
     // Cancel Fuse
     if (cancel) {
       // Reset the clock
-      obj.userData.hitTime = this.clock.getElapsedTime()
+      d.hitTime = this.clock.getElapsedTime()
       //Force gaze to end...this might be to assumptions
       this.fuse.update(this.fuse.options.duration)
     }
 
     // Does object have an action assigned to it?
-    if (reticulum.onGazeClick != null) {
-      reticulum.onGazeClick()
+    if (d.reticulum.onGazeClick != null) {
+      d.reticulum.onGazeClick()
     }
   }
 
-  private gazeOut(obj: ReticulumTarget) {
-    obj.userData.hitTime = 0
-
+  private gazeOut() {
     this.fuse.out()
-
     this.reticle.hit = false
     this.reticle.setDepthAndScale()
 
-    if (obj.userData.reticulum.onGazeOut != null) {
-      obj.userData.reticulum.onGazeOut()
+    if (this.intersected != null) {
+      this.intersected.userData.hitTime = 0
+
+      if (this.intersected.userData.reticulum.onGazeOut != null) {
+        this.intersected.userData.reticulum.onGazeOut()
+      }
     }
+
+    this.intersected = undefined
   }
 
-  private gazeOver(obj: ReticulumTarget) {
-    const data = obj.userData.reticulum
+  private gazeOver(target: ReticulumTarget) {
+    const d = target.userData
+    this.intersected = target
 
     // Reticle
-    this.reticle.currentHoverColor = data.reticleHoverColor ?? this.reticle.hoverColor
+    this.reticle.currentHoverColor = d.reticulum.reticleHoverColor ?? this.reticle.hoverColor
 
     // Fuse
-    this.fuse.over(data.fuseDuration, data.fuseVisible)
+    this.fuse.over(d.reticulum.fuseDuration, d.reticulum.fuseVisible)
 
-    if (data.fuseColor) {
-      this.setColor(this.fuse.mesh, data.fuseColor)
+    if (d.reticulum.fuseColor) {
+      this.setColor(this.fuse.mesh, d.reticulum.fuseColor)
     }
 
-    obj.userData.hitTime = this.clock.getElapsedTime()
+    d.hitTime = this.clock.getElapsedTime()
 
     // Vibrate
     if (this.reticle.options.vibrate) {
@@ -177,15 +171,16 @@ export default class Reticulum {
     }
 
     // Does object have an action assigned to it?
-    if (obj.userData.reticulum.onGazeOver != null) {
-      obj.userData.reticulum.onGazeOver()
+    if (d.reticulum.onGazeOver != null) {
+      d.reticulum.onGazeOver()
     }
   }
 
   private gazeLong(obj: ReticulumTarget) {
-    let distance
+    const d = obj.userData
     const elapsed = this.clock.getElapsedTime()
-    const gazeTime = elapsed - obj.userData.hitTime
+    const gazeTime = elapsed - d.hitTime
+    let distance
 
     // There has to be a better way...
     // Keep updating distance while user is focused on target
@@ -216,12 +211,12 @@ export default class Reticulum {
       this.vibrate(this.fuse.options.vibrate)
 
       // Does object have an action assigned to it?
-      if (obj.userData.reticulum.onGazeLong != null) {
-        obj.userData.reticulum.onGazeLong()
+      if (d.reticulum.onGazeLong != null) {
+        d.reticulum.onGazeLong()
       }
 
       // Reset the clock
-      obj.userData.hitTime = elapsed
+      d.hitTime = elapsed
     } else {
       this.fuse.update(gazeTime)
     }
@@ -234,80 +229,55 @@ export default class Reticulum {
 
   private detectHit() {
     try {
-      this.raycaster.setFromCamera(this.vector, this.camera)
+      this.raycaster.setFromCamera(this.screenCenterCoords, this.camera)
     } catch (e) {
       this.raycaster.ray.origin.copy(this.camera.position)
       this.raycaster.ray.direction
-        .set(this.vector.x, this.vector.y, 0.5)
+        .set(this.screenCenterCoords.x, this.screenCenterCoords.y, 0.5)
         .unproject(this.camera)
         .sub(this.camera.position)
         .normalize()
     }
 
-    //
-    const intersects = this.raycaster.intersectObjects<ReticulumTarget>(this.collisionList)
-    const intersectsCount = intersects.length
+    // Intersects
+    const targets = this.raycaster.intersectObjects<ReticulumTarget>(this.collisionList).map(({ object }) => object)
 
-    // Detect
-    if (intersectsCount) {
-      let newObj
+    // Gaze out when no targets or when intersected is not gazeable anymore
+    if (!targets.length || !this.intersected?.userData.reticulum.gazeable) {
+      this.gazeOut()
+    }
 
-      // Check if what we are hitting can be used
-      for (let i = 0, l = intersectsCount; i < l; i++) {
-        newObj = intersects[i].object
-        // If new object is not gazeable skip it.
-        if (!newObj.userData.reticulum.gazeable) {
-          if (newObj == this.INTERSECTED) {
-            //TO DO: move this else where
-            this.gazeOut(this.INTERSECTED)
-          }
-          newObj = null
-          continue
-        }
-        // If new object is invisible skip it.
-        if (this.reticle.options.ignoreInvisible && !newObj.visible) {
-          newObj = null
-          continue
-        }
-        // No issues let use this one
-        break
-      }
+    // Check if what we are hitting is a valid
+    const target = targets.find(({ userData, visible }) => {
+      const isGazeable = userData.reticulum.gazeable
+      const isVisible = this.reticle.options.ignoreInvisible ? visible : true
 
-      // There is no valid object
-      if (newObj == null) {
-        return
-      }
+      return isGazeable && isVisible
+    })
 
-      // Is it a new object?
-      if (this.INTERSECTED != newObj) {
-        // If old INTERSECTED i.e. not null reset and gazeout
-        if (this.INTERSECTED) {
-          this.gazeOut(this.INTERSECTED)
-        }
+    // There is no valid object
+    if (target == null) {
+      return
+    }
 
-        //Updated INTERSECTED with new object
-        this.INTERSECTED = newObj
-        //Is the object gazeable?
-        //if (INTERSECTED.gazeable) {
-        //Yes
-        this.gazeOver(this.INTERSECTED)
-        //}
-      } else {
-        //Ok it looks like we are in love
-        this.gazeLong(this.INTERSECTED)
-      }
+    // Is it the intersected object?
+    if (target === this.intersected) {
+      // Ok it looks like we are in love
+      this.gazeLong(this.intersected)
     } else {
-      // Is the object gazeable?
-      if (this.INTERSECTED) {
-        // GAZE OUT
-        this.gazeOut(this.INTERSECTED)
-      }
+      // If old intersected i.e. not null reset and gazeout
+      this.gazeOut()
 
-      this.INTERSECTED = null
+      //Update intersected with new object
+      this.gazeOver(target)
     }
   }
 
   private proximity() {
+    if (!this.options.proximity) {
+      return
+    }
+
     let showReticle = false
 
     //Use frustum to see if any targetable object is visible
