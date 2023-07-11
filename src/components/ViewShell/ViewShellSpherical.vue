@@ -1,12 +1,18 @@
-<script setup lang="ts">
+<script lang="ts" setup>
+  import ImageMapTooltip from '@/components/ImageMapTooltip/ImageMapTooltip.vue'
   import XrControls from '@/components/XrControls/XrControls.vue'
-  import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
+  import useDialog from '@/composables/Dialog/Dialog'
+  import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
+  import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
+  import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
+  import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
-  import useXrSessionController from '@/composables/XrSessionController/XrSessionController'
+  import useTranslation from '@/composables/Translation/Translation'
+  import type { DialogHotspot, DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
   import { Texture, TextureLoader } from 'three'
-  import { computed, onMounted, ref, watch } from 'vue'
+  import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
 
   const TL = new TextureLoader()
@@ -23,41 +29,85 @@
     background: '',
   })
 
+  const hotspotDisplayDelay = 600
+  const hotspotStaggerDelay = 60
+
   const route = useRoute()
   const { isMounted } = useIsMounted()
+  const { t } = useTranslation()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
+  const { dialog } = useDialog()
+  const { isHotspotShown } = useDialogHotspot()
+  const { handleCommand } = useDialogCommand(dialog)
 
   const canvasEl = ref<HTMLCanvasElement | null>(null)
   const wrapperEl = ref<HTMLDivElement | null>(null)
   const overlayEl = ref<HTMLDivElement | null>(null)
   const texture = ref<Texture | null>(null)
+  const hotspotLocations = ref<Array<DialogHotspotLocation>>([])
+  const showHotspots = ref<boolean>(false)
+  const canvasWidth = ref<number>(0)
+  const canvasHeight = ref<number>(0)
 
-  const { initScene: initInlineScene } = useInlineScene(wrapperEl, canvasEl)
+  const onRenderImmersive = (width: number, height: number, coords: Array<DialogHotspotLocation>) => {
+    canvasWidth.value = width
+    canvasHeight.value = height
+    hotspotLocations.value = coords
+  }
+
+  const onRenderInline = (width: number, height: number, coords: Array<DialogHotspotLocation>) => {
+    canvasWidth.value = width
+    canvasHeight.value = height
+    hotspotLocations.value = coords
+  }
+
   const {
+    isSessionReady,
+    isPresenting,
     initScene: initImmersiveScene,
     requestSession,
-    endSession,
-    hasActiveSession,
-    debugPosition,
-  } = useXrSessionController()
+    endSession: endImmersiveSession,
+  } = useImmersiveSession(onRenderImmersive)
+  const { initScene: initInlineScene, unmountScene: endInlineSession } = useInlineScene(
+    onRenderInline,
+    { wrapperEl, canvasEl },
+    computed<boolean>(() => !isPresenting.value),
+  )
+  const labelTranslations = ref<Record<string, string>>({})
 
+  const transitionedHotspotLocations = computed<Array<DialogHotspotLocation>>(() => {
+    return showHotspots.value ? hotspotLocations.value : []
+  })
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const isImmersiveScenePrepared = computed<boolean>(() => {
-    return isMounted.value && isBackgroundLoaded.value && hasActiveSession.value
+    return isMounted.value && isBackgroundLoaded.value && isSessionReady.value
   })
   const isInlineScenePrepared = computed<boolean>(() => {
     return isMounted.value && isBackgroundLoaded.value
   })
+
   const mainImageClasses = computed<Array<string>>(() => {
     return [bemAdd(isBackgroundLoaded.value ? 'is-shown' : '', 'main-image')]
   })
+
+  const storeLabelTranslation = (label: string) => {
+    if (!labelTranslations.value[label]) {
+      labelTranslations.value[label] = t(label)
+    }
+
+    return labelTranslations.value[label]
+  }
 
   const onRequestImmersiveSession = () => {
     requestSession(overlayEl.value)
   }
 
   const onEndImmersiveSession = () => {
-    endSession()
+    endImmersiveSession()
+  }
+
+  const onActionRequested = (hotspot: DialogHotspot) => {
+    hotspot.commandData.forEach((command) => handleCommand(command))
   }
 
   // React to `props.background` change (load new texture).
@@ -95,32 +145,63 @@
   )
 
   onMounted(() => {
-    // inline session started
+    setTimeout(() => {
+      showHotspots.value = true
+    }, hotspotDisplayDelay)
+  })
+
+  onBeforeUnmount(() => {
+    endImmersiveSession()
+    endInlineSession()
   })
 </script>
 
 <template>
   <div :class="bemFacets" class="c-view-shell-spherical">
-    <div class="c-view-shell-spherical__background-wrap" ref="wrapperEl">
+    <div ref="wrapperEl" class="c-view-shell-spherical__background-wrap">
       <div class="c-view-shell-spherical__background-element" />
       <canvas
-        class="c-view-shell-spherical__main-image"
-        :class="mainImageClasses"
         :key="route.fullPath"
         ref="canvasEl"
+        :class="mainImageClasses"
+        class="c-view-shell-spherical__main-image"
       />
     </div>
-    <div class="c-view-shell-spherical__content">
+    <div ref="overlayEl" class="c-view-shell-spherical__overlay u-typography-root">
+      <ul class="u-reset">
+        <li
+          v-for="({ hotspot, coords }, hotspotLocationIdx) in transitionedHotspotLocations"
+          :key="hotspot.label"
+          :style="{
+            '--trs-delay': hotspotStaggerDelay,
+            '--trs-idx': hotspotLocationIdx,
+            '--trs-total': transitionedHotspotLocations.length,
+          }"
+        >
+          <ImageMapTooltip
+            v-if="isHotspotShown(hotspot.label)"
+            :height="canvasHeight"
+            :hotspot="hotspot"
+            :show-button="false"
+            :width="canvasWidth"
+            :x="coords.x"
+            :y="coords.y"
+            @action="onActionRequested(hotspot)"
+          >
+            <template #default="{ label }">
+              <span :key="label">
+                {{ storeLabelTranslation(label) }}
+              </span>
+            </template>
+          </ImageMapTooltip>
+        </li>
+      </ul>
+    </div>
+    <div class="c-view-shell-spherical__content u-typography-root">
       <XrControls @request-session="onRequestImmersiveSession" @end-session="onEndImmersiveSession" />
     </div>
     <div class="c-view-shell-spherical__debug">
       <slot name="debug" />
-      <div ref="overlayEl">
-        XR OVERLAY:
-        <pre>x: {{ debugPosition.x }}</pre>
-        <pre>y: {{ debugPosition.y }}</pre>
-        <pre>z: {{ debugPosition.z }}</pre>
-      </div>
     </div>
   </div>
 </template>
@@ -173,12 +254,21 @@
     }
   }
 
+  .c-view-shell-spherical__overlay,
   .c-view-shell-spherical__content {
-    z-index: 2;
     pointer-events: none;
-    position: relative;
+    position: absolute;
     width: 100%;
     height: 100%;
     padding-right: var(--scroll-lock);
+  }
+
+  .c-view-shell-spherical__overlay {
+    --label-offset: 6vmin;
+    z-index: 2;
+  }
+
+  .c-view-shell-spherical__content {
+    z-index: 3;
   }
 </style>

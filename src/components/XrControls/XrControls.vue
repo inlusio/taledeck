@@ -1,19 +1,20 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   import UiIcon from '@/components/UiIcon/UiIcon.vue'
-  import useXrApiController from '@/composables/XrApiController/XrApiController'
+  import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useTranslation from '@/composables/Translation/Translation'
-  import useXrSessionController from '@/composables/XrSessionController/XrSessionController'
+  import useXrApiController from '@/composables/XrApiController/XrApiController'
   import { UiIconId, UiIconSizeId } from '@/models/UiIcon/UiIcon'
   import { computed } from 'vue'
 
   interface Emits {
     (e: 'request-session'): void
+
     (e: 'end-session'): void
   }
 
   const { t } = useTranslation()
   const { hasXr, hasImmersiveXr } = useXrApiController()
-  const { hasActiveSession } = useXrSessionController()
+  const { isPresenting } = useImmersiveSession()
 
   const emit = defineEmits<Emits>()
 
@@ -23,7 +24,7 @@
       return 'xr_controls.unavailable'
     }
 
-    if (hasActiveSession.value) {
+    if (isPresenting.value) {
       return 'xr_controls.exit'
     }
 
@@ -31,7 +32,7 @@
   })
 
   const onClick = () => {
-    if (hasActiveSession.value) {
+    if (isPresenting.value) {
       emit('end-session')
     } else {
       emit('request-session')
@@ -42,9 +43,9 @@
 <template>
   <div class="c-xr-controls">
     <button
-      @click="onClick"
       :disabled="disabled"
       class="c-xr-controls__action btn btn--small btn--highlight btn--has-grid"
+      @click="onClick"
     >
       <UiIcon :id="UiIconId.PanoramaHorizontal" :colorize="true" :size="UiIconSizeId.Medium" />
       {{ t(text) }}
@@ -53,7 +54,7 @@
   </div>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
   .c-xr-controls {
     pointer-events: none;
     display: flex;

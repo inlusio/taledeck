@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   import useAudioController from '@/composables/AudioController/AudioController'
   import useGameStory from '@/composables/GameStory/GameStory'
   import useUiController from '@/composables/UiController/UiController'
@@ -12,27 +12,30 @@
 
 <template>
   <div class="c-debug-panel">
-    <pre class="c-debug-panel__item"><b>Allow audio:</b> {{ allowAudio ? 'true' : 'false' }}</pre>
-    <pre class="c-debug-panel__item"><b>Interaction occured:</b> {{ interactionOccured ? 'true' : 'false' }}</pre>
-    <pre class="c-debug-panel__item"><b>XR supported:</b> {{ hasXr ? 'true' : 'false' }}</pre>
-    <pre class="c-debug-panel__item"><b>Immersive XR supported:</b> {{ hasImmersiveXr ? 'true' : 'false' }}</pre>
     <details class="c-debug-panel__details">
-      <summary><b>Audio channels:</b></summary>
-      <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />
-    </details>
-    <details class="c-debug-panel__details">
-      <summary><b>Scene List:</b></summary>
-      <pre>{{ sceneOverviewList }}</pre>
-    </details>
-    <details class="c-debug-panel__details">
-      <summary><b>Audio List:</b></summary>
-      <pre>{{ audioOverviewList }}</pre>
-    </details>
-    <details class="c-debug-panel__details">
-      <summary><b>WebXR Debug:</b></summary>
-      <!--<pre>{{ debugPosition.x }}</pre>-->
-      <!--<pre>{{ debugPosition.y }}</pre>-->
-      <!--<pre>{{ debugPosition.z }}</pre>-->
+      <summary>debug</summary>
+      <pre class="c-debug-panel__item"><b>Allow audio:</b> {{ allowAudio ? 'true' : 'false' }}</pre>
+      <pre class="c-debug-panel__item"><b>Interaction occured:</b> {{ interactionOccured ? 'true' : 'false' }}</pre>
+      <pre class="c-debug-panel__item"><b>XR supported:</b> {{ hasXr ? 'true' : 'false' }}</pre>
+      <pre class="c-debug-panel__item"><b>Immersive XR supported:</b> {{ hasImmersiveXr ? 'true' : 'false' }}</pre>
+      <details class="c-debug-panel__details">
+        <summary><b>Audio channels:</b></summary>
+        <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />
+      </details>
+      <details class="c-debug-panel__details">
+        <summary><b>Scene List:</b></summary>
+        <pre>{{ sceneOverviewList }}</pre>
+      </details>
+      <details class="c-debug-panel__details">
+        <summary><b>Audio List:</b></summary>
+        <pre>{{ audioOverviewList }}</pre>
+      </details>
+      <details class="c-debug-panel__details">
+        <summary><b>WebXR Debug:</b></summary>
+        <!--<pre>{{ debugPosition.x }}</pre>-->
+        <!--<pre>{{ debugPosition.y }}</pre>-->
+        <!--<pre>{{ debugPosition.z }}</pre>-->
+      </details>
     </details>
   </div>
 </template>
@@ -67,7 +70,7 @@
 
   details,
   .c-debug-panel__item {
-    border: 1px solid #aaa;
+    border: 1px solid #aaaaaa;
     border-radius: 4px;
 
     ~ details,
@@ -86,8 +89,8 @@
     padding: 0.5em;
   }
 
-  details[open] summary {
-    border-bottom: 1px solid #aaa;
+  details[open] > summary {
+    border-bottom: 1px solid #aaaaaa;
     margin-bottom: 0.5em;
   }
 </style>

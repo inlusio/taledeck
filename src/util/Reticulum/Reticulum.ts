@@ -31,6 +31,7 @@ export default class Reticulum {
   private reticle: Reticle
   private fuse: Fuse
 
+  private clickListener = this.onClick.bind(this)
   private vibrate: (pattern: VibratePattern) => boolean
 
   constructor(c: PerspectiveCamera, o: ReticulumOptions = {}) {
@@ -53,7 +54,7 @@ export default class Reticulum {
 
     //Enable click / Tap events
     if (this.options.clickEvents) {
-      document.body.addEventListener('click', this.onClick.bind(this), false)
+      document.body.addEventListener('click', this.clickListener, false)
     }
 
     //Initiate Reticle
@@ -106,6 +107,10 @@ export default class Reticulum {
     this.detectHit()
     this.proximity()
     this.reticle.update(delta)
+  }
+
+  public destroy() {
+    document.body.removeEventListener('click', this.clickListener, false)
   }
 
   private onClick(e: MouseEvent) {
@@ -207,7 +212,7 @@ export default class Reticulum {
     if (gazeTime >= this.fuse.duration && !this.fuse.active && !this.fuse.timeDone) {
       // Vibrate
       this.fuse.timeDone = true
-      this.fuse.mesh.visible = !this.fuse.options.hideAfterEnd
+      this.fuse.mesh.visible = this.fuse.options.visible && !this.fuse.options.hideAfterEnd
       this.vibrate(this.fuse.options.vibrate)
 
       // Does object have an action assigned to it?

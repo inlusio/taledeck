@@ -42,7 +42,7 @@ export interface TaleDeckScene extends TaleDeckCollection {
   script: string
   tj_story_id: number
   tj_audio: Array<number>
-  '360active': boolean
+  immersive_active: boolean
 }
 
 export interface TaleDeckAudio extends TaleDeckCollection {

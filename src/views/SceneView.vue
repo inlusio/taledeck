@@ -1,65 +1,50 @@
-<script setup lang="ts">
-  import useGameScene from '@/composables/GameScene/GameScene'
-  import { ViewShellFacet } from '@/components/ViewShell/ViewShellFacet'
-  import DialogBox from '@/components/DialogBox/DialogBox.vue'
-  import useDialog from '@/composables/Dialog/Dialog'
-  import useDebug from '@/composables/Debug/Debug'
-  import ImageMapTooltip from '@/components/ImageMapTooltip/ImageMapTooltip.vue'
-  import ResponsiveShell from '@/components/ResponsiveShell/ResponsiveShell.vue'
-  import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
-  import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
-  import useTranslation from '@/composables/Translation/Translation'
-  import MainActionsNav from '@/components/MainActionsNav/MainActionsNav.vue'
-  import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
-  import useSceneTransition from '@/composables/SceneTransition/SceneTransition'
-  import DebugPanel from '@/components/DebugPanel/DebugPanel.vue'
-  import useAudioController from '@/composables/AudioController/AudioController'
-  import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'
+<script lang="ts" setup>
   import AudioChannel from '@/components/AudioChannel/AudioChannel.vue'
-  import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
-  import { computed, defineAsyncComponent } from 'vue'
+  import DebugPanel from '@/components/DebugPanel/DebugPanel.vue'
+  import DialogBox from '@/components/DialogBox/DialogBox.vue'
+  import MainActionsNav from '@/components/MainActionsNav/MainActionsNav.vue'
+  import { ViewShellFacet } from '@/components/ViewShell/ViewShellFacet'
+  import useAudioController from '@/composables/AudioController/AudioController'
+  import useDebug from '@/composables/Debug/Debug'
+  import useDialog from '@/composables/Dialog/Dialog'
+  import useGameScene from '@/composables/GameScene/GameScene'
   import useGameStory from '@/composables/GameStory/GameStory'
+  import useSceneTransition from '@/composables/SceneTransition/SceneTransition'
+  import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
+  import type { AudioChannelEntry } from '@/models/AudioChannel/AudioChannel'
   import { TaleDeckStoryType } from '@/models/TaleDeck/TaleDeck'
+  import { computed, defineAsyncComponent } from 'vue'
+
+  const ViewShellPlanar = defineAsyncComponent(() => import(`../components/ViewShell/ViewShellPlanar.vue`))
+  const ViewShellSpherical = defineAsyncComponent(() => import(`../components/ViewShell/ViewShellSpherical.vue`))
 
   const { getFileEntry } = useTaleDeckApi()
-  const { hotspots } = useDialogHotspot()
 
-  const { t } = useTranslation()
   const { story } = useGameStory()
   const { scene, sceneSlug } = useGameScene()
   const { dialog } = useDialog()
   const { isDebug } = useDebug()
-  const { handleCommand } = useDialogCommand(dialog)
-  const { isHotspotShown } = useDialogHotspot()
   const { transitionName, transitionMode } = useSceneTransition()
 
   const { audioChannels } = useAudioController()
 
-  const viewShellType = computed<string>(() => {
+  const viewShellComponent = computed(() => {
     switch (story.value?.story_type) {
       case TaleDeckStoryType.Planar:
-        return 'ViewShellPlanar'
+        return ViewShellPlanar
       case TaleDeckStoryType.Spherical:
-        if (scene.value && scene.value['360active']) {
-          return 'ViewShellSpherical'
+        if (scene.value && scene.value?.immersive_active) {
+          return ViewShellSpherical
         }
 
-        return 'ViewShellPlanar'
+        return ViewShellPlanar
       default:
         throw new Error('Unknown story type!')
     }
   })
 
-  const viewShellComponent = computed(() => {
-    return defineAsyncComponent(() => import(`../components/ViewShell/${viewShellType.value}.vue`))
-  })
-
   const getChannelKey = (channel: AudioChannelEntry) => {
     return `${channel.label}::${channel.behaviour}`
-  }
-
-  const onActionRequested = (hotspot: DialogHotspot) => {
-    hotspot.commandData.forEach((command) => handleCommand(command))
   }
 </script>
 
@@ -89,29 +74,6 @@
                 <DebugPanel v-if="isDebug" />
               </template>
               <template #content="{ width, height }">
-                <ResponsiveShell
-                  :outer-height="height"
-                  :outer-width="width"
-                  class="p-page-scene__responsive-shell u-typography-root"
-                >
-                  <ul class="u-reset p-page-scene__image-tooltip-list">
-                    <li v-for="hotspot in hotspots" :key="hotspot.label" class="p-page-scene__image-tooltip-entry">
-                      <Transition appear name="trs-simple-fade">
-                        <ImageMapTooltip
-                          v-if="isHotspotShown(hotspot.label)"
-                          :height="height"
-                          :hotspot="hotspot"
-                          :width="width"
-                          @action="onActionRequested(hotspot)"
-                        >
-                          <template #default="{ label }">
-                            {{ t(label) }}
-                          </template>
-                        </ImageMapTooltip>
-                      </Transition>
-                    </li>
-                  </ul>
-                </ResponsiveShell>
                 <div v-if="isDebug" class="s-container s-container--full-width">
                   <div class="s-container__container">
                     <span>scene: {{ sceneSlug }}</span>
@@ -119,6 +81,7 @@
                     <details>
                       <summary>Raw content</summary>
                       <pre>{{ scene }}</pre>
+                      <pre>{{ width }} / {{ height }}</pre>
                     </details>
                   </div>
                 </div>
@@ -140,11 +103,6 @@
   .p-page-scene {
     display: flex;
     flex-flow: column nowrap;
-  }
-
-  .p-page-scene__responsive-shell {
-    @include utils.overlay;
-    pointer-events: none;
   }
 
   .p-page-scene__main-actions-nav {

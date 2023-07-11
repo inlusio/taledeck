@@ -1,8 +1,9 @@
 import useImmersiveScene from '@/composables/ImmersiveScene/ImmersiveScene'
-import { StoreId } from '@/models/Store'
+import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import { useXrApiStore } from '@/stores/XrApi'
-import { defineStore, storeToRefs } from 'pinia'
-import { ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import type { Ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const sessionMode: XRSessionMode = 'immersive-vr'
 const sessionOptions: XRSessionInit = {
@@ -10,7 +11,9 @@ const sessionOptions: XRSessionInit = {
   requiredFeatures: ['local'],
 }
 
-export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
+export default function useImmersiveSession(
+  onRender = (_width: number, _height: number, _coords: Array<DialogHotspotLocation>) => {},
+) {
   const xrApiStore = useXrApiStore()
   const { createWebGLContext } = xrApiStore
   const { api } = storeToRefs(xrApiStore)
@@ -20,7 +23,12 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
   const refSpace = ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>(undefined)
   const removeResizeObserver = ref<(() => void) | null>(null)
 
-  const { debugPosition, initScene } = useImmersiveScene(context, session, refSpace)
+  const { renderer, initScene, unmountScene } = useImmersiveScene(context, session, refSpace, onRender)
+
+  const isPresenting = ref<boolean>(false)
+  const isSessionReady = computed<boolean>(() => {
+    return [context, session, refSpace].every(({ value }: Ref<unknown>) => value != null)
+  })
 
   const requestSession = async (overlayEl: HTMLDivElement | null) => {
     if (overlayEl == null) {
@@ -33,16 +41,26 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
     session.value = (await api.value?.requestSession(sessionMode, options)) || null
     refSpace.value = await session.value!.requestReferenceSpace('local')
 
-    session.value!.addEventListener('end', onSessionEnded)
+    console.log(session.value!.domOverlayState)
   }
 
   const endSession = () => {
     if (session.value) {
       session.value.end()
     }
+
+    unmountScene()
+  }
+
+  const onSessionStarted = () => {
+    renderer.value!.xr.removeEventListener('sessionstart', onSessionStarted)
+    isPresenting.value = true
   }
 
   const onSessionEnded = () => {
+    renderer.value!.xr.removeEventListener('sessionend', onSessionStarted)
+    isPresenting.value = false
+
     if (removeResizeObserver.value) {
       removeResizeObserver.value()
     }
@@ -51,6 +69,17 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
     session.value = null
     refSpace.value = undefined
   }
+
+  watch(
+    () => renderer.value,
+    (nV) => {
+      if (nV) {
+        nV.xr.addEventListener('sessionstart', onSessionStarted)
+        nV.xr.addEventListener('sessionend', onSessionEnded)
+      }
+    },
+    { immediate: true },
+  )
 
   watch(
     () => [session.value, context.value],
@@ -66,12 +95,10 @@ export const useXrSessionStore = defineStore(StoreId.XrSession, () => {
   )
 
   return {
-    debugPosition,
-    context,
-    session,
-    refSpace,
+    isPresenting,
+    isSessionReady,
     requestSession,
     endSession,
     initScene,
   }
-})
+}

@@ -1,0 +1,22 @@
+@use '@nirazul/scss-utils' as utils;
+@use '@/assets/scss/util/transition' as trs;
+
+.trs-staggered-fade {
+  &-enter-active,
+  &-leave-active {
+    transition: trs.$default-speed trs.$default-fn opacity;
+  }
+
+  &-enter-active {
+    transition-delay: calc(var(--trs-delay) * 1ms * var(--trs-idx));
+  }
+
+  &-leave-active {
+    transition-delay: calc(var(--trs-delay) * 1ms * (var(--trs-total) - var(--trs-idx)));
+  }
+
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
+  }
+}

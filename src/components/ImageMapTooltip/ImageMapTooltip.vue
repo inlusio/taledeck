@@ -1,24 +1,29 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
+  import useSegment from '@/composables/Segment/Segment'
+  import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
+  import type { Rect } from '@/models/Segment/Segment'
   import type { CSSProperties } from 'vue'
   import { computed, ref } from 'vue'
-  import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
-  import useSegment from '@/composables/Segment/Segment'
-  import type { Rect } from '@/models/Segment/Segment'
 
   interface Props extends UseBemProps {
+    showButton?: boolean
     facets?: Array<string>
     width: number
     height: number
     hotspot: DialogHotspot
+    x: number
+    y: number
   }
 
   interface Emits {
     (e: 'action'): void
   }
 
-  const props = defineProps<Props>()
+  const props = withDefaults(defineProps<Props>(), {
+    showButton: true,
+  })
   const emit = defineEmits<Emits>()
   const { bemAdd, bemFacets } = useBem('c-image-map-tooltip', props, {})
 
@@ -27,13 +32,13 @@
 
   const segmentIdx = computed<number>(() => {
     return getSegmentIdxOfPoint({
-      x: props.hotspot.x,
-      y: props.hotspot.y,
+      x: props.x,
+      y: props.y,
     })
   })
   const areaLabelStyles = computed<CSSProperties>(() => {
-    const x = (props.hotspot.x / props.width) * 100
-    const y = (props.hotspot.y / props.height) * 100
+    const x = (props.x / props.width) * 100
+    const y = (props.y / props.height) * 100
 
     return {
       top: `${y}%`,
@@ -51,7 +56,7 @@
     }
 
     return Object.entries(getSegmentFeatures(segmentIdx.value)).map(([key, value]) => {
-      return bemAdd(`${key}-${value}`, 'label')
+      return bemAdd(`${key}-${value === -1 ? 'x' : value}`, 'label')
     })
   })
 
@@ -62,7 +67,7 @@
 
 <template>
   <span :class="rootClasses" :style="areaLabelStyles" class="c-image-map-tooltip">
-    <button class="c-image-map-tooltip__btn" @click="onActionRequested">
+    <button v-if="showButton" class="c-image-map-tooltip__btn" @click="onActionRequested">
       <span class="c-image-map-tooltip__circle-inner" />
     </button>
     <span :class="labelClasses" class="s-tooltip-label c-image-map-tooltip__label">
@@ -108,14 +113,19 @@
   }
 
   .c-image-map-tooltip {
-    --value: calc(var(--scroll-bar) * -0.5);
+    --c-circle: var(--circle, #{$sz--circle});
+    --c-circle-outer: var(--circle-outer, #{$sz--circle-outer});
+    --c-circle-inner: var(--circle-inner, #{$sz--circle-inner});
+    --c-label-offset: var(--label-offset, #{$sz--label-offset});
+    --c-value: calc(var(--scroll-bar) * -0.5);
+
     pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;
     width: 0;
     height: 0;
-    transform: translateX(var(--value));
+    transform: translateX(var(--c-value));
   }
 
   .c-image-map-tooltip__btn {
@@ -125,10 +135,10 @@
     z-index: 2;
     position: relative;
     display: block;
-    width: $sz--circle;
-    height: $sz--circle;
+    width: var(--c-circle);
+    height: var(--c-circle);
     background-color: col.$monochrome-black;
-    border-radius: $sz--circle;
+    border-radius: var(--c-circle);
     padding: 2px;
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
@@ -153,18 +163,18 @@
 
     &::before {
       z-index: 1;
-      width: $sz--circle-outer;
-      height: $sz--circle-outer;
-      border-radius: $sz--circle-outer;
+      width: var(--c-circle-outer);
+      height: var(--c-circle-outer);
+      border-radius: var(--c-circle-outer);
       background-color: rgba(col.$brand-red-dark, 0.6);
       animation: pulse-ring 4000ms cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
     }
 
     &::after {
       z-index: 3;
-      width: $sz--circle-inner;
-      height: $sz--circle-inner;
-      border-radius: $sz--circle-inner;
+      width: var(--c-circle-inner);
+      height: var(--c-circle-inner);
+      border-radius: var(--c-circle-inner);
       background-color: color.change(col.$brand-red, $alpha: 0.6);
       transform: translate(-50%, -50%) scale(1);
 
@@ -185,7 +195,7 @@
     height: 100%;
     transform: translate(-50%, -50%);
     background-color: col.$monochrome-white;
-    border-radius: $sz--circle;
+    border-radius: var(--c-circle);
   }
 
   .c-image-map-tooltip__label {
@@ -193,6 +203,10 @@
     position: absolute;
 
     // Rows
+    &.c-image-map-tooltip__label--row-x {
+      display: none;
+    }
+
     &.c-image-map-tooltip__label--row-0 {
       top: 0;
     }
@@ -207,24 +221,28 @@
     }
 
     // Columns
+    &.c-image-map-tooltip__label--col-x {
+      display: none;
+    }
+
     &.c-image-map-tooltip__label--col-0 {
-      left: $sz--label-offset;
+      left: var(--c-label-offset);
     }
 
     &.c-image-map-tooltip__label--col-1 {
-      top: $sz--label-offset;
+      top: var(--c-label-offset);
       bottom: unset;
       transform: translateX(-50%);
     }
 
     &.c-image-map-tooltip__label--col-2 {
-      right: $sz--label-offset;
+      right: var(--c-label-offset);
     }
 
     // Segments
     &.c-image-map-tooltip__label--seg-5 {
       top: unset;
-      bottom: $sz--label-offset;
+      bottom: var(--c-label-offset);
     }
   }
 </style>
