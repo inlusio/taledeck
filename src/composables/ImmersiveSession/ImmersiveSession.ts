@@ -23,7 +23,7 @@ export default function useImmersiveSession(
   const refSpace = ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>(undefined)
   const removeResizeObserver = ref<(() => void) | null>(null)
 
-  const { renderer, initScene, unmountScene } = useImmersiveScene(context, session, refSpace, onRender)
+  const { renderer, mountScene, unmountScene } = useImmersiveScene(context, session, refSpace, onRender)
 
   const isPresenting = ref<boolean>(false)
   const isSessionReady = computed<boolean>(() => {
@@ -99,6 +99,7 @@ export default function useImmersiveSession(
     isSessionReady,
     requestSession,
     endSession,
-    initScene,
+    mountScene,
+    unmountScene,
   }
 }

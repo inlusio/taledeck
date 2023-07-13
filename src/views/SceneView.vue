@@ -28,19 +28,18 @@
 
   const { audioChannels } = useAudioController()
 
-  const viewShellComponent = computed(() => {
-    switch (story.value?.story_type) {
-      case TaleDeckStoryType.Planar:
-        return ViewShellPlanar
-      case TaleDeckStoryType.Spherical:
-        if (scene.value && scene.value?.immersive_active) {
-          return ViewShellSpherical
-        }
+  const isImmersiveMode = computed<boolean>(() => {
+    const isSpherical = story.value?.story_type === TaleDeckStoryType.Spherical
+    const isImmersive = scene.value != null && scene.value?.immersive_active
+    return isSpherical && isImmersive
+  })
 
-        return ViewShellPlanar
-      default:
-        throw new Error('Unknown story type!')
-    }
+  const viewShellComponent = computed(() => {
+    return isImmersiveMode.value ? ViewShellSpherical : ViewShellPlanar
+  })
+
+  const viewShellKey = computed<string>(() => {
+    return isImmersiveMode.value ? 'mode:spherical' : `mode:planar::scene:${sceneSlug.value}`
   })
 
   const getChannelKey = (channel: AudioChannelEntry) => {
@@ -61,10 +60,9 @@
     <div class="s-layout-game__main">
       <div class="s-layout-game__viewer">
         <Transition :mode="transitionMode" :name="transitionName">
-          <div v-if="scene" :key="sceneSlug" class="s-layout-game__viewer-frame">
+          <div v-if="scene" :key="viewShellKey" :data-key="viewShellKey" class="s-layout-game__viewer-frame">
             <component
               :is="viewShellComponent"
-              :key="sceneSlug"
               :background="getFileEntry(scene.scene_image)"
               :facets="[ViewShellFacet.Scene]"
               :height="900"

@@ -6,12 +6,13 @@
   import useDialog from '@/composables/Dialog/Dialog'
   import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
   import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
+  import useGameScene from '@/composables/GameScene/GameScene'
   import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
   import useTranslation from '@/composables/Translation/Translation'
   import type { DialogHotspot, DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
-  import { Texture, TextureLoader } from 'three'
+  import { Texture, TextureLoader, Vector2 } from 'three'
   import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
 
@@ -37,6 +38,7 @@
   const { t } = useTranslation()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
   const { dialog } = useDialog()
+  const { sceneSlug } = useGameScene()
   const { isHotspotShown } = useDialogHotspot()
   const { handleCommand } = useDialogCommand(dialog)
 
@@ -64,11 +66,12 @@
   const {
     isSessionReady,
     isPresenting,
-    initScene: initImmersiveScene,
     requestSession,
     endSession: endImmersiveSession,
+    mountScene: mountImmersiveScene,
+    unmountScene: unmountImmersiveScene,
   } = useImmersiveSession(onRenderImmersive)
-  const { initScene: initInlineScene, unmountScene: endInlineSession } = useInlineScene(
+  const { mountScene: mountInlineScene, unmountScene: unmountInlineScene } = useInlineScene(
     onRenderInline,
     { wrapperEl, canvasEl },
     computed<boolean>(() => !isPresenting.value),
@@ -79,10 +82,10 @@
     return showHotspots.value ? hotspotLocations.value : []
   })
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
-  const isImmersiveScenePrepared = computed<boolean>(() => {
+  const isImmersiveSceneReady = computed<boolean>(() => {
     return isMounted.value && isBackgroundLoaded.value && isSessionReady.value
   })
-  const isInlineScenePrepared = computed<boolean>(() => {
+  const isInlineSceneReady = computed<boolean>(() => {
     return isMounted.value && isBackgroundLoaded.value
   })
 
@@ -117,6 +120,9 @@
       if (url != null) {
         texture.value = null
         texture.value = await TL.loadAsync(url)
+        texture.value.center = new Vector2(0.5, 0.5)
+        texture.value.rotation = Math.PI
+        texture.value.flipY = false
       }
     },
     { immediate: true },
@@ -124,10 +130,10 @@
 
   // React to a new immersive session.
   watch(
-    () => isInlineScenePrepared.value,
+    () => isInlineSceneReady.value,
     (nValue) => {
       if (nValue) {
-        initInlineScene(texture.value!)
+        mountInlineScene(texture.value!)
       }
     },
     { immediate: true },
@@ -135,11 +141,20 @@
 
   // React to a new inline session.
   watch(
-    () => isImmersiveScenePrepared.value,
+    () => isImmersiveSceneReady.value,
     (nValue) => {
       if (nValue) {
-        initImmersiveScene(texture.value!)
+        mountImmersiveScene(texture.value!)
       }
+    },
+    { immediate: true },
+  )
+
+  watch(
+    () => sceneSlug.value,
+    () => {
+      unmountInlineScene()
+      unmountImmersiveScene()
     },
     { immediate: true },
   )
@@ -152,7 +167,7 @@
 
   onBeforeUnmount(() => {
     endImmersiveSession()
-    endInlineSession()
+    unmountInlineScene()
   })
 </script>
 

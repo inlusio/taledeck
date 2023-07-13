@@ -106,7 +106,7 @@ export default function useImmersiveScene(
     }
   }
 
-  const initScene = async (texture: Texture) => {
+  const mountScene = async (texture: Texture) => {
     obj = createObjects()
     createRenderer()
     reticulum = createReticulum(obj.camera)
@@ -117,10 +117,8 @@ export default function useImmersiveScene(
   }
 
   const unmountScene = () => {
-    if (reticulum) {
-      reticulum.destroy()
-    }
+    reticulum?.destroy()
   }
 
-  return { renderer, initScene, unmountScene }
+  return { renderer, mountScene, unmountScene }
 }

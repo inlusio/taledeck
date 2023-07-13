@@ -197,6 +197,9 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
         onGazeClick() {
           onActionRequested(child.userData.hotspot as DialogHotspot)
         },
+        onGazeLong() {
+          onActionRequested(child.userData.hotspot as DialogHotspot)
+        },
       })
     })
   }

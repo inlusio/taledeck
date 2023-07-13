@@ -96,7 +96,7 @@ export default function useInlineScene(
     viewFrustum.setFromProjectionMatrix(viewProjectionMatrix)
   }
 
-  const initScene = async (texture: Texture) => {
+  const mountScene = async (texture: Texture) => {
     obj = createObjects()
     createRenderer()
     createControls(obj.camera)
@@ -112,5 +112,5 @@ export default function useInlineScene(
     reticulum?.destroy()
   }
 
-  return { initScene, unmountScene }
+  return { mountScene, unmountScene }
 }
