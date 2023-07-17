@@ -2,8 +2,9 @@ import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
+import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
-import { Frustum, Matrix4, Texture, WebGLRenderer } from 'three'
+import { Frustum, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
 
@@ -21,10 +22,8 @@ export default function useImmersiveScene(
   let reticulum: Reticulum | undefined
 
   const { hotspots } = useDialogHotspot()
-  const { getHotspotCoords, createObjects, createReticulum, updateHotspots, updateSkyMaterial } = useScene(
-    true,
-    renderer,
-  )
+  const { getHotspotCoords, createObjects, createReticulum, updateHotspots, updateCamera, updateSkyMaterial } =
+    useScene(true, renderer)
 
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
     if (renderer.value == null || context.value == null || refSpace.value == null || frame == null) {
@@ -106,12 +105,14 @@ export default function useImmersiveScene(
     }
   }
 
-  const mountScene = async (texture: Texture) => {
-    obj = createObjects()
+  const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
     createRenderer()
-    reticulum = createReticulum(obj.camera)
     await createBaseLayer()
 
+    obj = createObjects()
+    reticulum = createReticulum(obj.camera)
+
+    updateCamera(obj.cameraroot, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     await updateHotspots(obj.hotspots, hotspots.value, reticulum)
   }

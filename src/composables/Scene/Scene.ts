@@ -11,6 +11,8 @@ import {
   CanvasTexture,
   Color,
   Frustum,
+  Group,
+  MathUtils,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -116,11 +118,11 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   }
 
   const createHotspots = () => {
-    return new Object3D()
+    return new Group()
   }
 
   const createLight = () => {
-    return new AmbientLight(0xffffff, 2)
+    return new AmbientLight(0xffffff, 1)
   }
 
   const createSky = () => {
@@ -130,16 +132,19 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   const createObjects = (): SceneObjects => {
     const result = {
       camera: createCamera(),
+      cameraroot: new Group(),
       hotspots: createHotspots(),
       light: createLight(),
       scene: createScene(),
       sky: createSky(),
     }
 
+    result.cameraroot.add(result.camera)
+
     result.scene.add(result.light)
     result.scene.add(result.sky)
     result.scene.add(result.hotspots)
-    result.scene.add(result.camera)
+    result.scene.add(result.cameraroot)
 
     return result
   }
@@ -174,6 +179,14 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     })
   }
 
+  const updateCamera = (cameraroot: Group, lookAtTarget: Vector3) => {
+    cameraroot.position.set(0, 0, 0)
+    const lookAtTargetPosition = new Vector3().copy(lookAtTarget)
+
+    cameraroot.lookAt(lookAtTargetPosition)
+    cameraroot.rotateOnAxis(new Vector3(0, 1, 0), MathUtils.DEG2RAD * 180)
+  }
+
   const updateSkyMaterial = (sky: Mesh, texture: Texture) => {
     if (sky == null || texture == null) {
       throw new Error('Failed to load sky texture!')
@@ -204,5 +217,5 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     })
   }
 
-  return { getHotspotCoords, createObjects, createReticulum, updateSkyMaterial, updateHotspots }
+  return { getHotspotCoords, createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots }
 }

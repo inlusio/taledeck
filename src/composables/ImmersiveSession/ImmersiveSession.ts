@@ -53,13 +53,13 @@ export default function useImmersiveSession(
   }
 
   const onSessionStarted = () => {
-    renderer.value!.xr.removeEventListener('sessionstart', onSessionStarted)
     isPresenting.value = true
+    renderer.value!.xr.removeEventListener('sessionstart', onSessionStarted)
   }
 
   const onSessionEnded = () => {
-    renderer.value!.xr.removeEventListener('sessionend', onSessionStarted)
     isPresenting.value = false
+    renderer.value!.xr.removeEventListener('sessionend', onSessionStarted)
 
     if (removeResizeObserver.value) {
       removeResizeObserver.value()

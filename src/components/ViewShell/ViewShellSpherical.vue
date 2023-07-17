@@ -38,7 +38,7 @@
   const { t } = useTranslation()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
   const { dialog } = useDialog()
-  const { sceneSlug } = useGameScene()
+  const { scene, sceneSlug } = useGameScene()
   const { isHotspotShown } = useDialogHotspot()
   const { handleCommand } = useDialogCommand(dialog)
 
@@ -83,10 +83,10 @@
   })
   const isBackgroundLoaded = computed<boolean>(() => texture.value != null)
   const isImmersiveSceneReady = computed<boolean>(() => {
-    return isMounted.value && isBackgroundLoaded.value && isSessionReady.value
+    return isMounted.value && isBackgroundLoaded.value && scene.value != null && isSessionReady.value
   })
   const isInlineSceneReady = computed<boolean>(() => {
-    return isMounted.value && isBackgroundLoaded.value
+    return isMounted.value && isBackgroundLoaded.value && scene.value != null
   })
 
   const mainImageClasses = computed<Array<string>>(() => {
@@ -133,7 +133,7 @@
     () => isInlineSceneReady.value,
     (nValue) => {
       if (nValue) {
-        mountInlineScene(texture.value!)
+        mountInlineScene(scene.value!, texture.value!)
       }
     },
     { immediate: true },
@@ -144,7 +144,7 @@
     () => isImmersiveSceneReady.value,
     (nValue) => {
       if (nValue) {
-        mountImmersiveScene(texture.value!)
+        mountImmersiveScene(scene.value!, texture.value!)
       }
     },
     { immediate: true },

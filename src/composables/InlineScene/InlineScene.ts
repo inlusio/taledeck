@@ -2,9 +2,10 @@ import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
+import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
-import { Frustum, Matrix4, PerspectiveCamera, Texture, WebGLRenderer } from 'three'
+import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
@@ -29,10 +30,8 @@ export default function useInlineScene(
   const renderer = ref<WebGLRenderer | null>(null)
 
   const { hotspots } = useDialogHotspot()
-  const { getHotspotCoords, createObjects, createReticulum, updateSkyMaterial, updateHotspots } = useScene(
-    false,
-    renderer,
-  )
+  const { getHotspotCoords, createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } =
+    useScene(false, renderer)
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect
@@ -96,7 +95,7 @@ export default function useInlineScene(
     viewFrustum.setFromProjectionMatrix(viewProjectionMatrix)
   }
 
-  const mountScene = async (texture: Texture) => {
+  const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
     obj = createObjects()
     createRenderer()
     createControls(obj.camera)
@@ -104,6 +103,7 @@ export default function useInlineScene(
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
 
+    updateCamera(obj.cameraroot, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     await updateHotspots(obj.hotspots, hotspots.value, reticulum!)
   }
