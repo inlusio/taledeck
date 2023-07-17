@@ -13,8 +13,8 @@ export type DialogCommandResultAddHotspot = arg.Result<DialogCommandSpecAddHotsp
   x: number
   y: number
   z?: number
-  click: Array<string>
   gazeDuration?: number
+  click?: Array<string>
   gazeLong?: Array<string>
 }
 

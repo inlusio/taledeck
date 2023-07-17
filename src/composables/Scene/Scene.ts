@@ -2,6 +2,7 @@ import useDialog from '@/composables/Dialog/Dialog'
 import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
 import useInlineHotspotTemplate from '@/composables/InlineHotspotTemplate/InlineHotspotTemplate'
 import type { DialogHotspot, DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
+import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import type { ReticulumTarget } from '@/util/Reticulum/Types'
@@ -37,8 +38,8 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
 
   const hotspotTexture = new CanvasTexture(hotspotEl)
 
-  const onActionRequested = (hotspot: DialogHotspot) => {
-    hotspot.commandData.forEach((command) => handleCommand(command))
+  const onActionRequested = (commandData: Array<DialogResultCommandData> | undefined = []) => {
+    commandData.forEach((command) => handleCommand(command))
   }
 
   const getHotspotCoords = (
@@ -205,13 +206,18 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     })
 
     children.forEach((child) => {
+      const { gazeDuration, onClick, onGazeLong } = child.userData.hotspot as DialogHotspot
+
+      console.log(gazeDuration)
+
       parent.add(child)
       reticulum?.add(child, {
+        fuseDuration: gazeDuration,
         onGazeClick() {
-          onActionRequested(child.userData.hotspot as DialogHotspot)
+          onActionRequested(onClick)
         },
         onGazeLong() {
-          onActionRequested(child.userData.hotspot as DialogHotspot)
+          onActionRequested(onGazeLong)
         },
       })
     })

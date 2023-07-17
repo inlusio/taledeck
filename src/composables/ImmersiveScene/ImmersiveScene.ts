@@ -2,6 +2,7 @@ import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
+import { referenceSpaceType } from '@/models/Session/Session'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { Frustum, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
@@ -79,8 +80,8 @@ export default function useImmersiveScene(
     renderer.value.setPixelRatio(window.devicePixelRatio)
     renderer.value.autoClear = false
     renderer.value.xr.enabled = true
-    renderer.value.xr.setReferenceSpace(refSpace.value)
-    renderer.value.xr.setReferenceSpaceType('local')
+    renderer.value.xr.setReferenceSpace(refSpace.value!)
+    renderer.value.xr.setReferenceSpaceType(referenceSpaceType)
     renderer.value.xr.setSession(session.value as XRSession)
     renderer.value.xr.setAnimationLoop(onAnimationFrame)
 

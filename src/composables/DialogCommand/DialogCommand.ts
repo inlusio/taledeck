@@ -1,13 +1,9 @@
-import { parseArgs } from 'string-args-parser'
-import arg from 'arg'
-import { DialogBool, dialogCommandDict, DialogCommandId } from '@/models/DialogCommand/DialogCommand'
-import useGameScene from '@/composables/GameScene/GameScene'
-import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
-import { useRouter } from 'vue-router'
-import type { ReactiveDialog } from '@/models/Dialog/Dialog'
-import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
-import type { RouteRecordId } from '@/models/RouteRecord/RouteRecord'
+import useAudioController from '@/composables/AudioController/AudioController'
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
+import useGameScene from '@/composables/GameScene/GameScene'
+import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
+import type { ReactiveDialog } from '@/models/Dialog/Dialog'
+import { DialogBool, dialogCommandDict, DialogCommandId } from '@/models/DialogCommand/DialogCommand'
 import type {
   DialogCommandResultAddHotspot,
   DialogCommandSpecAddHotspot,
@@ -17,7 +13,12 @@ import type {
   DialogCommandResultPlayAudio,
   DialogCommandSpecPlayAudio,
 } from '@/models/DialogCommand/DialogCommandPlayAudio'
-import useAudioController from '@/composables/AudioController/AudioController'
+import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
+import type { RouteRecordId } from '@/models/RouteRecord/RouteRecord'
+import arg from 'arg'
+import { camelCase } from 'lodash-es'
+import { parseArgs } from 'string-args-parser'
+import { useRouter } from 'vue-router'
 
 const PARSE_OPTIONS: arg.Options = {
   permissive: true,
@@ -42,7 +43,7 @@ const parseCommand = <TSpec extends arg.Spec, TResult extends arg.Result<TSpec>>
   const { spec } = dialogCommandDict[argv[0] as DialogCommandId]
   const result = arg(spec, { ...PARSE_OPTIONS, argv })
   Object.keys(result).forEach((key) => {
-    result[key.replace(/^-+/, '')] = result[key]
+    result[camelCase(key.replace(/^-+/, ''))] = result[key]
   })
 
   return result as arg.Result<TSpec> & TResult
@@ -57,25 +58,21 @@ export default function useDialogCommand(dialog: ReactiveDialog) {
 
   const handleCommand = async (commandResult: DialogResultCommandData) => {
     const { _: positional } = parseCommand<DialogCommandSpecGeneric, DialogCommandResultGeneric>(commandResult.command)
-    const [command, ...args] = positional
+    const [commandId, ...args] = positional
 
-    switch (command) {
+    switch (commandId) {
       case DialogCommandId.AddHint:
         console.warn('Dialog command "hint" is not implemented yet')
         break
       case DialogCommandId.AddHotspot: {
         const parsed = parseCommand<DialogCommandSpecAddHotspot, DialogCommandResultAddHotspot>(commandResult.command)
         const [_, label] = parsed._
-        const { x, y, z, click } = parsed
-        const commandData = click.map((instruction) => {
-          return {
-            command: instruction,
-            metadata: commandResult.metadata,
-            hashtags: commandResult.hashtags,
-          }
-        })
+        const { x, y, z, gazeDuration, click = [], gazeLong = [] } = parsed
+        const { metadata, hashtags } = commandResult
+        const onClick = click.map((command) => ({ command, metadata, hashtags }))
+        const onGazeLong = gazeLong.map((command) => ({ command, metadata, hashtags }))
 
-        hotspots.value.push({ x, y, z, label, commandData })
+        hotspots.value.push({ x, y, z, label, gazeDuration, onClick, onGazeLong })
         setHotspotShown(label, isHotspotShown(label) ?? true)
         break
       }

@@ -8,7 +8,7 @@ export default class Fuse {
     innerRadius: 0,
     outerRadius: 0,
     visible: true,
-    duration: 2.5,
+    duration: 2,
     vibrate: 100,
     clickCancel: false,
     hideAfterEnd: true,

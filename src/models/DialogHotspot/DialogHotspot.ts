@@ -8,7 +8,9 @@ export interface DialogHotspot {
   y: number
   z?: number
   label: string
-  commandData: Array<DialogResultCommandData>
+  gazeDuration?: number
+  onClick?: Array<DialogResultCommandData>
+  onGazeLong?: Array<DialogResultCommandData>
 }
 
 export interface DialogHotspotLocation {

@@ -1,15 +1,10 @@
 import useImmersiveScene from '@/composables/ImmersiveScene/ImmersiveScene'
 import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
+import { referenceSpaceType, sessionMode, sessionOptions } from '@/models/Session/Session'
 import { useXrApiStore } from '@/stores/XrApi'
 import { storeToRefs } from 'pinia'
 import type { Ref } from 'vue'
 import { computed, ref, watch } from 'vue'
-
-const sessionMode: XRSessionMode = 'immersive-vr'
-const sessionOptions: XRSessionInit = {
-  optionalFeatures: ['dom-overlay'],
-  requiredFeatures: ['local'],
-}
 
 export default function useImmersiveSession(
   onRender = (_width: number, _height: number, _coords: Array<DialogHotspotLocation>) => {},
@@ -39,7 +34,7 @@ export default function useImmersiveSession(
 
     context.value = createWebGLContext(undefined, undefined, { xrCompatible: true })
     session.value = (await api.value?.requestSession(sessionMode, options)) || null
-    refSpace.value = await session.value!.requestReferenceSpace('local')
+    refSpace.value = await session.value!.requestReferenceSpace(referenceSpaceType)
 
     console.log(session.value!.domOverlayState)
   }

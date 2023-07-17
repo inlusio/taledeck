@@ -11,7 +11,8 @@
   import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
   import useTranslation from '@/composables/Translation/Translation'
-  import type { DialogHotspot, DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
+  import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
+  import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
   import { Texture, TextureLoader, Vector2 } from 'three'
   import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
   import { useRoute } from 'vue-router'
@@ -109,8 +110,8 @@
     endImmersiveSession()
   }
 
-  const onActionRequested = (hotspot: DialogHotspot) => {
-    hotspot.commandData.forEach((command) => handleCommand(command))
+  const onActionRequested = (commandData: Array<DialogResultCommandData> | undefined = []) => {
+    commandData.forEach((command) => handleCommand(command))
   }
 
   // React to `props.background` change (load new texture).
@@ -201,7 +202,7 @@
             :width="canvasWidth"
             :x="coords.x"
             :y="coords.y"
-            @action="onActionRequested(hotspot)"
+            @action="onActionRequested(hotspot.onClick)"
           >
             <template #default="{ label }">
               <span :key="label">

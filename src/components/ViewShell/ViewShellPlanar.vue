@@ -9,6 +9,7 @@
   import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
   import useTranslation from '@/composables/Translation/Translation'
   import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
+  import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
   import { computed, onMounted, ref } from 'vue'
 
   interface Props extends UseBemProps {
@@ -50,8 +51,8 @@
     isBackgroundLoaded.value = true
   }
 
-  const onActionRequested = (hotspot: DialogHotspot) => {
-    hotspot.commandData.forEach((command) => handleCommand(command))
+  const onActionRequested = (commandData: Array<DialogResultCommandData> | undefined = []) => {
+    commandData.forEach((command) => handleCommand(command))
   }
 
   onMounted(() => {
@@ -105,7 +106,7 @@
               :width="width"
               :x="hotspot.x"
               :y="hotspot.y"
-              @action="onActionRequested(hotspot)"
+              @action="onActionRequested(hotspot.onClick)"
             >
               <template #default="{ label }">
                 {{ t(label) }}
