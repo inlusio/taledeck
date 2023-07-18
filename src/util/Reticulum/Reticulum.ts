@@ -17,6 +17,7 @@ export default class Reticulum {
   }
   private collisionList: Array<ReticulumTarget> = []
   private intersected?: ReticulumTarget
+  private reticleHitOnClickStart: boolean = false
 
   // Three objects
   private parent = new Object3D()
@@ -31,7 +32,8 @@ export default class Reticulum {
   private reticle: Reticle
   private fuse: Fuse
 
-  private clickListener = this.onClick.bind(this)
+  private clickStartListener = this.onClickStart.bind(this)
+  private clickEndListener = this.onClickEnd.bind(this)
   private vibrate: (pattern: VibratePattern) => boolean
 
   constructor(c: PerspectiveCamera, o: ReticulumOptions = {}) {
@@ -54,7 +56,10 @@ export default class Reticulum {
 
     //Enable click / Tap events
     if (this.options.clickEvents) {
-      document.body.addEventListener('click', this.clickListener, false)
+      document.addEventListener('mousedown', this.clickStartListener, false)
+      document.addEventListener('mouseup', this.clickEndListener, false)
+      document.addEventListener('touchstart', this.clickStartListener, false)
+      document.addEventListener('touchend', this.clickEndListener, false)
     }
 
     //Initiate Reticle
@@ -110,14 +115,23 @@ export default class Reticulum {
   }
 
   public destroy() {
-    document.body.removeEventListener('click', this.clickListener, false)
+    document.removeEventListener('mousedown', this.clickStartListener, false)
+    document.removeEventListener('mouseup', this.clickEndListener, false)
+    document.removeEventListener('touchstart', this.clickStartListener, false)
+    document.removeEventListener('touchend', this.clickEndListener, false)
   }
 
-  private onClick(e: MouseEvent) {
-    if (this.reticle.hit && this.intersected != null) {
+  private onClickStart() {
+    this.reticleHitOnClickStart = this.reticle.hit
+  }
+
+  private onClickEnd(e: MouseEvent | TouchEvent) {
+    if (this.intersected != null && this.reticle.hit && this.reticleHitOnClickStart) {
       e.preventDefault()
       this.gazeClick(this.intersected)
     }
+
+    this.reticleHitOnClickStart = false
   }
 
   private gazeClick(target: ReticulumTarget) {

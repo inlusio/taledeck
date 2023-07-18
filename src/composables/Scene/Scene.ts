@@ -208,8 +208,6 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     children.forEach((child) => {
       const { gazeDuration, onClick, onGazeLong } = child.userData.hotspot as DialogHotspot
 
-      console.log(gazeDuration)
-
       parent.add(child)
       reticulum?.add(child, {
         fuseDuration: gazeDuration,
