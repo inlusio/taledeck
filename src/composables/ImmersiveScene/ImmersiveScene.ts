@@ -2,10 +2,13 @@ import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
+import { NUM_CONTROLLERS } from '@/models/Scene/Scene'
 import { referenceSpaceType } from '@/models/Session/Session'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
-import { Frustum, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
+import { Frustum, Matrix4, Texture, Vector3, WebGLRenderer, XRTargetRaySpace } from 'three'
+//@ts-ignore
+import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
 
@@ -21,6 +24,7 @@ export default function useImmersiveScene(
 ) {
   let obj: SceneObjects
   let reticulum: Reticulum | undefined
+  let controllers: Array<XRTargetRaySpace> = []
 
   const { hotspots } = useDialogHotspot()
   const { getHotspotCoords, createObjects, createReticulum, updateHotspots, updateCamera, updateSkyMaterial } =
@@ -38,6 +42,8 @@ export default function useImmersiveScene(
     if (pose) {
       const view = pose.views[0]
       updateFrustum(view.projectionMatrix)
+
+      // console.log(renderer.value!.xr.getCamera().position.y)
 
       if (layer) {
         context.value.bindFramebuffer(context.value.FRAMEBUFFER, layer.framebuffer)
@@ -71,23 +77,25 @@ export default function useImmersiveScene(
       throw new Error('Renderer could not be initialized!')
     }
 
-    renderer.value = new WebGLRenderer({
+    const result = new WebGLRenderer({
       antialias: true,
       alpha: true,
       context: context.value,
       canvas: context.value.canvas,
     })
-    renderer.value.setPixelRatio(window.devicePixelRatio)
-    renderer.value.autoClear = false
-    renderer.value.xr.enabled = true
-    renderer.value.xr.setReferenceSpace(refSpace.value!)
-    renderer.value.xr.setReferenceSpaceType(referenceSpaceType)
-    renderer.value.xr.setSession(session.value as XRSession)
-    renderer.value.xr.setAnimationLoop(onAnimationFrame)
+    result.setPixelRatio(window.devicePixelRatio)
+    result.autoClear = false
+    result.xr.enabled = true
+    result.xr.setReferenceSpace(refSpace.value!)
+    result.xr.setReferenceSpaceType(referenceSpaceType)
+    result.xr.setSession(session.value as XRSession)
+    result.xr.setAnimationLoop(onAnimationFrame)
 
-    renderer.value.xr.addEventListener('sessionStarted', () => {
+    result.xr.addEventListener('sessionStarted', () => {
       console.log('XR session started')
     })
+
+    return result
   }
 
   const createBaseLayer = async () => {
@@ -99,6 +107,23 @@ export default function useImmersiveScene(
     await session.value.updateRenderState({ baseLayer })
   }
 
+  const createControllers = (r: WebGLRenderer) => {
+    const result = []
+
+    for (let i = 0; i < NUM_CONTROLLERS; i++) {
+      const controller = r.xr.getController(i)
+      obj.scene.add(controller)
+      result.push(controller)
+
+      const controllerModelFactory = new XRControllerModelFactory()
+      const grip = r.xr.getControllerGrip(i)
+      grip.add(controllerModelFactory.createControllerModel(grip))
+      obj.scene.add(grip)
+    }
+
+    return result
+  }
+
   const updateFrustum = (projectionMatrix: Float32Array) => {
     if (projectionMatrix != null) {
       viewProjectionMatrix.fromArray(projectionMatrix)
@@ -107,13 +132,14 @@ export default function useImmersiveScene(
   }
 
   const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
-    createRenderer()
+    renderer.value = createRenderer()
     await createBaseLayer()
 
     obj = createObjects()
-    reticulum = createReticulum(obj.camera)
+    controllers = createControllers(renderer.value)
+    reticulum = createReticulum(obj.camera, controllers)
 
-    updateCamera(obj.cameraroot, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
+    updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     await updateHotspots(obj.hotspots, hotspots.value, reticulum)
   }

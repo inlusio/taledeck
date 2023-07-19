@@ -99,11 +99,11 @@ export default function useInlineScene(
     obj = createObjects()
     createRenderer()
     createControls(obj.camera)
-    reticulum = createReticulum(obj.camera)
+    reticulum = createReticulum(obj.camera, [])
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
 
-    updateCamera(obj.cameraroot, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
+    updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     await updateHotspots(obj.hotspots, hotspots.value, reticulum!)
   }

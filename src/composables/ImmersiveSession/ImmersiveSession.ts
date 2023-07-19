@@ -35,8 +35,6 @@ export default function useImmersiveSession(
     context.value = createWebGLContext(undefined, undefined, { xrCompatible: true })
     session.value = (await api.value?.requestSession(sessionMode, options)) || null
     refSpace.value = await session.value!.requestReferenceSpace(referenceSpaceType)
-
-    console.log(session.value!.domOverlayState)
   }
 
   const endSession = () => {

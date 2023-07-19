@@ -4,6 +4,7 @@ import useInlineHotspotTemplate from '@/composables/InlineHotspotTemplate/Inline
 import type { DialogHotspot, DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
 import type { SceneObjects } from '@/models/Scene/Scene'
+import { REF_WORLD_SIZE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import type { ReticulumTarget } from '@/util/Reticulum/Types'
 import {
@@ -26,9 +27,11 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
+  XRTargetRaySpace,
 } from 'three'
 import type { Ref } from 'vue'
 
+const scale = TAR_WORLD_SIZE / REF_WORLD_SIZE
 const projectionVector = new Vector3()
 
 export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRenderer | null>) {
@@ -104,15 +107,15 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   const createHotspot = (material: SpriteMaterial, hotspot: DialogHotspot) => {
     const { x, y, z } = hotspot
     const result = new Sprite(material)
-    result.scale.set(3, 3, 1)
-    result.position.set(x, y, z ?? 0)
+    result.scale.set(3 * scale, 3 * scale, 1)
+    result.position.set(x * scale, y * scale, (z ?? 0) * scale)
     result.userData.hotspot = hotspot
 
     return result
   }
 
   const createCamera = () => {
-    const result = new PerspectiveCamera(90, undefined, 0.1, 101)
+    const result = new PerspectiveCamera(90, undefined, 0.1, TAR_WORLD_SIZE + 1)
     result.position.set(0, 0, 0.01)
 
     return result
@@ -127,42 +130,42 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   }
 
   const createSky = () => {
-    const geometry = new SphereGeometry(100, 25, 25)
+    const geometry = new SphereGeometry(TAR_WORLD_SIZE, 25, 25)
     return new Mesh(geometry)
   }
   const createObjects = (): SceneObjects => {
     const result = {
       camera: createCamera(),
-      cameraroot: new Group(),
+      viewer: new Group(),
       hotspots: createHotspots(),
       light: createLight(),
       scene: createScene(),
       sky: createSky(),
     }
 
-    result.cameraroot.add(result.camera)
+    result.viewer.add(result.camera)
 
     result.scene.add(result.light)
     result.scene.add(result.sky)
     result.scene.add(result.hotspots)
-    result.scene.add(result.cameraroot)
+    result.scene.add(result.viewer)
 
     return result
   }
 
-  const createReticulum = (camera: PerspectiveCamera) => {
+  const createReticulum = (camera: PerspectiveCamera, controllers: Array<XRTargetRaySpace>) => {
     const reticleInnerRadius = 0.02 * 3
     const reticleOuterRadius = 0.024 * 3
     const reticleRingWidth = reticleOuterRadius - reticleInnerRadius
     const fuseInnerRadius = reticleOuterRadius + 4 * reticleRingWidth
     const fuseOuterRadius = fuseInnerRadius + 4 * reticleRingWidth
 
-    return new Reticulum(camera, {
+    return new Reticulum(camera, controllers, {
       proximity: true,
       reticle: {
         color: 0xcc0000,
         speed: 4,
-        restPoint: 80,
+        restPoint: TAR_WORLD_SIZE - 1,
         innerRadius: 0.0008,
         outerRadius: 0.006,
         hover: {
@@ -180,12 +183,12 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     })
   }
 
-  const updateCamera = (cameraroot: Group, lookAtTarget: Vector3) => {
-    cameraroot.position.set(0, 0, 0)
+  const updateCamera = (viewer: Group, lookAtTarget: Vector3) => {
+    viewer.position.set(0, 0, 0)
     const lookAtTargetPosition = new Vector3().copy(lookAtTarget)
 
-    cameraroot.lookAt(lookAtTargetPosition)
-    cameraroot.rotateOnAxis(new Vector3(0, 1, 0), MathUtils.DEG2RAD * 180)
+    viewer.lookAt(lookAtTargetPosition)
+    viewer.rotateOnAxis(new Vector3(0, 1, 0), MathUtils.DEG2RAD * 180)
   }
 
   const updateSkyMaterial = (sky: Mesh, texture: Texture) => {
