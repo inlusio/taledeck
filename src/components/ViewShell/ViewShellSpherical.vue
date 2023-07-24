@@ -87,7 +87,7 @@
     return isMounted.value && isBackgroundLoaded.value && scene.value != null && isSessionReady.value
   })
   const isInlineSceneReady = computed<boolean>(() => {
-    return isMounted.value && isBackgroundLoaded.value && scene.value != null
+    return isMounted.value && isBackgroundLoaded.value && scene.value != null && !isPresenting.value
   })
 
   const mainImageClasses = computed<Array<string>>(() => {
@@ -135,6 +135,8 @@
     (nValue) => {
       if (nValue) {
         mountInlineScene(scene.value!, texture.value!)
+      } else {
+        unmountInlineScene()
       }
     },
     { immediate: true },

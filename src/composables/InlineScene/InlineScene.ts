@@ -24,6 +24,7 @@ export default function useInlineScene(
   allowRendering: Ref<boolean>,
 ) {
   let obj: SceneObjects
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let controls: OrbitControls | undefined
   let reticulum: Reticulum | undefined
 
@@ -101,9 +102,10 @@ export default function useInlineScene(
 
   const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
     obj = createObjects()
-    renderer.value = renderer.value ?? createRenderer()
-    controls = controls ?? createControls(obj.camera)
-    reticulum = reticulum ?? createReticulum(obj.camera, [])
+    renderer.value = createRenderer()
+
+    controls = createControls(obj.camera)
+    reticulum = createReticulum(obj.camera, [])
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
 

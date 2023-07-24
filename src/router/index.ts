@@ -1,7 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router'
 import { DEFAULT_LOCALE, loadMessages, setLocale, SUPPORT_LOCALES } from '@/i18n'
 import { i18n } from '@/main'
 import type { PageLocale } from '@/models/Translation/Translation'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,9 +17,17 @@ const router = createRouter({
       component: () => import('../views/StoryView.vue'),
     },
     {
+      path: '/:locale/story/',
+      redirect: { name: 'home' },
+    },
+    {
       path: '/:locale/story/:story/scene/:scene',
       name: 'scene',
       component: () => import('../views/SceneView.vue'),
+    },
+    {
+      path: '/:locale/story/:story/scene/',
+      redirect: { name: 'story' },
     },
     {
       path: '/admin',
