@@ -28,23 +28,21 @@ export const useImmersiveSessionStore = defineStore(StoreId.ImmersiveSession, ()
     context.value = createWebGLContext(undefined, undefined, { xrCompatible: true })
     session.value = (await api.value?.requestSession(sessionMode, options)) || null
     refSpace.value = await session.value!.requestReferenceSpace(referenceSpaceType)
-
-    setInterval(() => {
-      session.value!.addEventListener('selectstart', () => {
-        console.log('selectstart')
-      })
-      session.value!.addEventListener('selectend', () => {
-        console.log('selectend')
-      })
-      session.value!.addEventListener('select', () => {
-        console.log('select')
-      })
-    }, 1000)
   }
 
   const onSessionStarted = () => {
     isPresenting.value = true
     renderer.value!.xr.removeEventListener('sessionstart', onSessionStarted)
+
+    session.value!.addEventListener('selectstart', () => {
+      console.log('selectstart')
+    })
+    session.value!.addEventListener('selectend', () => {
+      console.log('selectend')
+    })
+    session.value!.addEventListener('select', () => {
+      console.log('select')
+    })
   }
 
   const onSessionEnded = () => {

@@ -64,8 +64,8 @@ export default class Reticulum {
       document.addEventListener('touchend', this.clickEndListener, false)
 
       this.controllers.forEach((controller) => {
-        controller.addEventListener('connected', () => {
-          console.log('controller connected')
+        controller.addEventListener('connected', (e) => {
+          console.log('controller connected', e)
           controller.addEventListener('selectstart', () => {
             console.log('selectstart test') // not working
           })
