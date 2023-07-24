@@ -39,7 +39,7 @@
   const { t } = useTranslation()
   const { bemAdd, bemFacets } = useBem('c-view-shell-spherical', props, {})
   const { dialog } = useDialog()
-  const { scene, sceneSlug } = useGameScene()
+  const { scene } = useGameScene()
   const { isHotspotShown } = useDialogHotspot()
   const { handleCommand } = useDialogCommand(dialog)
 
@@ -146,16 +146,9 @@
     (nValue) => {
       if (nValue) {
         mountImmersiveScene(scene.value!, texture.value!)
+      } else {
+        unmountImmersiveScene()
       }
-    },
-    { immediate: true },
-  )
-
-  watch(
-    () => sceneSlug.value,
-    () => {
-      unmountInlineScene()
-      unmountImmersiveScene()
     },
     { immediate: true },
   )

@@ -199,14 +199,14 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
   }
 
-  const updateHotspots = async (parent: Object3D, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
+  const updateHotspots = (parent: Group, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
     const hotspotMaterial = createHotspotMaterial()
     const children = hotspots.map((hotspot) => createHotspot(hotspotMaterial, hotspot))
 
     parent.children.forEach((child) => {
-      parent.remove(child)
       reticulum?.remove(child as ReticulumTarget)
     })
+    parent.clear()
 
     children.forEach((child) => {
       const { gazeDuration, onClick, onGazeLong } = child.userData.hotspot as DialogHotspot

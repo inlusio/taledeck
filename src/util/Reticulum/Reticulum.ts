@@ -10,6 +10,9 @@ import type { PerspectiveCamera, XRTargetRaySpace } from 'three'
 import { Clock, Color, Frustum, Matrix4, Mesh, MeshBasicMaterial, Object3D, Raycaster, Vector2 } from 'three'
 
 export default class Reticulum {
+  public controllers: Array<XRTargetRaySpace>
+  public clickStartListener = this.onClickStart.bind(this)
+  public clickEndListener = this.onClickEnd.bind(this)
   private options: ReticulumOptions = {
     proximity: false,
     clickEvents: true,
@@ -18,7 +21,6 @@ export default class Reticulum {
   private collisionList: Array<ReticulumTarget> = []
   private intersected?: ReticulumTarget
   private reticleHitOnClickStart: boolean = false
-
   // Three objects
   private parent = new Object3D()
   private raycaster = new Raycaster()
@@ -27,14 +29,9 @@ export default class Reticulum {
   private screenCenterCoords = new Vector2(0, 0)
   private cameraViewProjectionMatrix = new Matrix4()
   private camera: PerspectiveCamera
-  private controllers: Array<XRTargetRaySpace>
-
   // Library parts
   private reticle: Reticle
   private fuse: Fuse
-
-  private clickStartListener = this.onClickStart.bind(this)
-  private clickEndListener = this.onClickEnd.bind(this)
   private vibrate: (pattern: VibratePattern) => boolean
 
   constructor(ca: PerspectiveCamera, co: Array<XRTargetRaySpace> = [], o: ReticulumOptions = {}) {
@@ -58,25 +55,12 @@ export default class Reticulum {
 
     //Enable click / Tap events
     if (this.options.clickEvents) {
+      console.log('creating reticulum event listeners', this.controllers.length)
+
       document.addEventListener('mousedown', this.clickStartListener, false)
       document.addEventListener('mouseup', this.clickEndListener, false)
       document.addEventListener('touchstart', this.clickStartListener, false)
       document.addEventListener('touchend', this.clickEndListener, false)
-
-      this.controllers.forEach((controller) => {
-        controller.addEventListener('connected', (e) => {
-          console.log('controller connected', e)
-          controller.addEventListener('selectstart', () => {
-            console.log('selectstart test') // not working
-          })
-
-          controller.addEventListener('selectend', () => {
-            console.log('selectend test') // not working
-          })
-          controller.addEventListener('selectstart', this.clickStartListener)
-          controller.addEventListener('selectend', this.clickEndListener)
-        })
-      })
     }
 
     //Initiate Reticle
@@ -132,16 +116,12 @@ export default class Reticulum {
   }
 
   public destroy() {
+    console.log('destroying reticulum event listeners', this.controllers.length)
+
     document.removeEventListener('mousedown', this.clickStartListener, false)
     document.removeEventListener('mouseup', this.clickEndListener, false)
     document.removeEventListener('touchstart', this.clickStartListener, false)
     document.removeEventListener('touchend', this.clickEndListener, false)
-
-    this.controllers.forEach((controller) => {
-      console.log('controller unregistered')
-      controller.removeEventListener('selectstart', this.clickStartListener)
-      controller.removeEventListener('selectend', this.clickEndListener)
-    })
   }
 
   private onClickStart() {
@@ -149,14 +129,6 @@ export default class Reticulum {
   }
 
   private onClickEnd(e: MouseEvent | TouchEvent | unknown) {
-    if (!(e instanceof MouseEvent || e instanceof TouchEvent)) {
-      console.log('clickend')
-      console.log(this.intersected)
-      console.log(this.reticle.hit)
-    }
-
-    console.log(e)
-
     if (this.intersected != null && this.reticle.hit && this.reticleHitOnClickStart) {
       this.gazeClick(this.intersected)
 
@@ -198,7 +170,7 @@ export default class Reticulum {
         this.intersected.userData.reticulum.onGazeOut()
       }
 
-      console.log('intersected changed to undefined')
+      // console.log('intersected changed to undefined')
       this.intersected = undefined
     }
   }

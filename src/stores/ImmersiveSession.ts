@@ -33,16 +33,6 @@ export const useImmersiveSessionStore = defineStore(StoreId.ImmersiveSession, ()
   const onSessionStarted = () => {
     isPresenting.value = true
     renderer.value!.xr.removeEventListener('sessionstart', onSessionStarted)
-
-    session.value!.addEventListener('selectstart', () => {
-      console.log('selectstart')
-    })
-    session.value!.addEventListener('selectend', () => {
-      console.log('selectend')
-    })
-    session.value!.addEventListener('select', () => {
-      console.log('select')
-    })
   }
 
   const onSessionEnded = () => {

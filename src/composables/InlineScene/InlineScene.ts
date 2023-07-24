@@ -50,7 +50,7 @@ export default function useInlineScene(
       return
     }
 
-    reticulum!.update()
+    reticulum?.update()
     renderer.value.render(obj.scene, obj.camera)
 
     if (wrapperEl.value == null) {
@@ -71,12 +71,14 @@ export default function useInlineScene(
       throw new Error('Renderer could not be initialized!')
     }
 
-    renderer.value = new WebGLRenderer({
+    const result = new WebGLRenderer({
       antialias: true,
       alpha: true,
       canvas: canvasEl.value as HTMLCanvasElement,
     })
-    renderer.value.setAnimationLoop(onAnimationFrame)
+    result.setAnimationLoop(onAnimationFrame)
+
+    return result
   }
 
   const createControls = (camera: PerspectiveCamera) => {
@@ -84,8 +86,10 @@ export default function useInlineScene(
       throw new Error('Controls could not be initialized!')
     }
 
-    controls = new OrbitControls(camera, renderer.value.domElement)
-    controls.enableZoom = false
+    const result = new OrbitControls(camera, renderer.value.domElement)
+    result.enableZoom = false
+
+    return result
   }
 
   const updateFrustum = () => {
@@ -97,19 +101,20 @@ export default function useInlineScene(
 
   const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
     obj = createObjects()
-    createRenderer()
-    createControls(obj.camera)
-    reticulum = createReticulum(obj.camera, [])
+    renderer.value = renderer.value ?? createRenderer()
+    controls = controls ?? createControls(obj.camera)
+    reticulum = reticulum ?? createReticulum(obj.camera, [])
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
 
     updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
-    await updateHotspots(obj.hotspots, hotspots.value, reticulum!)
+    updateHotspots(obj.hotspots, hotspots.value, reticulum!)
   }
 
   const unmountScene = () => {
     reticulum?.destroy()
+    reticulum = undefined
   }
 
   return { mountScene, unmountScene }
