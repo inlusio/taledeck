@@ -55,7 +55,7 @@
     computed<boolean>(() => !isPresenting.value),
   )
   const isImmersiveSceneReady = computed<boolean>(() => isMounted.value && isSessionReady.value)
-  const isInlineSceneReady = computed<boolean>(() => isMounted.value && !isPresenting.value)
+  const isInlineSceneReady = computed<boolean>(() => isMounted.value)
 
   const isImmersiveSceneMounted = ref<boolean>(false)
   const isInlineSceneMounted = ref<boolean>(false)
@@ -89,8 +89,8 @@
     (nV) => {
       if (nV) {
         inlineScene.mount()
-        immersiveScene.unmount()
-        isImmersiveSceneMounted.value = false
+      } else {
+        inlineScene.unmount()
       }
 
       isInlineSceneMounted.value = nV
@@ -104,8 +104,8 @@
     async (nV) => {
       if (nV) {
         await immersiveScene.mount()
-        inlineScene.unmount()
-        isInlineSceneMounted.value = false
+      } else {
+        immersiveScene.unmount()
       }
 
       isImmersiveSceneMounted.value = nV
@@ -115,7 +115,7 @@
 
   // React to an updated inline session.
   watch(
-    () => [isInlineSceneMounted.value, scene.value, texture.value],
+    () => [isInlineSceneMounted.value, !isPresenting.value, scene.value, texture.value],
     (nV) => {
       if (!isInlineSceneMounted.value) {
         return
@@ -135,12 +135,14 @@
     () => [isImmersiveSceneMounted.value, scene.value, texture.value],
     (nV) => {
       if (!isImmersiveSceneMounted.value) {
+        console.log('aborting, immersive scene not mounted')
         return
       }
 
       immersiveScene.clear()
 
       if (nV.every(Boolean)) {
+        console.log('updating immersive scene')
         immersiveScene.update(scene.value!, texture.value!)
       }
     },

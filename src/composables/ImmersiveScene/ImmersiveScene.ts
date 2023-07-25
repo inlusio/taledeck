@@ -8,8 +8,7 @@ import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
-import { Frustum, Matrix4, Scene, Texture, Vector3, WebGLRenderer, XRTargetRaySpace } from 'three'
-//@ts-ignore
+import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer, XRTargetRaySpace } from 'three' //@ts-ignore
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { Ref } from 'vue'
 
@@ -30,7 +29,7 @@ export default function useImmersiveScene(
 
   const { renderer } = storeToRefs(immersiveSessionStore)
   const { hotspots } = useDialogHotspot()
-  const { getHotspotCoords, createObjects, createReticulum, updateHotspots, updateCamera, updateSkyMaterial } =
+  const { getHotspotCoords, createObjects, createReticulum, updateCamera, updateHotspots, updateSkyMaterial } =
     useScene(true, renderer)
 
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
@@ -45,8 +44,6 @@ export default function useImmersiveScene(
     if (pose) {
       const view = pose.views[0]
       updateFrustum(view.projectionMatrix)
-
-      // console.log(renderer.value!.xr.getCamera().position.y)
 
       if (layer) {
         context.value.bindFramebuffer(context.value.FRAMEBUFFER, layer.framebuffer)
@@ -108,18 +105,18 @@ export default function useImmersiveScene(
     await session.value.updateRenderState({ baseLayer })
   }
 
-  const createControllers = (r: WebGLRenderer, sc: Scene) => {
+  const createControllers = (r: WebGLRenderer, parent: Group) => {
     const result = []
 
     for (let i = 0; i < NUM_CONTROLLERS; i++) {
       const controller = r.xr.getController(i)
-      sc.add(controller)
+      parent.add(controller)
       result.push(controller)
 
       const controllerModelFactory = new XRControllerModelFactory()
       const grip = r.xr.getControllerGrip(i)
       grip.add(controllerModelFactory.createControllerModel(grip))
-      sc.add(grip)
+      parent.add(grip)
     }
 
     return result
@@ -157,16 +154,17 @@ export default function useImmersiveScene(
   }
 
   const mount = async () => {
-    console.log('mounting')
     renderer.value = renderer.value ?? (await createRenderer())
-
     obj = obj ?? createObjects()
-    controllers = controllers.length === NUM_CONTROLLERS ? controllers : createControllers(renderer.value, obj.scene)
+    controllers = controllers.length === NUM_CONTROLLERS ? controllers : createControllers(renderer.value, obj.viewer)
     reticulum = reticulum ?? createReticulum(obj.camera, controllers)
   }
 
   const unmount = () => {
-    //
+    renderer.value = null
+    obj = undefined
+    controllers = []
+    reticulum = undefined
   }
 
   const clear = () => {

@@ -182,12 +182,13 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     })
   }
 
-  const updateCamera = (viewer: Group, lookAtTarget: Vector3) => {
-    viewer.position.set(0, 0, 0)
-    const lookAtTargetPosition = new Vector3().copy(lookAtTarget)
+  const updateCamera = (p: Group, lookAtTarget: Vector3) => {
+    if (lookAtTarget.length() === 0) {
+      return
+    }
 
-    viewer.lookAt(lookAtTargetPosition)
-    viewer.rotateOnAxis(new Vector3(0, 1, 0), MathUtils.DEG2RAD * 180)
+    p.lookAt(p.worldToLocal(lookAtTarget.normalize()))
+    p.rotateOnAxis(new Vector3(0, 1, 0), MathUtils.DEG2RAD * 180)
   }
 
   const updateSkyMaterial = (sky: Mesh, texture: Texture) => {

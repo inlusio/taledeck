@@ -55,8 +55,6 @@ export default class Reticulum {
 
     //Enable click / Tap events
     if (this.options.clickEvents) {
-      console.log('creating reticulum event listeners', this.controllers.length)
-
       document.addEventListener('mousedown', this.clickStartListener, false)
       document.addEventListener('mouseup', this.clickEndListener, false)
       document.addEventListener('touchstart', this.clickStartListener, false)
@@ -120,8 +118,6 @@ export default class Reticulum {
   }
 
   public destroy() {
-    console.log('destroying reticulum event listeners', this.controllers.length)
-
     document.removeEventListener('mousedown', this.clickStartListener, false)
     document.removeEventListener('mouseup', this.clickEndListener, false)
     document.removeEventListener('touchstart', this.clickStartListener, false)

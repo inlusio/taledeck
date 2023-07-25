@@ -101,9 +101,8 @@ export default function useInlineScene(
   }
 
   const mount = () => {
-    obj = createObjects()
     renderer.value = createRenderer()
-
+    obj = createObjects()
     controls = createControls(obj.camera)
     reticulum = createReticulum(obj.camera, [])
 
