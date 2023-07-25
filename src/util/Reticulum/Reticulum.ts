@@ -97,6 +97,10 @@ export default class Reticulum {
     this.collisionList.push(target as ReticulumTarget)
   }
 
+  public clear() {
+    this.collisionList.forEach((target) => this.remove(target))
+  }
+
   public remove(target: ReticulumTarget) {
     const d = target.userData as UserData
     const idx = this.collisionList.indexOf(target)

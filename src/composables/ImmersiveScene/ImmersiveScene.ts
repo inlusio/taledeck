@@ -22,7 +22,7 @@ export default function useImmersiveScene(
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
   onRender = (_width: number, _height: number, _coords: Array<DialogHotspotLocation>) => {},
 ) {
-  let obj: SceneObjects
+  let obj: SceneObjects | undefined
   let reticulum: Reticulum | undefined
   let controllers: Array<XRTargetRaySpace> = []
 
@@ -66,12 +66,12 @@ export default function useImmersiveScene(
     }
 
     reticulum!.update()
-    renderer.value.render(obj.scene, obj.camera)
+    renderer.value.render(obj!.scene, obj!.camera)
 
     onRender(
       renderer.value.domElement.clientWidth,
       renderer.value.domElement.clientHeight,
-      getHotspotCoords(renderer.value.domElement, obj.camera, obj.hotspots, viewFrustum),
+      getHotspotCoords(renderer.value.domElement, obj!.camera, obj!.hotspots, viewFrustum),
     )
   }
 
@@ -156,22 +156,32 @@ export default function useImmersiveScene(
     })
   }
 
-  const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
+  const mount = async () => {
+    console.log('mounting')
     renderer.value = renderer.value ?? (await createRenderer())
 
     obj = obj ?? createObjects()
     controllers = controllers.length === NUM_CONTROLLERS ? controllers : createControllers(renderer.value, obj.scene)
     reticulum = reticulum ?? createReticulum(obj.camera, controllers)
-
-    updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
-    updateSkyMaterial(obj.sky, texture)
-    updateHotspots(obj.hotspots, hotspots.value, reticulum)
-    updateReticulum(reticulum)
   }
 
-  const unmountScene = () => {
+  const unmount = () => {
     //
   }
 
-  return { renderer, mountScene, unmountScene }
+  const clear = () => {
+    obj!.scene.visible = false
+    obj!.hotspots.clear()
+    reticulum?.clear()
+  }
+
+  const update = (scene: TaleDeckScene, texture: Texture) => {
+    updateCamera(obj!.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
+    updateSkyMaterial(obj!.sky, texture)
+    updateHotspots(obj!.hotspots, hotspots.value, reticulum)
+    updateReticulum(reticulum!)
+    obj!.scene.visible = true
+  }
+
+  return { renderer, mount, unmount, clear, update }
 }

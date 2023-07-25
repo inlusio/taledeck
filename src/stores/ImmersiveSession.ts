@@ -18,15 +18,9 @@ export const useImmersiveSessionStore = defineStore(StoreId.ImmersiveSession, ()
 
   const removeResizeObserver = ref<(() => void) | null>(null)
 
-  const requestSession = async (overlayEl: HTMLDivElement | null) => {
-    if (overlayEl == null) {
-      throw new Error('XR Session could not be initiated (DOM elements not found).')
-    }
-
-    const options: XRSessionInit = { ...sessionOptions, domOverlay: { root: overlayEl } }
-
+  const requestSession = async () => {
     context.value = createWebGLContext(undefined, undefined, { xrCompatible: true })
-    session.value = (await api.value?.requestSession(sessionMode, options)) || null
+    session.value = (await api.value?.requestSession(sessionMode, sessionOptions)) || null
     refSpace.value = await session.value!.requestReferenceSpace(referenceSpaceType)
   }
 

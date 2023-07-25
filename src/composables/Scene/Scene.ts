@@ -6,7 +6,6 @@ import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult
 import type { SceneObjects } from '@/models/Scene/Scene'
 import { REF_WORLD_SIZE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
-import type { ReticulumTarget } from '@/util/Reticulum/Types'
 import {
   AmbientLight,
   BackSide,
@@ -91,7 +90,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
 
   const createScene = () => {
     const result = new Scene()
-    result.background = new Color(0x00ff00)
+    result.background = new Color(0x4c4c4e)
     return result
   }
 
@@ -202,11 +201,6 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   const updateHotspots = (parent: Group, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
     const hotspotMaterial = createHotspotMaterial()
     const children = hotspots.map((hotspot) => createHotspot(hotspotMaterial, hotspot))
-
-    parent.children.forEach((child) => {
-      reticulum?.remove(child as ReticulumTarget)
-    })
-    parent.clear()
 
     children.forEach((child) => {
       const { gazeDuration, onClick, onGazeLong } = child.userData.hotspot as DialogHotspot

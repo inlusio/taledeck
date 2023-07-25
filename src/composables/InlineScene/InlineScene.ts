@@ -100,7 +100,7 @@ export default function useInlineScene(
     viewFrustum.setFromProjectionMatrix(viewProjectionMatrix)
   }
 
-  const mountScene = async (scene: TaleDeckScene, texture: Texture) => {
+  const mount = () => {
     obj = createObjects()
     renderer.value = createRenderer()
 
@@ -108,16 +108,25 @@ export default function useInlineScene(
     reticulum = createReticulum(obj.camera, [])
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
+  }
 
+  const unmount = () => {
+    //
+  }
+
+  const clear = () => {
+    obj!.scene.visible = false
+    obj!.hotspots.clear()
+    reticulum?.clear()
+  }
+
+  const update = (scene: TaleDeckScene, texture: Texture) => {
+    console.log('updating inline scene', texture)
     updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     updateHotspots(obj.hotspots, hotspots.value, reticulum!)
+    obj!.scene.visible = true
   }
 
-  const unmountScene = () => {
-    reticulum?.destroy()
-    reticulum = undefined
-  }
-
-  return { mountScene, unmountScene }
+  return { mount, unmount, clear, update }
 }

@@ -11,7 +11,7 @@ export default function useImmersiveSession(
   const immersiveSessionStore = useImmersiveSessionStore()
   const { requestSession } = immersiveSessionStore
   const { context, session, refSpace, isPresenting } = storeToRefs(immersiveSessionStore)
-  const { mountScene, unmountScene } = useImmersiveScene(context, session, refSpace, onRender)
+  const { mount, unmount, clear, update } = useImmersiveScene(context, session, refSpace, onRender)
 
   const isSessionReady = computed<boolean>(() => {
     return [context, session, refSpace].every(({ value }: Ref<unknown>) => value != null)
@@ -22,7 +22,7 @@ export default function useImmersiveSession(
       session.value.end()
     }
 
-    unmountScene()
+    unmount()
   }
 
   return {
@@ -30,7 +30,9 @@ export default function useImmersiveSession(
     isSessionReady,
     requestSession,
     endSession,
-    mountScene,
-    unmountScene,
+    mount,
+    unmount,
+    clear,
+    update,
   }
 }
