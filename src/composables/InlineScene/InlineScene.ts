@@ -9,8 +9,12 @@ import { useResizeObserver } from '@vueuse/core'
 import { Color, Frustum, MathUtils, Matrix4, Object3D, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { Ref } from 'vue'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ThreeMeshUI from 'three-mesh-ui'
+import useDialog from '@/composables/Dialog/Dialog'
+import useDialogResult from '@/composables/DialogResult/DialogResult'
+import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
+import { DialogResultType } from '@/models/DialogResult/DialogResult'
 
 interface InlineSceneEls {
   wrapperEl: Ref<HTMLDivElement | null>
@@ -32,9 +36,22 @@ export default function useInlineScene(
 
   const renderer = ref<WebGLRenderer | null>(null)
 
+  const { dialog } = useDialog()
+  const { getCharacter, getResultType } = useDialogResult()
   const { hotspots } = useDialogHotspot()
   const { getHotspotCoords, createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } =
     useScene(false, renderer)
+  const currentResult = computed<DialogResultTextData | null>(() => {
+    if (dialog.isReady) {
+      if (getResultType(dialog.runner.currentResult) === DialogResultType.Text) {
+        return dialog.runner.currentResult as DialogResultTextData
+      }
+
+      throw Error('Unsupported dialog result type!')
+    }
+
+    return null
+  })
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect
@@ -107,7 +124,7 @@ export default function useInlineScene(
     const container = new ThreeMeshUI.Block({
       width: 20 * SCALE,
       height: 4 * SCALE,
-      padding: 0.2 * SCALE,
+      padding: 0.4 * SCALE,
       justifyContent: 'start',
       textAlign: 'left',
       bestFit: 'shrink',
@@ -118,14 +135,24 @@ export default function useInlineScene(
     })
 
     container.position.set(0, -7 * SCALE, -10 * SCALE)
-    container.rotation.set(MathUtils.DEG2RAD * -16, 0, 0)
+    container.rotation.set(MathUtils.DEG2RAD * -10, 0, 0)
 
-    const text = new ThreeMeshUI.Text({
-      content: 'Some text to be displayed',
+    const characterText = new ThreeMeshUI.Text({
+      content: currentResult.value != null ? `${getCharacter(currentResult.value?.markup)}: ` : '',
       fontSize: 0.055,
+      fontColor: new Color(0xffffff),
+      letterSpacing: 0.2,
     })
 
-    container.add(text)
+    const dialogText = new ThreeMeshUI.Text({
+      content: currentResult.value != null ? currentResult.value?.text : '',
+      fontSize: 0.055,
+      fontColor: new Color(0xeeeeee),
+      letterSpacing: 0.1,
+    })
+
+    container.add(characterText)
+    container.add(dialogText)
     parent.add(container)
   }
 

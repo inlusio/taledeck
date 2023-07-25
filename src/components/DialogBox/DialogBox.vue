@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   // @ts-ignore
   import YarnBound from 'yarn-bound/src'
   import { cloneDeep } from 'lodash-es'
@@ -33,12 +33,7 @@
 
   const advance = () => {
     props.runner.advance()
-    // nextTick(scrollToBottom)
   }
-
-  // const scrollToBottom = () => {
-  //   scrollEl.value?.scroll({ top: scrollEl.value?.scrollHeight, behavior: 'smooth' })
-  // }
 
   const onOptionChosen = (optionIdx: number) => {
     props.runner.advance(optionIdx)
@@ -76,11 +71,11 @@
         <div class="c-dialog-box__wrap">
           <div ref="scrollEl" class="c-dialog-box__scroller">
             <ul class="c-dialog-box__history-entries u-reset">
-              <li v-for="entry in resultHistory" class="c-dialog-box__history-entry" :key="entry.timestamp">
+              <li v-for="entry in resultHistory" :key="entry.timestamp" class="c-dialog-box__history-entry">
                 <Transition appear name="trs-simple-fade" @after-enter="onAfterEnter(entry)">
                   <UiAccordion
-                    :data-open="entry.isOpen"
                     :key="entry.timestamp"
+                    :data-open="entry.isOpen"
                     :facets="[]"
                     :open="entry.isOpen"
                     :passive="true"
