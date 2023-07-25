@@ -2,13 +2,15 @@ import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
 import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
+import { SCALE } from '@/models/Scene/Scene'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
-import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
+import { Color, Frustum, MathUtils, Matrix4, Object3D, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { Ref } from 'vue'
 import { ref } from 'vue'
+import ThreeMeshUI from 'three-mesh-ui'
 
 interface InlineSceneEls {
   wrapperEl: Ref<HTMLDivElement | null>
@@ -52,6 +54,7 @@ export default function useInlineScene(
     }
 
     reticulum?.update()
+    ThreeMeshUI.update()
     renderer.value.render(obj.scene, obj.camera)
 
     if (wrapperEl.value == null) {
@@ -100,6 +103,32 @@ export default function useInlineScene(
     viewFrustum.setFromProjectionMatrix(viewProjectionMatrix)
   }
 
+  const createDialogBox = (parent: Object3D) => {
+    const container = new ThreeMeshUI.Block({
+      width: 20 * SCALE,
+      height: 4 * SCALE,
+      padding: 0.2 * SCALE,
+      justifyContent: 'start',
+      textAlign: 'left',
+      bestFit: 'shrink',
+      backgroundColor: new Color(0x000000),
+      backgroundOpacity: 0.6,
+      fontFamily: '/font/roboto-msdf/Roboto-msdf.json',
+      fontTexture: '/font/roboto-msdf/Roboto-msdf.png',
+    })
+
+    container.position.set(0, -7 * SCALE, -10 * SCALE)
+    container.rotation.set(MathUtils.DEG2RAD * -16, 0, 0)
+
+    const text = new ThreeMeshUI.Text({
+      content: 'Some text to be displayed',
+      fontSize: 0.055,
+    })
+
+    container.add(text)
+    parent.add(container)
+  }
+
   const mount = () => {
     renderer.value = createRenderer()
     obj = createObjects()
@@ -107,6 +136,7 @@ export default function useInlineScene(
     reticulum = createReticulum(obj.camera, [])
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
+    createDialogBox(obj!.camera)
   }
 
   const unmount = () => {
@@ -120,7 +150,6 @@ export default function useInlineScene(
   }
 
   const update = (scene: TaleDeckScene, texture: Texture) => {
-    console.log('updating inline scene', texture)
     updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     updateHotspots(obj.hotspots, hotspots.value, reticulum!)

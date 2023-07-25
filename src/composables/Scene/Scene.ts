@@ -4,7 +4,7 @@ import useInlineHotspotTemplate from '@/composables/InlineHotspotTemplate/Inline
 import type { DialogHotspot, DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
 import type { SceneObjects } from '@/models/Scene/Scene'
-import { REF_WORLD_SIZE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
+import { SCALE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import {
   AmbientLight,
@@ -30,7 +30,6 @@ import {
 } from 'three'
 import type { Ref } from 'vue'
 
-const scale = TAR_WORLD_SIZE / REF_WORLD_SIZE
 const projectionVector = new Vector3()
 
 export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRenderer | null>) {
@@ -106,8 +105,8 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   const createHotspot = (material: SpriteMaterial, hotspot: DialogHotspot) => {
     const { x, y, z } = hotspot
     const result = new Sprite(material)
-    result.scale.set(3 * scale, 3 * scale, 1)
-    result.position.set(x * scale, y * scale, (z ?? 0) * scale)
+    result.scale.set(3 * SCALE, 3 * SCALE, 1)
+    result.position.set(x * SCALE, y * SCALE, (z ?? 0) * SCALE)
     result.userData.hotspot = hotspot
 
     return result

@@ -31,6 +31,7 @@
     "string-args-parser": "^1.0.4",
     "superjson": "^1.12.2",
     "three": "^0.154.0",
+    "three-mesh-ui": "^6.5.4",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6",
     "yarn-bound": "^0.4.3"

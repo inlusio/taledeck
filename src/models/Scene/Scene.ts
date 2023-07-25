@@ -12,3 +12,4 @@ export interface SceneObjects {
 export const NUM_CONTROLLERS = 2
 export const REF_WORLD_SIZE = 100
 export const TAR_WORLD_SIZE = 10
+export const SCALE = TAR_WORLD_SIZE / REF_WORLD_SIZE

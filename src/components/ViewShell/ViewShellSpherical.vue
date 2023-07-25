@@ -135,14 +135,12 @@
     () => [isImmersiveSceneMounted.value, scene.value, texture.value],
     (nV) => {
       if (!isImmersiveSceneMounted.value) {
-        console.log('aborting, immersive scene not mounted')
         return
       }
 
       immersiveScene.clear()
 
       if (nV.every(Boolean)) {
-        console.log('updating immersive scene')
         immersiveScene.update(scene.value!, texture.value!)
       }
     },
