@@ -6,7 +6,7 @@
 import Fuse from '@/util/Reticulum/Fuse'
 import Reticle from '@/util/Reticulum/Reticle'
 import type { ReticulumData, ReticulumOptions, ReticulumTarget, UserData } from '@/util/Reticulum/Types'
-import type { PerspectiveCamera, XRTargetRaySpace } from 'three'
+import type { PerspectiveCamera, WebGLRenderer, XRTargetRaySpace } from 'three'
 import { Clock, Color, Frustum, Matrix4, Mesh, MeshBasicMaterial, Object3D, Raycaster, Vector2 } from 'three'
 
 export default class Reticulum {
@@ -34,7 +34,7 @@ export default class Reticulum {
   private fuse: Fuse
   private vibrate: (pattern: VibratePattern) => boolean
 
-  constructor(ca: PerspectiveCamera, co: Array<XRTargetRaySpace> = [], o: ReticulumOptions = {}) {
+  constructor(r: WebGLRenderer, ca: PerspectiveCamera, co: Array<XRTargetRaySpace> = [], o: ReticulumOptions = {}) {
     this.camera = ca
     this.controllers = co
     this.options.proximity = o.proximity ?? this.options.proximity
@@ -55,10 +55,10 @@ export default class Reticulum {
 
     //Enable click / Tap events
     if (this.options.clickEvents) {
-      document.addEventListener('mousedown', this.clickStartListener, false)
-      document.addEventListener('mouseup', this.clickEndListener, false)
-      document.addEventListener('touchstart', this.clickStartListener, false)
-      document.addEventListener('touchend', this.clickEndListener, false)
+      r.domElement.addEventListener('mousedown', this.clickStartListener, false)
+      r.domElement.addEventListener('mouseup', this.clickEndListener, false)
+      r.domElement.addEventListener('touchstart', this.clickStartListener, false)
+      r.domElement.addEventListener('touchend', this.clickEndListener, false)
     }
 
     //Initiate Reticle

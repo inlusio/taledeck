@@ -1,20 +1,19 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
-import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
-import { SCALE } from '@/models/Scene/Scene'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
-import { Color, Frustum, MathUtils, Matrix4, Object3D, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
+import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import type { Ref } from 'vue'
-import { computed, ref } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import ThreeMeshUI from 'three-mesh-ui'
-import useDialog from '@/composables/Dialog/Dialog'
 import useDialogResult from '@/composables/DialogResult/DialogResult'
-import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
+import type { DialogResultTextData } from '@/models/DialogResult/DialogResult' //@ts-ignore
 import { DialogResultType } from '@/models/DialogResult/DialogResult'
+//@ts-ignore
+import type YarnBound from 'yarn-bound/src'
 
 interface InlineSceneEls {
   wrapperEl: Ref<HTMLDivElement | null>
@@ -25,33 +24,32 @@ const viewFrustum = new Frustum()
 const viewProjectionMatrix = new Matrix4()
 
 export default function useInlineScene(
-  onRender = (_width: number, _height: number, _coords: Array<DialogHotspotLocation>) => {},
+  onRender = (_width: number, _height: number) => {},
   { wrapperEl, canvasEl }: InlineSceneEls,
   allowRendering: Ref<boolean>,
+  runner: ComputedRef<YarnBound>,
 ) {
   let obj: SceneObjects
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let controls: OrbitControls | undefined
   let reticulum: Reticulum | undefined
 
-  const renderer = ref<WebGLRenderer | null>(null)
-
-  const { dialog } = useDialog()
-  const { getCharacter, getResultType } = useDialogResult()
-  const { hotspots } = useDialogHotspot()
-  const { getHotspotCoords, createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } =
-    useScene(false, renderer)
-  const currentResult = computed<DialogResultTextData | null>(() => {
-    if (dialog.isReady) {
-      if (getResultType(dialog.runner.currentResult) === DialogResultType.Text) {
-        return dialog.runner.currentResult as DialogResultTextData
-      }
-
-      throw Error('Unsupported dialog result type!')
+  const { getResultType } = useDialogResult()
+  const displayText = computed<DialogResultTextData | null>(() => {
+    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
+      return runner.value.currentResult as DialogResultTextData
+    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
+      return null
     }
 
-    return null
+    throw Error('Unsupported dialog result type!')
   })
+
+  const isVisible = ref<boolean>(false)
+  const renderer = ref<WebGLRenderer | null>(null)
+  const { getCharacter } = useDialogResult()
+  const { hotspots } = useDialogHotspot()
+  const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } = useScene(false, renderer)
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect
@@ -71,7 +69,6 @@ export default function useInlineScene(
     }
 
     reticulum?.update()
-    ThreeMeshUI.update()
     renderer.value.render(obj.scene, obj.camera)
 
     if (wrapperEl.value == null) {
@@ -80,11 +77,7 @@ export default function useInlineScene(
 
     updateFrustum()
 
-    onRender(
-      wrapperEl.value.clientWidth,
-      wrapperEl.value.clientHeight,
-      getHotspotCoords(renderer.value.domElement, obj.camera, obj.hotspots, viewFrustum),
-    )
+    onRender(wrapperEl.value.clientWidth, wrapperEl.value.clientHeight)
   }
 
   const createRenderer = () => {
@@ -120,42 +113,6 @@ export default function useInlineScene(
     viewFrustum.setFromProjectionMatrix(viewProjectionMatrix)
   }
 
-  const createDialogBox = (parent: Object3D) => {
-    const container = new ThreeMeshUI.Block({
-      width: 20 * SCALE,
-      height: 4 * SCALE,
-      padding: 0.4 * SCALE,
-      justifyContent: 'start',
-      textAlign: 'left',
-      bestFit: 'shrink',
-      backgroundColor: new Color(0x000000),
-      backgroundOpacity: 0.6,
-      fontFamily: '/font/roboto-msdf/Roboto-msdf.json',
-      fontTexture: '/font/roboto-msdf/Roboto-msdf.png',
-    })
-
-    container.position.set(0, -7 * SCALE, -10 * SCALE)
-    container.rotation.set(MathUtils.DEG2RAD * -10, 0, 0)
-
-    const characterText = new ThreeMeshUI.Text({
-      content: currentResult.value != null ? `${getCharacter(currentResult.value?.markup)}: ` : '',
-      fontSize: 0.055,
-      fontColor: new Color(0xffffff),
-      letterSpacing: 0.2,
-    })
-
-    const dialogText = new ThreeMeshUI.Text({
-      content: currentResult.value != null ? currentResult.value?.text : '',
-      fontSize: 0.055,
-      fontColor: new Color(0xeeeeee),
-      letterSpacing: 0.1,
-    })
-
-    container.add(characterText)
-    container.add(dialogText)
-    parent.add(container)
-  }
-
   const mount = () => {
     renderer.value = createRenderer()
     obj = createObjects()
@@ -163,25 +120,60 @@ export default function useInlineScene(
     reticulum = createReticulum(obj.camera, [])
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
-    createDialogBox(obj!.camera)
+
+    isVisible.value = true
   }
 
   const unmount = () => {
-    //
+    isVisible.value = false
   }
 
   const clear = () => {
+    isVisible.value = false
     obj!.scene.visible = false
     obj!.hotspots.clear()
     reticulum?.clear()
+
+    ThreeMeshUI.update()
   }
 
   const update = (scene: TaleDeckScene, texture: Texture) => {
     updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
     updateSkyMaterial(obj.sky, texture)
     updateHotspots(obj.hotspots, hotspots.value, reticulum!)
+
     obj!.scene.visible = true
+    isVisible.value = true
+    ThreeMeshUI.update()
   }
+
+  watch(
+    () => [isVisible.value, displayText.value],
+    () => {
+      if (isVisible.value && displayText.value != null) {
+        const characterContent = `${getCharacter(displayText.value.markup)}: `
+        const dialogContent = displayText.value.text
+
+        //@ts-ignore
+        obj!.dialog.characterText.set({ content: characterContent })
+        //@ts-ignore
+        obj!.dialog.dialogText.set({ content: dialogContent })
+
+        obj!.dialog.box.visible = !!(characterContent || dialogContent)
+      } else {
+        if (obj?.dialog) {
+          obj.dialog.box.visible = false
+          //@ts-ignore
+          obj.dialog.characterText.set({ content: '' })
+          //@ts-ignore
+          obj.dialog.dialogText.set({ content: '' })
+        }
+      }
+
+      ThreeMeshUI.update()
+    },
+    { immediate: true },
+  )
 
   return { mount, unmount, clear, update }
 }

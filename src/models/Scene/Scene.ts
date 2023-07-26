@@ -1,4 +1,11 @@
 import type { AmbientLight, Group, Mesh, PerspectiveCamera, Scene } from 'three'
+import ThreeMeshUI from 'three-mesh-ui'
+
+export interface SceneDialogBox {
+  box: ThreeMeshUI.Block
+  characterText: ThreeMeshUI.Text
+  dialogText: ThreeMeshUI.Text
+}
 
 export interface SceneObjects {
   scene: Scene
@@ -7,6 +14,7 @@ export interface SceneObjects {
   light: AmbientLight
   sky: Mesh
   hotspots: Group
+  dialog: SceneDialogBox
 }
 
 export const NUM_CONTROLLERS = 2

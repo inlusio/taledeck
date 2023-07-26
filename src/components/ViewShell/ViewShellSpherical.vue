@@ -6,14 +6,19 @@
   import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
-  import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
   import { Texture, TextureLoader, Vector2 } from 'three'
   import { computed, onBeforeUnmount, ref, watch } from 'vue'
+  // @ts-ignore
+  import YarnBound from 'yarn-bound/src'
+  import useDialogResult from '@/composables/DialogResult/DialogResult'
+  import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
+  import { DialogResultType } from '@/models/DialogResult/DialogResult'
 
   const TL = new TextureLoader()
 
   interface Props extends UseBemProps {
     facets?: Array<string>
+    runner: YarnBound
     background?: string
     width: number
     height: number
@@ -31,28 +36,48 @@
   const canvasEl = ref<HTMLCanvasElement | null>(null)
   const wrapperEl = ref<HTMLDivElement | null>(null)
   const texture = ref<Texture | null>(null)
-  const hotspotLocations = ref<Array<DialogHotspotLocation>>([])
   const canvasWidth = ref<number>(0)
   const canvasHeight = ref<number>(0)
 
-  const onRenderImmersive = (width: number, height: number, coords: Array<DialogHotspotLocation>) => {
+  const runner = computed(() => props.runner)
+
+  const onRenderImmersive = (width: number, height: number) => {
     canvasWidth.value = width
     canvasHeight.value = height
-    hotspotLocations.value = coords
   }
 
-  const onRenderInline = (width: number, height: number, coords: Array<DialogHotspotLocation>) => {
+  const onRenderInline = (width: number, height: number) => {
     canvasWidth.value = width
     canvasHeight.value = height
-    hotspotLocations.value = coords
   }
 
-  const immersiveScene = useImmersiveSession(onRenderImmersive)
+  const { getResultType } = useDialogResult()
+
+  const currentResult = computed<DialogResultTextData | null>(() => {
+    if (getResultType(props.runner.currentResult) === DialogResultType.Text) {
+      return props.runner.currentResult as DialogResultTextData
+    } else if (getResultType(props.runner.currentResult) === DialogResultType.End) {
+      return null
+    }
+
+    throw Error('Unsupported dialog result type!')
+  })
+
+  watch(
+    () => currentResult.value,
+    () => {
+      console.log(currentResult.value)
+    },
+    { immediate: true },
+  )
+
+  const immersiveScene = useImmersiveSession(onRenderImmersive, runner)
   const { isSessionReady, isPresenting, requestSession, endSession: endImmersiveSession } = immersiveScene
   const inlineScene = useInlineScene(
     onRenderInline,
     { wrapperEl, canvasEl },
     computed<boolean>(() => !isPresenting.value),
+    runner,
   )
   const isImmersiveSceneReady = computed<boolean>(() => isMounted.value && isSessionReady.value)
   const isInlineSceneReady = computed<boolean>(() => isMounted.value)

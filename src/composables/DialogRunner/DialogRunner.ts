@@ -11,7 +11,7 @@ export default function useDialogRunner(dialog: ReactiveDialog) {
 
   const runner = ref<YarnBound | null>(null)
 
-  const createRunner = (dialog: ReactiveDialog, storage: DialogVariableStorageHandler, code: string) => {
+  const createRunner = (storage: DialogVariableStorageHandler, code: string) => {
     runner.value = new YarnBound({
       dialogue: code,
       variableStorage: storage,

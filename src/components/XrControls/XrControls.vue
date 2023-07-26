@@ -1,10 +1,11 @@
 <script lang="ts" setup>
   import UiIcon from '@/components/UiIcon/UiIcon.vue'
-  import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useTranslation from '@/composables/Translation/Translation'
   import useXrApiController from '@/composables/XrApiController/XrApiController'
   import { UiIconId, UiIconSizeId } from '@/models/UiIcon/UiIcon'
   import { computed } from 'vue'
+  import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
+  import { storeToRefs } from 'pinia'
 
   interface Emits {
     (e: 'request-session'): void
@@ -14,7 +15,8 @@
 
   const { t } = useTranslation()
   const { hasXr, hasImmersiveXr } = useXrApiController()
-  const { isPresenting } = useImmersiveSession()
+  const immersiveSessionStore = useImmersiveSessionStore()
+  const { isPresenting } = storeToRefs(immersiveSessionStore)
 
   const emit = defineEmits<Emits>()
 

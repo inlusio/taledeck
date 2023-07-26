@@ -1,6 +1,5 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
-import type { DialogHotspotLocation } from '@/models/DialogHotspot/DialogHotspot'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import { NUM_CONTROLLERS } from '@/models/Scene/Scene'
 import { referenceSpaceType } from '@/models/Session/Session'
@@ -10,7 +9,13 @@ import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
 import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer, XRTargetRaySpace } from 'three' //@ts-ignore
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
-import type { Ref } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import ThreeMeshUI from 'three-mesh-ui'
+import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
+import { DialogResultType } from '@/models/DialogResult/DialogResult'
+import useDialogResult from '@/composables/DialogResult/DialogResult' //@ts-ignore
+import type YarnBound from 'yarn-bound/src'
 
 const viewFrustum = new Frustum()
 const viewProjectionMatrix = new Matrix4()
@@ -19,18 +24,31 @@ export default function useImmersiveScene(
   context: Ref<WebGL2RenderingContext | null>,
   session: Ref<XRSession | null>,
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
-  onRender = (_width: number, _height: number, _coords: Array<DialogHotspotLocation>) => {},
+  onRender = (_width: number, _height: number) => {},
+  runner: ComputedRef<YarnBound>,
 ) {
   let obj: SceneObjects | undefined
   let reticulum: Reticulum | undefined
   let controllers: Array<XRTargetRaySpace> = []
 
+  const { getResultType } = useDialogResult()
+  const displayText = computed<DialogResultTextData | null>(() => {
+    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
+      return runner.value.currentResult as DialogResultTextData
+    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
+      return null
+    }
+
+    throw Error('Unsupported dialog result type!')
+  })
+
   const immersiveSessionStore = useImmersiveSessionStore()
 
   const { renderer } = storeToRefs(immersiveSessionStore)
+  const { getCharacter } = useDialogResult()
   const { hotspots } = useDialogHotspot()
-  const { getHotspotCoords, createObjects, createReticulum, updateCamera, updateHotspots, updateSkyMaterial } =
-    useScene(true, renderer)
+  const { createObjects, createReticulum, updateCamera, updateHotspots, updateSkyMaterial } = useScene(true, renderer)
+  const isVisible = ref<boolean>(false)
 
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
     if (renderer.value == null || context.value == null || refSpace.value == null || frame == null) {
@@ -65,11 +83,7 @@ export default function useImmersiveScene(
     reticulum!.update()
     renderer.value.render(obj!.scene, obj!.camera)
 
-    onRender(
-      renderer.value.domElement.clientWidth,
-      renderer.value.domElement.clientHeight,
-      getHotspotCoords(renderer.value.domElement, obj!.camera, obj!.hotspots, viewFrustum),
-    )
+    onRender(renderer.value.domElement.clientWidth, renderer.value.domElement.clientHeight)
   }
 
   const createRenderer = async () => {
@@ -143,10 +157,10 @@ export default function useImmersiveScene(
 
         if (e.data.handedness === 'right') {
           controller.addEventListener('selectend', () => {
-            console.log('R selectend --> continue conversation')
+            runner.value.advance()
           })
           controller.addEventListener('squeezeend', () => {
-            console.log('R squeezeend --> continue conversation')
+            runner.value.advance()
           })
         }
       })
@@ -158,6 +172,8 @@ export default function useImmersiveScene(
     obj = obj ?? createObjects()
     controllers = controllers.length === NUM_CONTROLLERS ? controllers : createControllers(renderer.value, obj.viewer)
     reticulum = reticulum ?? createReticulum(obj.camera, controllers)
+
+    isVisible.value = false
   }
 
   const unmount = () => {
@@ -165,12 +181,16 @@ export default function useImmersiveScene(
     obj = undefined
     controllers = []
     reticulum = undefined
+
+    isVisible.value = false
   }
 
   const clear = () => {
     obj!.scene.visible = false
     obj!.hotspots.clear()
     reticulum?.clear()
+
+    isVisible.value = false
   }
 
   const update = (scene: TaleDeckScene, texture: Texture) => {
@@ -179,7 +199,38 @@ export default function useImmersiveScene(
     updateHotspots(obj!.hotspots, hotspots.value, reticulum)
     updateReticulum(reticulum!)
     obj!.scene.visible = true
+    isVisible.value = true
   }
+
+  watch(
+    () => [isVisible.value, displayText.value],
+    () => {
+      console.log('BLUBB', isVisible.value, displayText.value)
+
+      if (isVisible.value && displayText.value != null) {
+        const characterContent = `${getCharacter(displayText.value.markup)}: `
+        const dialogContent = displayText.value.text
+
+        //@ts-ignore
+        obj!.dialog.characterText.set({ content: characterContent })
+        //@ts-ignore
+        obj!.dialog.dialogText.set({ content: dialogContent })
+
+        obj!.dialog.box.visible = !!(characterContent || dialogContent)
+      } else {
+        if (obj?.dialog) {
+          obj.dialog.box.visible = false
+          //@ts-ignore
+          obj.dialog.characterText.set({ content: '' })
+          //@ts-ignore
+          obj.dialog.dialogText.set({ content: '' })
+        }
+      }
+
+      ThreeMeshUI.update()
+    },
+    { immediate: true },
+  )
 
   return { renderer, mount, unmount, clear, update }
 }

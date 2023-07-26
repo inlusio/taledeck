@@ -39,7 +39,7 @@ export default function useDialog() {
     dialog.sceneSlug = scene_slug
     dialog.isReady = true
     dialog.hasStarted = true
-    dialog.runner = createRunner(dialog, storage, script)
+    dialog.runner = createRunner(storage, script)
 
     return dialog
   }

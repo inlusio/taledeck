@@ -63,9 +63,11 @@
           <div v-if="scene" :key="viewShellKey" :data-key="viewShellKey" class="s-layout-game__viewer-frame">
             <component
               :is="viewShellComponent"
+              v-if="dialog.isReady"
               :background="getFileEntry(scene.scene_image)"
               :facets="[ViewShellFacet.Scene]"
               :height="900"
+              :runner="dialog.runner!"
               :width="1600"
             >
               <template #debug>
