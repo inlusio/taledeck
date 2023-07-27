@@ -34,11 +34,8 @@ export default function useInlineScene(
   const isVisible = ref<boolean>(false)
   const renderer = ref<WebGLRenderer | null>(null)
   const { hotspots } = useDialogHotspot()
-  const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } = useScene(
-    false,
-    renderer,
-    runner,
-  )
+  const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots, updateHotspotDirections } =
+    useScene(false, renderer, runner)
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect
@@ -65,6 +62,7 @@ export default function useInlineScene(
     }
 
     updateFrustum()
+    updateHotspotDirections(obj.hotspots, obj.camera)
 
     onRender(wrapperEl.value.clientWidth, wrapperEl.value.clientHeight)
   }

@@ -6,7 +6,7 @@ import { Color, Mesh, MeshBasicMaterial, Object3D, RingGeometry, Vector3 } from 
 export default class Reticle {
   public options: Required<ReticleOptions> = {
     color: 0x00fff6,
-    innerRadius: 0.0004,
+    innerRadius: 0.0001,
     outerRadius: 0.003,
     visible: true,
     vibrate: 50,

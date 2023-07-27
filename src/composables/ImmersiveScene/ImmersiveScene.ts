@@ -35,11 +35,15 @@ export default function useImmersiveScene(
   const { renderer } = storeToRefs(immersiveSessionStore)
   const { getCharacter } = useDialogResult()
   const { hotspots } = useDialogHotspot()
-  const { displayText, createObjects, createReticulum, updateCamera, updateHotspots, updateSkyMaterial } = useScene(
-    true,
-    renderer,
-    runner,
-  )
+  const {
+    displayText,
+    createObjects,
+    createReticulum,
+    updateCamera,
+    updateHotspots,
+    updateHotspotDirections,
+    updateSkyMaterial,
+  } = useScene(true, renderer, runner)
   const isVisible = ref<boolean>(false)
 
   const onAdvance = () => {
@@ -57,7 +61,6 @@ export default function useImmersiveScene(
 
     if (pose) {
       const view = pose.views[0]
-      updateFrustum(view.projectionMatrix)
 
       if (layer) {
         context.value.bindFramebuffer(context.value.FRAMEBUFFER, layer.framebuffer)
@@ -67,6 +70,8 @@ export default function useImmersiveScene(
         context.value.viewport(x, y, width, height)
       }
 
+      updateFrustum(view.projectionMatrix)
+      updateHotspotDirections(obj!.hotspots, obj!.camera)
       renderScene()
     }
   }

@@ -16,12 +16,13 @@ import {
   Group,
   MathUtils,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
+  Object3D,
   PerspectiveCamera,
+  PlaneGeometry,
   Scene,
   SphereGeometry,
-  Sprite,
-  SpriteMaterial,
   Texture,
   Vector3,
   WebGLRenderer,
@@ -66,7 +67,7 @@ export default function useScene(
   }
 
   const createHotspotMaterial = () => {
-    return new SpriteMaterial({
+    return new MeshBasicMaterial({
       map: hotspotTexture,
       alphaTest: 0.5,
       fog: false,
@@ -74,10 +75,10 @@ export default function useScene(
     })
   }
 
-  const createHotspot = (material: SpriteMaterial, hotspot: DialogHotspot) => {
+  const createHotspot = (material: MeshBasicMaterial, hotspot: DialogHotspot) => {
     const { x, y, z } = hotspot
-    const result = new Sprite(material)
-    result.scale.set(3 * SCALE, 3 * SCALE, 1)
+    const result = new Mesh(new PlaneGeometry(3 * SCALE, 3 * SCALE), material)
+    // result.scale.set(3 * SCALE, 3 * SCALE, 3 * SCALE)
     result.position.set(x * SCALE, y * SCALE, (z ?? 0) * SCALE)
     result.userData.hotspot = hotspot
 
@@ -235,6 +236,12 @@ export default function useScene(
     })
   }
 
+  const updateHotspotDirections = (hotspots: Group, target: Object3D) => {
+    hotspots.children.forEach((child) => {
+      child.lookAt(target.position)
+    })
+  }
+
   return {
     displayText,
     createObjects,
@@ -243,5 +250,6 @@ export default function useScene(
     updateCamera,
     updateSkyMaterial,
     updateHotspots,
+    updateHotspotDirections,
   }
 }
