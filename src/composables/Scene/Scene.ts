@@ -1,8 +1,10 @@
 import useDialog from '@/composables/Dialog/Dialog'
 import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
+import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useInlineHotspotTemplate from '@/composables/InlineHotspotTemplate/InlineHotspotTemplate'
 import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
-import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
+import type { DialogResultCommandData, DialogResultTextData } from '@/models/DialogResult/DialogResult'
+import { DialogResultType } from '@/models/DialogResult/DialogResult'
 import type { SceneDialogBox, SceneObjects } from '@/models/Scene/Scene'
 import { SCALE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
@@ -25,15 +27,33 @@ import {
   WebGLRenderer,
   XRTargetRaySpace,
 } from 'three'
-import type { Ref } from 'vue'
 import ThreeMeshUI from 'three-mesh-ui'
+import type { ComputedRef, Ref } from 'vue'
+import { computed } from 'vue'
+//@ts-ignore
+import type YarnBound from 'yarn-bound/src'
 
-export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRenderer | null>) {
+export default function useScene(
+  isImmersive: boolean,
+  renderer: Ref<WebGLRenderer | null>,
+  runner: ComputedRef<YarnBound>,
+) {
   const { dialog } = useDialog()
+  const { getResultType } = useDialogResult()
   const { handleCommand } = useDialogCommand(dialog)
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
 
   const hotspotTexture = new CanvasTexture(hotspotEl)
+
+  const displayText = computed<DialogResultTextData | null>(() => {
+    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
+      return runner.value.currentResult as DialogResultTextData
+    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
+      return null
+    }
+
+    throw Error('Unsupported dialog result type!')
+  })
 
   const onActionRequested = (commandData: Array<DialogResultCommandData> | undefined = []) => {
     commandData.forEach((command) => handleCommand(command))
@@ -216,6 +236,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   }
 
   return {
+    displayText,
     createObjects,
     createReticulum,
     createDialogBox,

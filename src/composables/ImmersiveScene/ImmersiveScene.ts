@@ -1,4 +1,5 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
+import useDialogResult from '@/composables/DialogResult/DialogResult' //@ts-ignore
 import useScene from '@/composables/Scene/Scene'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import { NUM_CONTROLLERS } from '@/models/Scene/Scene'
@@ -8,13 +9,11 @@ import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
 import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer, XRTargetRaySpace } from 'three' //@ts-ignore
+import ThreeMeshUI from 'three-mesh-ui'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { ComputedRef, Ref } from 'vue'
-import { computed, ref, watch } from 'vue'
-import ThreeMeshUI from 'three-mesh-ui'
-import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
-import { DialogResultType } from '@/models/DialogResult/DialogResult'
-import useDialogResult from '@/composables/DialogResult/DialogResult' //@ts-ignore
+import { ref, watch } from 'vue'
+//@ts-ignore
 import type YarnBound from 'yarn-bound/src'
 
 const viewFrustum = new Frustum()
@@ -31,23 +30,16 @@ export default function useImmersiveScene(
   let reticulum: Reticulum | undefined
   let controllers: Array<XRTargetRaySpace> = []
 
-  const { getResultType } = useDialogResult()
-  const displayText = computed<DialogResultTextData | null>(() => {
-    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
-      return runner.value.currentResult as DialogResultTextData
-    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
-      return null
-    }
-
-    throw Error('Unsupported dialog result type!')
-  })
-
   const immersiveSessionStore = useImmersiveSessionStore()
 
   const { renderer } = storeToRefs(immersiveSessionStore)
   const { getCharacter } = useDialogResult()
   const { hotspots } = useDialogHotspot()
-  const { createObjects, createReticulum, updateCamera, updateHotspots, updateSkyMaterial } = useScene(true, renderer)
+  const { displayText, createObjects, createReticulum, updateCamera, updateHotspots, updateSkyMaterial } = useScene(
+    true,
+    renderer,
+    runner,
+  )
   const isVisible = ref<boolean>(false)
 
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
@@ -156,12 +148,8 @@ export default function useImmersiveScene(
         }
 
         if (e.data.handedness === 'right') {
-          controller.addEventListener('selectend', () => {
-            runner.value.advance()
-          })
-          controller.addEventListener('squeezeend', () => {
-            runner.value.advance()
-          })
+          controller.addEventListener('selectend', runner.value.advance)
+          controller.addEventListener('squeezeend', runner.value.advance)
         }
       })
     })
@@ -205,8 +193,6 @@ export default function useImmersiveScene(
   watch(
     () => [isVisible.value, displayText.value],
     () => {
-      console.log('BLUBB', isVisible.value, displayText.value)
-
       if (isVisible.value && displayText.value != null) {
         const characterContent = `${getCharacter(displayText.value.markup)}: `
         const dialogContent = displayText.value.text

@@ -1,17 +1,15 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
+import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useScene from '@/composables/Scene/Scene'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
 import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
+import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { ComputedRef, Ref } from 'vue'
-import { computed, ref, watch } from 'vue'
-import ThreeMeshUI from 'three-mesh-ui'
-import useDialogResult from '@/composables/DialogResult/DialogResult'
-import type { DialogResultTextData } from '@/models/DialogResult/DialogResult' //@ts-ignore
-import { DialogResultType } from '@/models/DialogResult/DialogResult'
+import { ref, watch } from 'vue'
 //@ts-ignore
 import type YarnBound from 'yarn-bound/src'
 
@@ -34,22 +32,15 @@ export default function useInlineScene(
   let controls: OrbitControls | undefined
   let reticulum: Reticulum | undefined
 
-  const { getResultType } = useDialogResult()
-  const displayText = computed<DialogResultTextData | null>(() => {
-    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
-      return runner.value.currentResult as DialogResultTextData
-    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
-      return null
-    }
-
-    throw Error('Unsupported dialog result type!')
-  })
-
   const isVisible = ref<boolean>(false)
   const renderer = ref<WebGLRenderer | null>(null)
   const { getCharacter } = useDialogResult()
   const { hotspots } = useDialogHotspot()
-  const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } = useScene(false, renderer)
+  const { displayText, createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } = useScene(
+    false,
+    renderer,
+    runner,
+  )
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect
