@@ -51,11 +51,14 @@ export default class Fuse {
       color: this.options.color,
       side: BackSide,
       fog: false,
+      depthTest: false,
+      depthWrite: false,
     })
 
     // Mesh
     this.mesh = new Mesh(geometry, material)
     this.mesh.visible = this.options.visible
+    this.mesh.renderOrder = 999
     this.mesh.position.z = 0.0001 // Keep in front of reticle
     this.mesh.rotation.y = 180 * (Math.PI / 180) //Make it turn clockwise
 

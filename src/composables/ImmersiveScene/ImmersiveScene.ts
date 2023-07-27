@@ -42,6 +42,10 @@ export default function useImmersiveScene(
   )
   const isVisible = ref<boolean>(false)
 
+  const onAdvance = () => {
+    runner.value.advance()
+  }
+
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
     if (renderer.value == null || context.value == null || refSpace.value == null || frame == null) {
       throw new Error('Scene could not be rendered!')
@@ -140,16 +144,18 @@ export default function useImmersiveScene(
       controller.addEventListener('connected', (e) => {
         console.log('controller connected', e)
 
-        if (e.data.handedness === 'left') {
+        const data: XRInputSource = e.data
+
+        if (data.handedness === 'left') {
           controller.addEventListener('selectstart', reticulum.clickStartListener)
           controller.addEventListener('selectend', reticulum.clickEndListener)
           controller.addEventListener('squeezestart', reticulum.clickStartListener)
           controller.addEventListener('squeezeend', reticulum.clickEndListener)
         }
 
-        if (e.data.handedness === 'right') {
-          controller.addEventListener('selectend', runner.value.advance)
-          controller.addEventListener('squeezeend', runner.value.advance)
+        if (data.handedness === 'right') {
+          controller.addEventListener('selectend', onAdvance)
+          controller.addEventListener('squeezeend', onAdvance)
         }
       })
     })

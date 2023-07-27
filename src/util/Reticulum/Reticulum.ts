@@ -29,12 +29,14 @@ export default class Reticulum {
   private screenCenterCoords = new Vector2(0, 0)
   private cameraViewProjectionMatrix = new Matrix4()
   private camera: PerspectiveCamera
+  private renderer: WebGLRenderer
   // Library parts
   private reticle: Reticle
   private fuse: Fuse
   private vibrate: (pattern: VibratePattern) => boolean
 
   constructor(r: WebGLRenderer, ca: PerspectiveCamera, co: Array<XRTargetRaySpace> = [], o: ReticulumOptions = {}) {
+    this.renderer = r
     this.camera = ca
     this.controllers = co
     this.options.proximity = o.proximity ?? this.options.proximity
@@ -55,10 +57,10 @@ export default class Reticulum {
 
     //Enable click / Tap events
     if (this.options.clickEvents) {
-      r.domElement.addEventListener('mousedown', this.clickStartListener, false)
-      r.domElement.addEventListener('mouseup', this.clickEndListener, false)
-      r.domElement.addEventListener('touchstart', this.clickStartListener, false)
-      r.domElement.addEventListener('touchend', this.clickEndListener, false)
+      this.renderer.domElement.addEventListener('mousedown', this.clickStartListener, { passive: true })
+      this.renderer.domElement.addEventListener('mouseup', this.clickEndListener, { passive: true })
+      this.renderer.domElement.addEventListener('touchstart', this.clickStartListener, { passive: true })
+      this.renderer.domElement.addEventListener('touchend', this.clickEndListener, { passive: true })
     }
 
     //Initiate Reticle
@@ -118,23 +120,19 @@ export default class Reticulum {
   }
 
   public destroy() {
-    document.removeEventListener('mousedown', this.clickStartListener, false)
-    document.removeEventListener('mouseup', this.clickEndListener, false)
-    document.removeEventListener('touchstart', this.clickStartListener, false)
-    document.removeEventListener('touchend', this.clickEndListener, false)
+    this.renderer.domElement.removeEventListener('mousedown', this.clickStartListener)
+    this.renderer.domElement.removeEventListener('mouseup', this.clickEndListener)
+    this.renderer.domElement.removeEventListener('touchstart', this.clickStartListener)
+    this.renderer.domElement.removeEventListener('touchend', this.clickEndListener)
   }
 
   private onClickStart() {
     this.reticleHitOnClickStart = this.reticle.hit
   }
 
-  private onClickEnd(e: MouseEvent | TouchEvent | unknown) {
+  private onClickEnd(_e: MouseEvent | TouchEvent | unknown) {
     if (this.intersected != null && this.reticle.hit && this.reticleHitOnClickStart) {
       this.gazeClick(this.intersected)
-
-      if (e instanceof MouseEvent || e instanceof TouchEvent) {
-        e.preventDefault()
-      }
     }
 
     this.reticleHitOnClickStart = false
@@ -255,16 +253,7 @@ export default class Reticulum {
   }
 
   private detectHit() {
-    try {
-      this.raycaster.setFromCamera(this.screenCenterCoords, this.camera)
-    } catch (e) {
-      this.raycaster.ray.origin.copy(this.camera.position)
-      this.raycaster.ray.direction
-        .set(this.screenCenterCoords.x, this.screenCenterCoords.y, 0.5)
-        .unproject(this.camera)
-        .sub(this.camera.position)
-        .normalize()
-    }
+    this.raycaster.setFromCamera(this.screenCenterCoords, this.camera)
 
     // Intersects
     const targets: Array<ReticulumTarget> = this.raycaster

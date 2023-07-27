@@ -1,5 +1,4 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
-import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useScene from '@/composables/Scene/Scene'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
@@ -9,7 +8,7 @@ import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } 
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { ComputedRef, Ref } from 'vue'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 //@ts-ignore
 import type YarnBound from 'yarn-bound/src'
 
@@ -34,9 +33,8 @@ export default function useInlineScene(
 
   const isVisible = ref<boolean>(false)
   const renderer = ref<WebGLRenderer | null>(null)
-  const { getCharacter } = useDialogResult()
   const { hotspots } = useDialogHotspot()
-  const { displayText, createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } = useScene(
+  const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots } = useScene(
     false,
     renderer,
     runner,
@@ -137,34 +135,6 @@ export default function useInlineScene(
     isVisible.value = true
     ThreeMeshUI.update()
   }
-
-  watch(
-    () => [isVisible.value, displayText.value],
-    () => {
-      if (isVisible.value && displayText.value != null) {
-        const characterContent = `${getCharacter(displayText.value.markup)}: `
-        const dialogContent = displayText.value.text
-
-        //@ts-ignore
-        obj!.dialog.characterText.set({ content: characterContent })
-        //@ts-ignore
-        obj!.dialog.dialogText.set({ content: dialogContent })
-
-        obj!.dialog.box.visible = !!(characterContent || dialogContent)
-      } else {
-        if (obj?.dialog) {
-          obj.dialog.box.visible = false
-          //@ts-ignore
-          obj.dialog.characterText.set({ content: '' })
-          //@ts-ignore
-          obj.dialog.dialogText.set({ content: '' })
-        }
-      }
-
-      ThreeMeshUI.update()
-    },
-    { immediate: true },
-  )
 
   return { mount, unmount, clear, update }
 }

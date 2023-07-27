@@ -1,7 +1,7 @@
 import type { ReticleAttributes, ReticleOptions } from '@/util/Reticulum/Types'
+import { clampBottom } from '@/util/Reticulum/Utils'
 import type { PerspectiveCamera } from 'three'
 import { Color, Mesh, MeshBasicMaterial, Object3D, RingGeometry, Vector3 } from 'three'
-import { clampBottom } from '@/util/Reticulum/Utils'
 
 export default class Reticle {
   public options: Required<ReticleOptions> = {
@@ -72,13 +72,16 @@ export default class Reticle {
       geoBase,
       new MeshBasicMaterial({
         color: this.baseColor,
-        fog: false,
         transparent: false,
+        fog: false,
+        depthTest: false,
+        depthWrite: false,
       }),
     )
 
     // Add Morph Targets for scale animation
     this.mesh.visible = this.options.visible
+    this.mesh.renderOrder = 999
     this.mesh.geometry.morphAttributes.position = []
     this.mesh.geometry.morphAttributes.position[0] = geoHover.getAttribute('position')
 
