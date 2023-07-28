@@ -78,7 +78,6 @@ export default function useScene(
   const createHotspot = (material: MeshBasicMaterial, hotspot: DialogHotspot) => {
     const { x, y, z } = hotspot
     const result = new Mesh(new PlaneGeometry(3 * SCALE, 3 * SCALE), material)
-    // result.scale.set(3 * SCALE, 3 * SCALE, 3 * SCALE)
     result.position.set(x * SCALE, y * SCALE, (z ?? 0) * SCALE)
     result.userData.hotspot = hotspot
 
