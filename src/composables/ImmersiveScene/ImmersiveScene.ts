@@ -1,5 +1,5 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
-import useDialogResult from '@/composables/DialogResult/DialogResult' //@ts-ignore
+import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useScene from '@/composables/Scene/Scene'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import { NUM_CONTROLLERS } from '@/models/Scene/Scene'
@@ -8,13 +8,12 @@ import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
-import type { XRTargetRaySpace } from 'three' //@ts-ignore
-import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three' //@ts-ignore
+import type { XRTargetRaySpace } from 'three'
+import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { ComputedRef, Ref } from 'vue'
 import { ref, watch } from 'vue'
-//@ts-ignore
 import type YarnBound from 'yarn-bound/src'
 
 const viewFrustum = new Frustum()

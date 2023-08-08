@@ -1,11 +1,11 @@
 <script lang="ts" setup>
-  // @ts-ignore
-  import YarnBound from 'yarn-bound/src'
+  import UiAccordion from '@/components/UiAccordion/UiAccordion.vue'
+  import useDialogResult from '@/composables/DialogResult/DialogResult'
+  import { DialogResultType } from '@/models/DialogResult/DialogResult'
   import { cloneDeep } from 'lodash-es'
   import { computed, ref, watch } from 'vue'
-  import { DialogResultType } from '@/models/DialogResult/DialogResult'
-  import useDialogResult from '@/composables/DialogResult/DialogResult'
-  import UiAccordion from '@/components/UiAccordion/UiAccordion.vue'
+  import type { Result } from 'yarn-bound/src'
+  import YarnBound from 'yarn-bound/src'
 
   export interface Props {
     facets?: Array<string>
@@ -15,7 +15,7 @@
   interface ResultHistoryEntry {
     timestamp: number
     isOpen: boolean
-    result: YarnBound.Result
+    result: Result
   }
 
   const props = defineProps<Props>()

@@ -2,7 +2,7 @@ import useImmersiveScene from '@/composables/ImmersiveScene/ImmersiveScene'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import { storeToRefs } from 'pinia'
 import type { ComputedRef, Ref } from 'vue'
-import { computed } from 'vue' //@ts-ignore
+import { computed } from 'vue'
 import type YarnBound from 'yarn-bound/src'
 
 export default function useImmersiveSession(

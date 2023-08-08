@@ -88,7 +88,7 @@ export default function useDialogCommand(dialog: ReactiveDialog) {
         await router.push(toGameScene(args[0]))
         break
       case DialogCommandId.Jump:
-        dialog.runner.jump(...args)
+        dialog.runner?.jump(args[0])
         break
       case DialogCommandId.ShowHotspot: {
         const [label, showFlag] = args

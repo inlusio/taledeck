@@ -9,7 +9,6 @@ import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { ComputedRef, Ref } from 'vue'
 import { ref } from 'vue'
-//@ts-ignore
 import type YarnBound from 'yarn-bound/src'
 
 interface InlineSceneEls {

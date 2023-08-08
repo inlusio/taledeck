@@ -31,7 +31,6 @@ import {
 import ThreeMeshUI from 'three-mesh-ui'
 import type { ComputedRef, Ref } from 'vue'
 import { computed } from 'vue'
-//@ts-ignore
 import type YarnBound from 'yarn-bound/src'
 
 export default function useScene(

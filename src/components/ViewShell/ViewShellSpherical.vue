@@ -2,17 +2,16 @@
   import XrControls from '@/components/XrControls/XrControls.vue'
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
+  import useDialogResult from '@/composables/DialogResult/DialogResult'
   import useGameScene from '@/composables/GameScene/GameScene'
   import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
-  import { Texture, TextureLoader, Vector2 } from 'three'
-  import { computed, onBeforeUnmount, ref, watch } from 'vue'
-  // @ts-ignore
-  import YarnBound from 'yarn-bound/src'
-  import useDialogResult from '@/composables/DialogResult/DialogResult'
   import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
   import { DialogResultType } from '@/models/DialogResult/DialogResult'
+  import { Texture, TextureLoader, Vector2 } from 'three'
+  import { computed, onBeforeUnmount, ref, watch } from 'vue'
+  import YarnBound from 'yarn-bound/src'
 
   const TL = new TextureLoader()
 

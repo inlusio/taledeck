@@ -1,13 +1,12 @@
-// @ts-ignore
-import YarnBound from 'yarn-bound/src'
-import type { DialogResultContentData, DialogResultMarkup } from '@/models/DialogResult/DialogResult'
-import { DialogResultType } from '@/models/DialogResult/DialogResult'
-import DialogResultText from '@/components/DialogResultText/DialogResultText.vue'
-import DialogResultOptionList from '@/components/DialogResultOptionList/DialogResultOptionList.vue'
 import DialogResultCommand from '@/components/DialogResultCommand/DialogResultCommand.vue'
 import DialogResultEnd from '@/components/DialogResultEnd/DialogResultEnd.vue'
+import DialogResultOptionList from '@/components/DialogResultOptionList/DialogResultOptionList.vue'
+import DialogResultText from '@/components/DialogResultText/DialogResultText.vue'
 import { DialogCharacter } from '@/models/DialogCharacter/DialogCharacter'
+import type { DialogResultContentData, DialogResultMarkup } from '@/models/DialogResult/DialogResult'
+import { DialogResultType } from '@/models/DialogResult/DialogResult'
 import { DialogResultTextFacet } from '@/models/DialogResultTextFacet/DialogResultTextFacet'
+import { CommandResult, OptionsResult, Result, TextResult } from 'yarn-bound/src'
 
 export default function useDialogResult() {
   const getCharacter = (markup: Array<DialogResultMarkup>): string | undefined => {
@@ -20,13 +19,13 @@ export default function useDialogResult() {
     return undefined
   }
 
-  const getResultType = (result: YarnBound.Result | undefined) => {
+  const getResultType = (result: Result | undefined) => {
     switch (true) {
-      case result instanceof YarnBound.TextResult:
+      case result instanceof TextResult:
         return DialogResultType.Text
-      case result instanceof YarnBound.OptionsResult:
+      case result instanceof OptionsResult:
         return DialogResultType.Options
-      case result instanceof YarnBound.CommandResult:
+      case result instanceof CommandResult:
         return DialogResultType.Command
       case result === undefined:
         return DialogResultType.End
@@ -35,13 +34,13 @@ export default function useDialogResult() {
     }
   }
 
-  const getResultComponent = (result: YarnBound.Result | undefined): string => {
+  const getResultComponent = (result: Result | undefined): string => {
     switch (true) {
-      case result instanceof YarnBound.TextResult:
+      case result instanceof TextResult:
         return DialogResultText as unknown as string
-      case result instanceof YarnBound.OptionsResult:
+      case result instanceof OptionsResult:
         return DialogResultOptionList as unknown as string
-      case result instanceof YarnBound.CommandResult:
+      case result instanceof CommandResult:
         return DialogResultCommand as unknown as string
       case result === undefined:
         return DialogResultEnd as unknown as string
