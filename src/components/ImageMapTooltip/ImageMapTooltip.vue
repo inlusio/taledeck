@@ -5,7 +5,7 @@
   import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
   import type { Rect } from '@/models/Segment/Segment'
   import type { CSSProperties } from 'vue'
-  import { computed, ref } from 'vue'
+  import { computed } from 'vue'
 
   interface Props extends UseBemProps {
     showButton?: boolean
@@ -27,7 +27,9 @@
   const emit = defineEmits<Emits>()
   const { bemAdd, bemFacets } = useBem('c-image-map-tooltip', props, {})
 
-  const segmentRect = ref<Rect>({ x: 0, y: 0, width: props.width, height: props.height })
+  const segmentRect = computed<Rect>(() => {
+    return { x: 0, y: 0, width: props.width, height: props.height }
+  })
   const { getSegmentFeatures, getSegmentIdxOfPoint } = useSegment(segmentRect, [3, 3])
 
   const segmentIdx = computed<number>(() => {

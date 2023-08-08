@@ -8,7 +8,8 @@ import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
-import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer, XRTargetRaySpace } from 'three' //@ts-ignore
+import type { XRTargetRaySpace } from 'three' //@ts-ignore
+import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three' //@ts-ignore
 import ThreeMeshUI from 'three-mesh-ui'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { ComputedRef, Ref } from 'vue'
@@ -205,11 +206,11 @@ export default function useImmersiveScene(
     () => [isVisible.value, displayText.value],
     () => {
       if (isVisible.value && displayText.value != null) {
-        const characterContent = `${getCharacter(displayText.value.markup)}: `
+        const characterContent = getCharacter(displayText.value.markup)
         const dialogContent = displayText.value.text
 
         //@ts-ignore
-        obj!.dialog.characterText.set({ content: characterContent })
+        obj!.dialog.characterText.set({ content: characterContent ? `${characterContent}: ` : ' ' })
         //@ts-ignore
         obj!.dialog.dialogText.set({ content: dialogContent })
 

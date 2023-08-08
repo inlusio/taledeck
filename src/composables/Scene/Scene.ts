@@ -8,6 +8,7 @@ import { DialogResultType } from '@/models/DialogResult/DialogResult'
 import type { SceneDialogBox, SceneObjects } from '@/models/Scene/Scene'
 import { SCALE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
+import type { XRTargetRaySpace } from 'three'
 import {
   AmbientLight,
   BackSide,
@@ -26,7 +27,6 @@ import {
   Texture,
   Vector3,
   WebGLRenderer,
-  XRTargetRaySpace,
 } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import type { ComputedRef, Ref } from 'vue'

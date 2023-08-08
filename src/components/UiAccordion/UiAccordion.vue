@@ -1,12 +1,14 @@
-<script setup lang="ts">
-  import { computed, nextTick, onMounted, ref, watch } from 'vue'
+<script lang="ts" setup>
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
+  import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
   interface Emits {
     (e: 'change', value: boolean): void
+
     (e: 'changed', value: boolean): void
+
     (e: 'request-change', value: boolean): void
   }
 
@@ -29,6 +31,7 @@
 
   const body = ref<HTMLDivElement | null>(null)
   const isAnimating = ref(false)
+  // eslint-disable-next-line vue/no-setup-props-destructure
   const isOpen = ref(props.open)
 
   const rootClasses = computed(() => {
