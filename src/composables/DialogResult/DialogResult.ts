@@ -6,7 +6,10 @@ import { DialogCharacter } from '@/models/DialogCharacter/DialogCharacter'
 import type { DialogResultContentData, DialogResultMarkup } from '@/models/DialogResult/DialogResult'
 import { DialogResultType } from '@/models/DialogResult/DialogResult'
 import { DialogResultTextFacet } from '@/models/DialogResultTextFacet/DialogResultTextFacet'
-import { CommandResult, OptionsResult, Result, TextResult } from 'yarn-bound/src'
+import type { Result } from 'yarn-bound/src'
+import YarnBound from 'yarn-bound/src'
+
+const { TextResult, OptionsResult, CommandResult } = YarnBound
 
 export default function useDialogResult() {
   const getCharacter = (markup: Array<DialogResultMarkup>): string | undefined => {

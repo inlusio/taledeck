@@ -1,6 +1,7 @@
 declare module 'yarn-bound/src' {
-  import bondage, { CommandResult, OptionsResult, Runner, TextResult } from '@mnbroatch/bondage/src/index.js'
-  import { Result } from '@mnbroatch/bondage/src/results.js'
+  import bondage from '@mnbroatch/bondage/src/index.js'
+  import { CommandResult, OptionsResult, Result, TextResult } from '@mnbroatch/bondage/src/results.js'
+  import { Runner } from '@mnbroatch/bondage/src/runner.js'
 
   export interface YarnBoundOptions {
     dialogue: string
@@ -14,6 +15,10 @@ declare module 'yarn-bound/src' {
   }
 
   class YarnBound {
+    static readonly CommandResult = CommandResult
+    static readonly OptionsResult = OptionsResult
+    static readonly TextResult = TextResult
+
     readonly handleCommand: (...args: Array<unknown>) => unknown
     readonly pauseCommand: string
     readonly combineTextAndOptionsResults: boolean
@@ -33,7 +38,7 @@ declare module 'yarn-bound/src' {
     registerFunction(name: string, func: () => void): void
   }
 
-  export { CommandResult, OptionsResult, Result, TextResult }
+  export type { Result }
 
   export default YarnBound
 }
