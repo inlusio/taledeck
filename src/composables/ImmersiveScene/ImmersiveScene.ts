@@ -202,6 +202,16 @@ export default function useImmersiveScene(
   }
 
   watch(
+    () => [isVisible.value, hotspots.value.length],
+    () => {
+      if (isVisible.value) {
+        updateHotspots(obj!.hotspots, hotspots.value, reticulum)
+      }
+    },
+    { immediate: true },
+  )
+
+  watch(
     () => [isVisible.value, displayText.value],
     () => {
       if (isVisible.value && displayText.value != null) {

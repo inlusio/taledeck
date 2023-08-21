@@ -8,7 +8,7 @@ import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } 
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { ComputedRef, Ref } from 'vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type YarnBound from 'yarn-bound/src'
 
 interface InlineSceneEls {
@@ -132,6 +132,16 @@ export default function useInlineScene(
     isVisible.value = true
     ThreeMeshUI.update()
   }
+
+  watch(
+    () => [isVisible.value, hotspots.value.length],
+    () => {
+      if (isVisible.value) {
+        updateHotspots(obj!.hotspots, hotspots.value, reticulum)
+      }
+    },
+    { immediate: true },
+  )
 
   return { mount, unmount, clear, update }
 }
