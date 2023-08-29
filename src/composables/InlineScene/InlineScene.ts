@@ -1,5 +1,6 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useScene from '@/composables/Scene/Scene'
+import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
@@ -7,9 +8,8 @@ import { useResizeObserver } from '@vueuse/core'
 import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import type { ComputedRef, Ref } from 'vue'
+import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
-import type YarnBound from 'yarn-bound/src'
 
 interface InlineSceneEls {
   wrapperEl: Ref<HTMLDivElement | null>
@@ -23,7 +23,7 @@ export default function useInlineScene(
   onRender = (_width: number, _height: number) => {},
   { wrapperEl, canvasEl }: InlineSceneEls,
   allowRendering: Ref<boolean>,
-  runner: ComputedRef<YarnBound>,
+  dialog: ReactiveDialog,
 ) {
   let obj: SceneObjects
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -34,7 +34,7 @@ export default function useInlineScene(
   const renderer = ref<WebGLRenderer | null>(null)
   const { hotspots } = useDialogHotspot()
   const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots, updateHotspotDirections } =
-    useScene(false, renderer, runner)
+    useScene(false, renderer, dialog)
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect

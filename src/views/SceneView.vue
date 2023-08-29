@@ -65,9 +65,9 @@
               :is="viewShellComponent"
               v-if="dialog.isReady"
               :background="getFileEntry(scene.scene_image)"
+              :dialog="dialog"
               :facets="[ViewShellFacet.Scene]"
               :height="900"
-              :runner="dialog.runner!"
               :width="1600"
             >
               <template #debug>

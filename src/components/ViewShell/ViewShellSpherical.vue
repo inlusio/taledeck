@@ -7,20 +7,21 @@
   import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
+  import type { ReactiveDialog } from '@/models/Dialog/Dialog'
   import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
   import { DialogResultType } from '@/models/DialogResult/DialogResult'
+  import { toReactive } from '@vueuse/core'
   import { Texture, TextureLoader, Vector2 } from 'three'
   import { computed, onBeforeUnmount, ref, watch } from 'vue'
-  import YarnBound from 'yarn-bound/src'
 
   const TL = new TextureLoader()
 
   interface Props extends UseBemProps {
     facets?: Array<string>
-    runner: YarnBound
     background?: string
     width: number
     height: number
+    dialog: ReactiveDialog
   }
 
   const props = withDefaults(defineProps<Props>(), {
@@ -38,7 +39,7 @@
   const canvasWidth = ref<number>(0)
   const canvasHeight = ref<number>(0)
 
-  const runner = computed(() => props.runner)
+  const runner = computed(() => props.dialog.runner!)
 
   const onRenderImmersive = (width: number, height: number) => {
     canvasWidth.value = width
@@ -52,10 +53,11 @@
 
   const { getResultType } = useDialogResult()
 
+  const { dialog } = toReactive(props)
   const currentResult = computed<DialogResultTextData | null>(() => {
-    if (getResultType(props.runner.currentResult) === DialogResultType.Text) {
-      return props.runner.currentResult as DialogResultTextData
-    } else if (getResultType(props.runner.currentResult) === DialogResultType.End) {
+    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
+      return runner.value.currentResult as DialogResultTextData
+    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
       return null
     }
 
@@ -70,13 +72,13 @@
     { immediate: true },
   )
 
-  const immersiveScene = useImmersiveSession(onRenderImmersive, runner)
+  const immersiveScene = useImmersiveSession(onRenderImmersive, dialog)
   const { isSessionReady, isPresenting, requestSession, endSession: endImmersiveSession } = immersiveScene
   const inlineScene = useInlineScene(
     onRenderInline,
     { wrapperEl, canvasEl },
     computed<boolean>(() => !isPresenting.value),
-    runner,
+    dialog,
   )
   const isImmersiveSceneReady = computed<boolean>(() => isMounted.value && isSessionReady.value)
   const isInlineSceneReady = computed<boolean>(() => isMounted.value)

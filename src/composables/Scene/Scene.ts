@@ -1,7 +1,7 @@
-import useDialog from '@/composables/Dialog/Dialog'
 import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
 import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useInlineHotspotTemplate from '@/composables/InlineHotspotTemplate/InlineHotspotTemplate'
+import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
 import type { DialogResultCommandData, DialogResultTextData } from '@/models/DialogResult/DialogResult'
 import { DialogResultType } from '@/models/DialogResult/DialogResult'
@@ -29,22 +29,17 @@ import {
   WebGLRenderer,
 } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
-import type { ComputedRef, Ref } from 'vue'
+import type { Ref } from 'vue'
 import { computed } from 'vue'
-import type YarnBound from 'yarn-bound/src'
 
-export default function useScene(
-  isImmersive: boolean,
-  renderer: Ref<WebGLRenderer | null>,
-  runner: ComputedRef<YarnBound>,
-) {
-  const { dialog } = useDialog()
+export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRenderer | null>, dialog: ReactiveDialog) {
   const { getResultType } = useDialogResult()
   const { handleCommand } = useDialogCommand(dialog)
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
 
   const hotspotTexture = new CanvasTexture(hotspotEl)
 
+  const runner = computed(() => dialog.runner!)
   const displayText = computed<DialogResultTextData | null>(() => {
     if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
       return runner.value.currentResult as DialogResultTextData

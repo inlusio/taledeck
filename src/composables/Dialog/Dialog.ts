@@ -1,12 +1,12 @@
 import useDialogRunner from '@/composables/DialogRunner/DialogRunner'
-import type { Dialog } from '@/models/Dialog/Dialog'
-import { reactive, watch } from 'vue'
 import useGameScene from '@/composables/GameScene/GameScene'
-import { useDialogMainStore } from '@/stores/DialogMain'
-import { storeToRefs } from 'pinia'
-import { useDialogVariablesStore } from '@/stores/DialogVariables'
-import { useDialogHotspotsStore } from '@/stores/DialogHotspots'
+import type { Dialog } from '@/models/Dialog/Dialog'
 import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
+import { useDialogHotspotsStore } from '@/stores/DialogHotspots'
+import { useDialogMainStore } from '@/stores/DialogMain'
+import { useDialogVariablesStore } from '@/stores/DialogVariables'
+import { storeToRefs } from 'pinia'
+import { reactive, watch } from 'vue'
 
 export default function useDialog() {
   const dialogMainStore = useDialogMainStore()

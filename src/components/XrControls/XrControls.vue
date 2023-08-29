@@ -3,9 +3,9 @@
   import useTranslation from '@/composables/Translation/Translation'
   import useXrApiController from '@/composables/XrApiController/XrApiController'
   import { UiIconId, UiIconSizeId } from '@/models/UiIcon/UiIcon'
-  import { computed } from 'vue'
   import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
   import { storeToRefs } from 'pinia'
+  import { computed } from 'vue'
 
   interface Emits {
     (e: 'request-session'): void
@@ -70,5 +70,13 @@
 
   .c-xr-controls__action {
     pointer-events: auto;
+
+    &:disabled {
+      opacity: 0.1;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
   }
 </style>

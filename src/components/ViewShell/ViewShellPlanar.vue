@@ -4,10 +4,10 @@
   import ResponsiveShell from '@/components/ResponsiveShell/ResponsiveShell.vue'
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
-  import useDialog from '@/composables/Dialog/Dialog'
   import useDialogCommand from '@/composables/DialogCommand/DialogCommand'
   import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
   import useTranslation from '@/composables/Translation/Translation'
+  import type { ReactiveDialog } from '@/models/Dialog/Dialog'
   import type { DialogHotspot } from '@/models/DialogHotspot/DialogHotspot'
   import type { DialogResultCommandData } from '@/models/DialogResult/DialogResult'
   import { computed, onMounted, ref } from 'vue'
@@ -17,6 +17,7 @@
     background?: string
     width: number
     height: number
+    dialog: ReactiveDialog
   }
 
   const hotspotDisplayDelay = 600
@@ -29,9 +30,7 @@
 
   const { t } = useTranslation()
   const { bemAdd, bemFacets } = useBem('c-view-shell-planar', props, {})
-  const { dialog } = useDialog()
   const { hotspots, isHotspotShown } = useDialogHotspot()
-  const { handleCommand } = useDialogCommand(dialog)
 
   const isBackgroundLoaded = ref<boolean>(false)
   const showHotspots = ref<boolean>(false)
@@ -52,6 +51,7 @@
   }
 
   const onActionRequested = (commandData: Array<DialogResultCommandData> | undefined = []) => {
+    const { handleCommand } = useDialogCommand(props.dialog)
     commandData.forEach((command) => handleCommand(command))
   }
 

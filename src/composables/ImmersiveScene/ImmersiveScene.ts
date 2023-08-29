@@ -1,6 +1,7 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useScene from '@/composables/Scene/Scene'
+import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import { NUM_CONTROLLERS } from '@/models/Scene/Scene'
 import { referenceSpaceType } from '@/models/Session/Session'
@@ -12,9 +13,8 @@ import type { XRTargetRaySpace } from 'three'
 import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
-import type { ComputedRef, Ref } from 'vue'
+import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
-import type YarnBound from 'yarn-bound/src'
 
 const viewFrustum = new Frustum()
 const viewProjectionMatrix = new Matrix4()
@@ -24,7 +24,7 @@ export default function useImmersiveScene(
   session: Ref<XRSession | null>,
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
   onRender = (_width: number, _height: number) => {},
-  runner: ComputedRef<YarnBound>,
+  dialog: ReactiveDialog,
 ) {
   let obj: SceneObjects | undefined
   let reticulum: Reticulum | undefined
@@ -43,11 +43,11 @@ export default function useImmersiveScene(
     updateHotspots,
     updateHotspotDirections,
     updateSkyMaterial,
-  } = useScene(true, renderer, runner)
+  } = useScene(true, renderer, dialog)
   const isVisible = ref<boolean>(false)
 
   const onAdvance = () => {
-    runner.value.advance()
+    dialog.runner!.advance()
   }
 
   const onAnimationFrame = (_time: DOMHighResTimeStamp, frame: XRFrame) => {
