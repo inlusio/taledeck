@@ -2,19 +2,16 @@
   import XrControls from '@/components/XrControls/XrControls.vue'
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
-  import useDialogResult from '@/composables/DialogResult/DialogResult'
-  import useGameScene from '@/composables/GameScene/GameScene'
   import useImmersiveSession from '@/composables/ImmersiveSession/ImmersiveSession'
   import useInlineScene from '@/composables/InlineScene/InlineScene'
   import useIsMounted from '@/composables/IsMounted/IsMounted'
   import type { ReactiveDialog } from '@/models/Dialog/Dialog'
-  import type { DialogResultTextData } from '@/models/DialogResult/DialogResult'
-  import { DialogResultType } from '@/models/DialogResult/DialogResult'
   import { toReactive } from '@vueuse/core'
   import { Texture, TextureLoader, Vector2 } from 'three'
   import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
   const TL = new TextureLoader()
+  const textureDict: Record<string, Texture> = {}
 
   interface Props extends UseBemProps {
     facets?: Array<string>
@@ -31,15 +28,12 @@
 
   const { isMounted } = useIsMounted()
   const { bemFacets } = useBem('c-view-shell-spherical', props, {})
-  const { scene } = useGameScene()
 
   const canvasEl = ref<HTMLCanvasElement | null>(null)
   const wrapperEl = ref<HTMLDivElement | null>(null)
   const texture = ref<Texture | null>(null)
   const canvasWidth = ref<number>(0)
   const canvasHeight = ref<number>(0)
-
-  const runner = computed(() => props.dialog.runner!)
 
   const onRenderImmersive = (width: number, height: number) => {
     canvasWidth.value = width
@@ -51,40 +45,19 @@
     canvasHeight.value = height
   }
 
-  const { getResultType } = useDialogResult()
-
   const { dialog } = toReactive(props)
-  const currentResult = computed<DialogResultTextData | null>(() => {
-    if (getResultType(runner.value.currentResult) === DialogResultType.Text) {
-      return runner.value.currentResult as DialogResultTextData
-    } else if (getResultType(runner.value.currentResult) === DialogResultType.End) {
-      return null
-    }
 
-    throw Error('Unsupported dialog result type!')
-  })
-
-  watch(
-    () => currentResult.value,
-    () => {
-      console.log(currentResult.value)
-    },
-    { immediate: true },
-  )
-
-  const immersiveScene = useImmersiveSession(onRenderImmersive, dialog)
+  const immersiveScene = useImmersiveSession(onRenderImmersive, dialog, texture)
   const { isSessionReady, isPresenting, requestSession, endSession: endImmersiveSession } = immersiveScene
   const inlineScene = useInlineScene(
     onRenderInline,
+    dialog,
+    texture,
     { wrapperEl, canvasEl },
     computed<boolean>(() => !isPresenting.value),
-    dialog,
   )
   const isImmersiveSceneReady = computed<boolean>(() => isMounted.value && isSessionReady.value)
   const isInlineSceneReady = computed<boolean>(() => isMounted.value)
-
-  const isImmersiveSceneMounted = ref<boolean>(false)
-  const isInlineSceneMounted = ref<boolean>(false)
 
   const onRequestImmersiveSession = () => {
     requestSession()
@@ -100,7 +73,8 @@
     async (url) => {
       if (url != null) {
         texture.value = null
-        texture.value = await TL.loadAsync(url)
+        textureDict[url] = textureDict[url] ?? (await TL.loadAsync(url))
+        texture.value = textureDict[url]
         texture.value.center = new Vector2(0.5, 0.5)
         texture.value.rotation = Math.PI
         texture.value.flipY = false
@@ -118,8 +92,6 @@
       } else {
         inlineScene.unmount()
       }
-
-      isInlineSceneMounted.value = nV
     },
     { immediate: true },
   )
@@ -132,42 +104,6 @@
         await immersiveScene.mount()
       } else {
         immersiveScene.unmount()
-      }
-
-      isImmersiveSceneMounted.value = nV
-    },
-    { immediate: true },
-  )
-
-  // React to an updated inline session.
-  watch(
-    () => [isInlineSceneMounted.value, !isPresenting.value, scene.value, texture.value],
-    (nV) => {
-      if (!isInlineSceneMounted.value) {
-        return
-      }
-
-      inlineScene.clear()
-
-      if (nV.every(Boolean)) {
-        inlineScene.update(scene.value!, texture.value!)
-      }
-    },
-    { immediate: true },
-  )
-
-  // React to an updated immersive session.
-  watch(
-    () => [isImmersiveSceneMounted.value, scene.value, texture.value],
-    (nV) => {
-      if (!isImmersiveSceneMounted.value) {
-        return
-      }
-
-      immersiveScene.clear()
-
-      if (nV.every(Boolean)) {
-        immersiveScene.update(scene.value!, texture.value!)
       }
     },
     { immediate: true },

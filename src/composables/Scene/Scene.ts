@@ -25,7 +25,6 @@ import {
   Scene,
   SphereGeometry,
   Texture,
-  Vector3,
   WebGLRenderer,
 } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
@@ -78,9 +77,17 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     return result
   }
 
+  const createViewer = () => {
+    const result = new Group()
+    result.rotation.order = 'YXZ'
+
+    return result
+  }
+
   const createCamera = () => {
     const result = new PerspectiveCamera(90, undefined, 0.1, TAR_WORLD_SIZE + 1)
     result.position.set(0, 0, 0.01)
+    result.rotation.order = 'YXZ'
 
     return result
   }
@@ -97,10 +104,11 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     const geometry = new SphereGeometry(TAR_WORLD_SIZE, 25, 25)
     return new Mesh(geometry)
   }
+
   const createObjects = (): SceneObjects => {
     const result: SceneObjects = {
       camera: createCamera(),
-      viewer: new Group(),
+      viewer: createViewer(),
       hotspots: createHotspots(),
       light: createLight(),
       scene: createScene(),
@@ -108,17 +116,17 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
       dialog: createDialogBox(),
     }
 
-    result.viewer.add(result.camera)
+    result.scene.add(result.light)
+    result.scene.add(result.viewer)
+    result.scene.add(result.camera)
+
+    result.viewer.add(result.sky)
+    result.viewer.add(result.hotspots)
 
     result.camera.add(result.dialog.box)
 
     result.dialog.box.add(result.dialog.characterText)
     result.dialog.box.add(result.dialog.dialogText)
-
-    result.scene.add(result.light)
-    result.scene.add(result.sky)
-    result.scene.add(result.hotspots)
-    result.scene.add(result.viewer)
 
     return result
   }
@@ -192,13 +200,12 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     }
   }
 
-  const updateCamera = (p: Group, lookAtTarget: Vector3) => {
-    if (lookAtTarget.length() === 0) {
-      return
-    }
+  const updateCamera = (viewer: Group, camera: PerspectiveCamera, azimuth: number) => {
+    const viewerRot = viewer.rotation.y
+    const cameraRot = camera.rotation.y
+    const targetRot = viewerRot + cameraRot - viewerRot + MathUtils.degToRad(azimuth)
 
-    p.lookAt(p.worldToLocal(lookAtTarget.normalize()))
-    p.rotateOnAxis(new Vector3(0, 1, 0), MathUtils.DEG2RAD * 180)
+    viewer.rotation.set(viewer.rotation.x, targetRot, viewer.rotation.z)
   }
 
   const updateSkyMaterial = (sky: Mesh, texture: Texture) => {

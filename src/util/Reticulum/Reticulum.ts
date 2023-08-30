@@ -175,7 +175,7 @@ export default class Reticulum {
 
   private gazeOver(target: ReticulumTarget) {
     const d = target.userData
-    console.log('intersected changed to', target.uuid)
+    // console.log('intersected changed to', target.uuid)
     this.intersected = target
 
     // Reticle

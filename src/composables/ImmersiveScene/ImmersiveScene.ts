@@ -1,16 +1,16 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useDialogResult from '@/composables/DialogResult/DialogResult'
+import useGameScene from '@/composables/GameScene/GameScene'
 import useScene from '@/composables/Scene/Scene'
 import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import { NUM_CONTROLLERS } from '@/models/Scene/Scene'
 import { referenceSpaceType } from '@/models/Session/Session'
-import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
 import type { XRTargetRaySpace } from 'three'
-import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
+import { Frustum, Group, Matrix4, Texture, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { Ref } from 'vue'
@@ -25,6 +25,7 @@ export default function useImmersiveScene(
   refSpace: Ref<XRReferenceSpace | XRBoundedReferenceSpace | undefined>,
   onRender = (_width: number, _height: number) => {},
   dialog: ReactiveDialog,
+  texture: Ref<Texture | null>,
 ) {
   let obj: SceneObjects | undefined
   let reticulum: Reticulum | undefined
@@ -34,6 +35,7 @@ export default function useImmersiveScene(
 
   const { renderer } = storeToRefs(immersiveSessionStore)
   const { getCharacter } = useDialogResult()
+  const { scene } = useGameScene()
   const { hotspots } = useDialogHotspot()
   const {
     displayText,
@@ -44,6 +46,7 @@ export default function useImmersiveScene(
     updateHotspotDirections,
     updateSkyMaterial,
   } = useScene(true, renderer, dialog)
+  const isMounted = ref<boolean>(false)
   const isVisible = ref<boolean>(false)
 
   const onAdvance = () => {
@@ -172,6 +175,7 @@ export default function useImmersiveScene(
     controllers = controllers.length === NUM_CONTROLLERS ? controllers : createControllers(renderer.value, obj.viewer)
     reticulum = reticulum ?? createReticulum(obj.camera, controllers)
 
+    isMounted.value = true
     isVisible.value = false
   }
 
@@ -181,10 +185,15 @@ export default function useImmersiveScene(
     controllers = []
     reticulum = undefined
 
+    isMounted.value = false
     isVisible.value = false
   }
 
   const clear = () => {
+    if (!isMounted.value) {
+      return
+    }
+
     obj!.scene.visible = false
     obj!.hotspots.clear()
     reticulum?.clear()
@@ -192,14 +201,40 @@ export default function useImmersiveScene(
     isVisible.value = false
   }
 
-  const update = (scene: TaleDeckScene, texture: Texture) => {
-    updateCamera(obj!.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
-    updateSkyMaterial(obj!.sky, texture)
-    updateHotspots(obj!.hotspots, hotspots.value, reticulum)
-    updateReticulum(reticulum!)
+  const show = () => {
     obj!.scene.visible = true
     isVisible.value = true
   }
+
+  // React to an updated session.
+  watch(
+    () => [isMounted.value, scene.value],
+    (nV) => {
+      clear()
+
+      if (nV.every(Boolean)) {
+        updateCamera(obj!.viewer, obj!.camera, scene.value!.look_at_phi)
+        updateHotspots(obj!.hotspots, hotspots.value, reticulum)
+        updateReticulum(reticulum!)
+        show()
+      }
+    },
+    { immediate: true },
+  )
+
+  // React to a texture update.
+  watch(
+    () => [isMounted.value, texture.value],
+    (nV) => {
+      clear()
+
+      if (nV.every(Boolean)) {
+        updateSkyMaterial(obj!.sky, texture.value!)
+        show()
+      }
+    },
+    { immediate: true },
+  )
 
   watch(
     () => [isVisible.value, hotspots.value.length],
@@ -239,5 +274,5 @@ export default function useImmersiveScene(
     { immediate: true },
   )
 
-  return { renderer, mount, unmount, clear, update }
+  return { isMounted, mount, unmount }
 }

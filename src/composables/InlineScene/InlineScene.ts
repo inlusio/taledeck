@@ -1,11 +1,11 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
+import useGameScene from '@/composables/GameScene/GameScene'
 import useScene from '@/composables/Scene/Scene'
 import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
-import type { TaleDeckScene } from '@/models/TaleDeck/TaleDeck'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
-import { Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
+import { Frustum, Matrix4, PerspectiveCamera, Texture, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { Ref } from 'vue'
@@ -21,17 +21,20 @@ const viewProjectionMatrix = new Matrix4()
 
 export default function useInlineScene(
   onRender = (_width: number, _height: number) => {},
+  dialog: ReactiveDialog,
+  texture: Ref<Texture | null>,
   { wrapperEl, canvasEl }: InlineSceneEls,
   allowRendering: Ref<boolean>,
-  dialog: ReactiveDialog,
 ) {
   let obj: SceneObjects
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let controls: OrbitControls | undefined
   let reticulum: Reticulum | undefined
 
+  const isMounted = ref<boolean>(false)
   const isVisible = ref<boolean>(false)
   const renderer = ref<WebGLRenderer | null>(null)
+  const { scene } = useGameScene()
   const { hotspots } = useDialogHotspot()
   const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots, updateHotspotDirections } =
     useScene(false, renderer, dialog)
@@ -107,14 +110,20 @@ export default function useInlineScene(
 
     useResizeObserver(wrapperEl, ([entry]) => onCanvasResize(entry as ResizeObserverEntry))
 
+    isMounted.value = true
     isVisible.value = true
   }
 
   const unmount = () => {
+    isMounted.value = false
     isVisible.value = false
   }
 
   const clear = () => {
+    if (!isMounted.value) {
+      return
+    }
+
     isVisible.value = false
     obj!.scene.visible = false
     obj!.hotspots.clear()
@@ -123,15 +132,40 @@ export default function useInlineScene(
     ThreeMeshUI.update()
   }
 
-  const update = (scene: TaleDeckScene, texture: Texture) => {
-    updateCamera(obj.viewer, new Vector3(scene.look_at_x, scene.look_at_y, scene.look_at_z))
-    updateSkyMaterial(obj.sky, texture)
-    updateHotspots(obj.hotspots, hotspots.value, reticulum!)
-
+  const show = () => {
     obj!.scene.visible = true
     isVisible.value = true
     ThreeMeshUI.update()
   }
+
+  // React to an updated inline session.
+  watch(
+    () => [isMounted.value, allowRendering.value, scene.value],
+    (nV) => {
+      clear()
+
+      if (nV.every(Boolean)) {
+        updateCamera(obj.viewer, obj.camera, scene.value!.look_at_phi)
+        updateHotspots(obj.hotspots, hotspots.value, reticulum!)
+        show()
+      }
+    },
+    { immediate: true },
+  )
+
+  // React to a texture update.
+  watch(
+    () => [isMounted.value, allowRendering.value, texture.value],
+    (nV) => {
+      clear()
+
+      if (nV.every(Boolean)) {
+        updateSkyMaterial(obj!.sky, texture.value!)
+        show()
+      }
+    },
+    { immediate: true },
+  )
 
   watch(
     () => [isVisible.value, hotspots.value.length],
@@ -143,5 +177,5 @@ export default function useInlineScene(
     { immediate: true },
   )
 
-  return { mount, unmount, clear, update }
+  return { isMounted, mount, unmount }
 }
