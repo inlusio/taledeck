@@ -43,7 +43,7 @@ export interface TaleDeckScene extends TaleDeckCollection {
   tj_story_id: number
   tj_audio: Array<number>
   immersive_active: boolean
-  look_at_phi: number
+  look_at_theta: number
 }
 
 export interface TaleDeckAudio extends TaleDeckCollection {

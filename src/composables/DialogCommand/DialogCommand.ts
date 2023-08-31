@@ -67,12 +67,12 @@ export default function useDialogCommand(dialog: ReactiveDialog) {
       case DialogCommandId.AddHotspot: {
         const parsed = parseCommand<DialogCommandSpecAddHotspot, DialogCommandResultAddHotspot>(commandResult.command)
         const [_, label] = parsed._
-        const { x, y, z, gazeDuration, click = [], gazeLong = [] } = parsed
+        const { x, y, z, phi, theta, radius, gazeDuration, click = [], gazeLong = [] } = parsed
         const { metadata, hashtags } = commandResult
         const onClick = click.map((command) => ({ command, metadata, hashtags }))
         const onGazeLong = gazeLong.map((command) => ({ command, metadata, hashtags }))
 
-        hotspots.value.push({ x, y, z, label, gazeDuration, onClick, onGazeLong })
+        hotspots.value.push({ x, y, z, phi, theta, radius, label, gazeDuration, onClick, onGazeLong })
         setHotspotShown(label, isHotspotShown(label) ?? true)
         break
       }

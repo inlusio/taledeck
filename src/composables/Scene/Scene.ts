@@ -69,10 +69,23 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   }
 
   const createHotspot = (material: MeshBasicMaterial, hotspot: DialogHotspot) => {
-    const { x, y, z } = hotspot
+    const { x, y, z, phi, theta, radius } = hotspot
     const result = new Mesh(new PlaneGeometry(3 * SCALE, 3 * SCALE), material)
-    result.position.set(x * SCALE, y * SCALE, (z ?? 0) * SCALE)
+
     result.userData.hotspot = hotspot
+
+    if ([x, y, z].every((coord) => coord != null)) {
+      result.position.set(x! * SCALE, y! * SCALE, z! * SCALE)
+      // result.position.setFromSphericalCoords()
+    } else if ([phi, theta, radius].every((coord) => coord != null)) {
+      result.position.setFromSphericalCoords(
+        radius! * SCALE,
+        MathUtils.degToRad(90 - phi!),
+        MathUtils.degToRad(theta! + 180),
+      )
+    } else {
+      throw new Error('Neither cartesian nor spherical coordinates were provided for hotspot!')
+    }
 
     return result
   }

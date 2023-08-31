@@ -104,8 +104,8 @@
               :height="height"
               :hotspot="hotspot"
               :width="width"
-              :x="hotspot.x"
-              :y="hotspot.y"
+              :x="hotspot.x ?? 0"
+              :y="hotspot.y ?? 0"
               @action="onActionRequested(hotspot.onClick)"
             >
               <template #default="{ label }">
