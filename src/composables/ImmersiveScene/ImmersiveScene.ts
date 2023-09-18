@@ -251,7 +251,7 @@ export default function useImmersiveScene(
     () => [isVisible.value, displayText.value],
     () => {
       if (!obj?.dialog) {
-        return
+        throw new Error('Scene items are not yet initialized!')
       }
 
       if (isVisible.value && displayText.value != null) {
