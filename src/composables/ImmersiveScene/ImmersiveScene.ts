@@ -10,12 +10,13 @@ import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
 import type { XRTargetRaySpace } from 'three'
-import { Frustum, Group, Matrix4, Texture, WebGLRenderer } from 'three'
+import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 
+const cameraTargetPosition = new Vector3()
 const viewFrustum = new Frustum()
 const viewProjectionMatrix = new Matrix4()
 
@@ -249,16 +250,25 @@ export default function useImmersiveScene(
   watch(
     () => [isVisible.value, displayText.value],
     () => {
+      if (!obj?.dialog) {
+        return
+      }
+
       if (isVisible.value && displayText.value != null) {
         const characterContent = getCharacter(displayText.value.markup)
         const dialogContent = displayText.value.text
 
-        //@ts-ignore
-        obj!.dialog.characterText.set({ content: characterContent ? `${characterContent}: ` : ' ' })
-        //@ts-ignore
-        obj!.dialog.dialogText.set({ content: dialogContent })
+        obj.dialog.cameraTarget.getWorldPosition(cameraTargetPosition)
+        obj.dialog.cameraTarget.lookAt(obj.camera.position)
 
-        obj!.dialog.box.visible = !!(characterContent || dialogContent)
+        //@ts-ignore
+        obj.dialog.characterText.set({ content: characterContent ? `${characterContent}: ` : ' ' })
+        //@ts-ignore
+        obj.dialog.dialogText.set({ content: dialogContent })
+
+        obj.dialog.box.position.set(...cameraTargetPosition.toArray())
+        obj.dialog.box.lookAt(obj.scene.position)
+        obj.dialog.box.visible = !!(characterContent || dialogContent)
       } else {
         if (obj?.dialog) {
           obj.dialog.box.visible = false

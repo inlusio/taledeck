@@ -132,11 +132,12 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     result.scene.add(result.light)
     result.scene.add(result.viewer)
     result.scene.add(result.camera)
+    result.scene.add(result.dialog.box)
 
     result.viewer.add(result.sky)
     result.viewer.add(result.hotspots)
 
-    result.camera.add(result.dialog.box)
+    result.camera.add(result.dialog.cameraTarget)
 
     result.dialog.box.add(result.dialog.characterText)
     result.dialog.box.add(result.dialog.dialogText)
@@ -175,11 +176,14 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   }
 
   const createDialogBox = (): SceneDialogBox => {
+    const cameraTarget = new Object3D()
+    cameraTarget.position.set(0, -4 * SCALE, -10 * SCALE)
+
     const box = new ThreeMeshUI.Block({
       width: 10 * SCALE,
       height: 2 * SCALE,
       padding: 0.4 * SCALE,
-      justifyContent: 'start',
+      justifyContent: 'center',
       textAlign: 'left',
       bestFit: 'shrink',
       backgroundColor: new Color(0x000000),
@@ -188,8 +192,6 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
       fontTexture: '/font/roboto-msdf/Roboto-msdf.png',
     })
 
-    box.position.set(0, -4 * SCALE, -10 * SCALE)
-    box.rotation.set(MathUtils.DEG2RAD * -10, 0, 0)
     box.visible = false
 
     const characterText = new ThreeMeshUI.Text({
@@ -207,6 +209,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     })
 
     return {
+      cameraTarget,
       box,
       characterText,
       dialogText,

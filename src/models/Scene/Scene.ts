@@ -1,7 +1,8 @@
-import type { AmbientLight, Group, Mesh, PerspectiveCamera, Scene } from 'three'
+import type { AmbientLight, Group, Mesh, Object3D, PerspectiveCamera, Scene } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 
 export interface SceneDialogBox {
+  cameraTarget: Object3D
   box: ThreeMeshUI.Block
   characterText: ThreeMeshUI.Text
   dialogText: ThreeMeshUI.Text
