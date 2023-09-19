@@ -1,6 +1,7 @@
 import { useDialogHotspot } from '@/composables/DialogHotspot/DialogHotspot'
 import useDialogResult from '@/composables/DialogResult/DialogResult'
 import useGameScene from '@/composables/GameScene/GameScene'
+import useGameStory from '@/composables/GameStory/GameStory'
 import useScene from '@/composables/Scene/Scene'
 import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
@@ -17,6 +18,7 @@ import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 
 const cameraTargetPosition = new Vector3()
+const dialogBoxPosition = new Vector3()
 const viewFrustum = new Frustum()
 const viewProjectionMatrix = new Matrix4()
 
@@ -37,6 +39,7 @@ export default function useImmersiveScene(
   const { renderer } = storeToRefs(immersiveSessionStore)
   const { getCharacter } = useDialogResult()
   const { scene } = useGameScene()
+  const { story } = useGameStory()
   const { hotspots } = useDialogHotspot()
   const {
     displayText,
@@ -250,33 +253,40 @@ export default function useImmersiveScene(
   watch(
     () => [isVisible.value, displayText.value],
     () => {
+      if (!isVisible.value) {
+        return
+      }
+
       if (!obj?.dialog) {
         throw new Error('Scene items are not yet initialized!')
       }
 
-      if (isVisible.value && displayText.value != null) {
+      if (displayText.value != null) {
         const characterContent = getCharacter(displayText.value.markup)
         const dialogContent = displayText.value.text
 
         obj.dialog.cameraTarget.getWorldPosition(cameraTargetPosition)
-        obj.dialog.cameraTarget.lookAt(obj.camera.position)
+        obj.dialog.box.getWorldPosition(dialogBoxPosition)
+
+        const distance = dialogBoxPosition.distanceTo(cameraTargetPosition)
+
+        if (distance > (story.value?.immersive_dialog_box_move_threshold ?? 0)) {
+          obj.dialog.cameraTarget.lookAt(obj.camera.position)
+          obj.dialog.box.position.set(...cameraTargetPosition.toArray())
+          obj.dialog.box.lookAt(obj.camera.position)
+        }
 
         //@ts-ignore
         obj.dialog.characterText.set({ content: characterContent ? `${characterContent}: ` : ' ' })
         //@ts-ignore
         obj.dialog.dialogText.set({ content: dialogContent })
-
-        obj.dialog.box.position.set(...cameraTargetPosition.toArray())
-        obj.dialog.box.lookAt(obj.scene.position)
         obj.dialog.box.visible = !!(characterContent || dialogContent)
       } else {
-        if (obj?.dialog) {
-          obj.dialog.box.visible = false
-          //@ts-ignore
-          obj.dialog.characterText.set({ content: '' })
-          //@ts-ignore
-          obj.dialog.dialogText.set({ content: '' })
-        }
+        obj.dialog.box.visible = false
+        //@ts-ignore
+        obj.dialog.characterText.set({ content: '' })
+        //@ts-ignore
+        obj.dialog.dialogText.set({ content: '' })
       }
 
       ThreeMeshUI.update()
