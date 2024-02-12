@@ -1,7 +1,7 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   import { computed, useAttrs } from 'vue'
 
-  type LoadingStrategy = 'auto' | 'eager' | 'lazy'
+  type LoadingStrategy = 'eager' | 'lazy' | undefined
 
   interface RootAttrs {
     srcset: string
@@ -24,7 +24,7 @@
   const emit = defineEmits<Emits>()
   const props = withDefaults(defineProps<Props>(), {
     api: 'sharp',
-    loading: 'auto',
+    loading: undefined,
     resolutions: () => [1, 2],
   })
   const attrs = useAttrs()
@@ -71,7 +71,7 @@
 </script>
 
 <template>
-  <img @load="emit('load', true)" :alt="alt" :loading="loading" class="c-responsive-img" v-bind="rootAttrs" />
+  <img :alt="alt" :loading="loading" class="c-responsive-img" v-bind="rootAttrs" @load="emit('load', true)" />
 </template>
 
 <style lang="scss" scoped>

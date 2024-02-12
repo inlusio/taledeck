@@ -145,7 +145,7 @@ export default function useInlineScene(
       clear()
 
       if (nV.every(Boolean)) {
-        updateCamera(obj.viewer, obj.camera, scene.value!.look_at_theta)
+        updateCamera(obj.viewer, obj.camera, scene.value!.look_at_theta ?? 0)
         updateHotspots(obj.hotspots, hotspots.value, reticulum!)
         show()
       }
