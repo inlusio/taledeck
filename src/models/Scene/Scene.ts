@@ -14,6 +14,7 @@ export interface SceneObjects {
   viewer: Group
   light: AmbientLight
   sky: Mesh
+  model: Group
   hotspots: Group
   dialog: SceneDialogBox
 }

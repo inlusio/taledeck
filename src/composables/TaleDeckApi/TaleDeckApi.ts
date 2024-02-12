@@ -1,7 +1,6 @@
-import { Directus } from '@directus/sdk'
+import type { TaleDeckAudioOverview, TaleDeckCollections, TaleDeckSceneOverview } from '@/models/TaleDeck/TaleDeck'
 import type { ManyItems } from '@directus/sdk'
-import type { TaleDeckAudioOverview, TaleDeckCollections } from '@/models/TaleDeck/TaleDeck'
-import type { TaleDeckSceneOverview } from '@/models/TaleDeck/TaleDeck'
+import { Directus } from '@directus/sdk'
 
 const directus = new Directus<TaleDeckCollections>(import.meta.env.VITE_TALE_DECK_API_BASE_URL)
 

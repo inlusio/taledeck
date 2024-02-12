@@ -28,6 +28,7 @@ import {
   WebGLRenderer,
 } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import type { Ref } from 'vue'
 import { computed } from 'vue'
 
@@ -57,6 +58,10 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     const result = new Scene()
     result.background = new Color(0x4c4c4e)
     return result
+  }
+
+  const createModel = () => {
+    return new Group()
   }
 
   const createHotspotMaterial = () => {
@@ -125,6 +130,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
       hotspots: createHotspots(),
       light: createLight(),
       scene: createScene(),
+      model: createModel(),
       sky: createSky(),
       dialog: createDialogBox(),
     }
@@ -136,6 +142,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
 
     result.viewer.add(result.sky)
     result.viewer.add(result.hotspots)
+    result.viewer.add(result.model)
 
     result.camera.add(result.dialog.cameraTarget)
 
@@ -232,6 +239,15 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
   }
 
+  const updateModel = (model: Group, gltf: GLTF) => {
+    if (model == null || gltf == null) {
+      throw new Error('Failed to load model!')
+    }
+
+    model.clear()
+    model.add(gltf.scene)
+  }
+
   const updateHotspots = (parent: Group, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
     const hotspotMaterial = createHotspotMaterial()
     const children = hotspots.map((hotspot) => createHotspot(hotspotMaterial, hotspot))
@@ -265,6 +281,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     createDialogBox,
     updateCamera,
     updateSkyMaterial,
+    updateModel,
     updateHotspots,
     updateHotspotDirections,
   }

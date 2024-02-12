@@ -1,11 +1,11 @@
-import { defineStore } from 'pinia'
-import { StoreId } from '@/models/Store'
-import usePersistentStorage from '@/composables/PersistentStorage/PersistentStorage'
-import type { AudioChannelDict } from '@/models/AudioChannel/AudioChannel'
-import { ref } from 'vue'
-import type { AudioFileContentDict } from '@/models/AudioFile/AudioFile'
 import useGameStory from '@/composables/GameStory/GameStory'
+import usePersistentStorage from '@/composables/PersistentStorage/PersistentStorage'
 import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
+import type { AudioChannelDict } from '@/models/AudioChannel/AudioChannel'
+import type { AudioFileContentDict } from '@/models/AudioFile/AudioFile'
+import { StoreId } from '@/models/Store'
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
 export const useAudioStore = defineStore(StoreId.Audio, () => {
   const { persistentRef } = usePersistentStorage(StoreId.Audio)
@@ -21,7 +21,7 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
 
   const load = async () => {
     audioFiles.value = audioOverviewList.value.reduce((acc, { audio_slug, audio_file }) => {
-      acc[audio_slug] = { id: audio_slug, file: getFileEntry(audio_file) }
+      acc[audio_slug] = { id: audio_slug, file: getFileEntry(audio_file) as string }
       return acc
     }, {} as AudioFileContentDict)
   }

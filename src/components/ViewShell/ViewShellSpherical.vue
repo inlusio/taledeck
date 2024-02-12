@@ -8,14 +8,19 @@
   import type { ReactiveDialog } from '@/models/Dialog/Dialog'
   import { toReactive } from '@vueuse/core'
   import { Texture, TextureLoader, Vector2 } from 'three'
-  import { computed, onBeforeUnmount, ref, watch } from 'vue'
+  import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+  import { computed, markRaw, onBeforeUnmount, ref, watch } from 'vue'
 
-  const TL = new TextureLoader()
+  const textureLoader = new TextureLoader()
   const textureDict: Record<string, Texture> = {}
+
+  const modelLoader = new GLTFLoader()
+  const modelDict: Record<string, GLTF> = {}
 
   interface Props extends UseBemProps {
     facets?: Array<string>
     background?: string
+    model?: string
     width: number
     height: number
     dialog: ReactiveDialog
@@ -24,6 +29,7 @@
   const props = withDefaults(defineProps<Props>(), {
     facets: () => [],
     background: '',
+    model: '',
   })
 
   const { isMounted } = useIsMounted()
@@ -31,9 +37,10 @@
 
   const canvasEl = ref<HTMLCanvasElement | null>(null)
   const wrapperEl = ref<HTMLDivElement | null>(null)
-  const texture = ref<Texture | null>(null)
   const canvasWidth = ref<number>(0)
   const canvasHeight = ref<number>(0)
+  const currentTexture = ref<Texture | null>(null)
+  const currentModel = ref<GLTF | null>(null)
 
   const onRenderImmersive = (width: number, height: number) => {
     canvasWidth.value = width
@@ -47,12 +54,13 @@
 
   const { dialog } = toReactive(props)
 
-  const immersiveScene = useImmersiveSession(onRenderImmersive, dialog, texture)
+  const immersiveScene = useImmersiveSession(onRenderImmersive, dialog, currentTexture, currentModel)
   const { isSessionReady, isPresenting, requestSession, endSession: endImmersiveSession } = immersiveScene
   const inlineScene = useInlineScene(
     onRenderInline,
     dialog,
-    texture,
+    currentTexture,
+    currentModel,
     { wrapperEl, canvasEl },
     computed<boolean>(() => !isPresenting.value),
   )
@@ -72,12 +80,25 @@
     () => props.background,
     async (url) => {
       if (url != null) {
-        texture.value = null
-        textureDict[url] = textureDict[url] ?? (await TL.loadAsync(url))
-        texture.value = textureDict[url]
-        texture.value.center = new Vector2(0.5, 0.5)
-        texture.value.rotation = Math.PI
-        texture.value.flipY = false
+        currentTexture.value = null
+        textureDict[url] = textureDict[url] ?? (await textureLoader.loadAsync(url))
+        currentTexture.value = textureDict[url]
+        currentTexture.value.center = new Vector2(0.5, 0.5)
+        currentTexture.value.rotation = Math.PI
+        currentTexture.value.flipY = false
+      }
+    },
+    { immediate: true },
+  )
+
+  // React to `props.model` change (load new model).
+  watch(
+    () => props.model,
+    async (url) => {
+      if (url != null) {
+        currentModel.value = null
+        modelDict[url] = modelDict[url] ?? markRaw(await modelLoader.loadAsync(url))
+        currentModel.value = modelDict[url]
       }
     },
     { immediate: true },

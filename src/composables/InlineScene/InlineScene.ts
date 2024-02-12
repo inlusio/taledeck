@@ -8,6 +8,7 @@ import { useResizeObserver } from '@vueuse/core'
 import { Frustum, Matrix4, PerspectiveCamera, Texture, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 
@@ -23,6 +24,7 @@ export default function useInlineScene(
   onRender = (_width: number, _height: number) => {},
   dialog: ReactiveDialog,
   texture: Ref<Texture | null>,
+  model: Ref<GLTF | null>,
   { wrapperEl, canvasEl }: InlineSceneEls,
   allowRendering: Ref<boolean>,
 ) {
@@ -36,8 +38,15 @@ export default function useInlineScene(
   const renderer = ref<WebGLRenderer | null>(null)
   const { scene } = useGameScene()
   const { hotspots } = useDialogHotspot()
-  const { createObjects, createReticulum, updateCamera, updateSkyMaterial, updateHotspots, updateHotspotDirections } =
-    useScene(false, renderer, dialog)
+  const {
+    createObjects,
+    createReticulum,
+    updateCamera,
+    updateSkyMaterial,
+    updateModel,
+    updateHotspots,
+    updateHotspotDirections,
+  } = useScene(false, renderer, dialog)
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
     const { width, height } = entry.contentRect
@@ -161,6 +170,20 @@ export default function useInlineScene(
 
       if (nV.every(Boolean)) {
         updateSkyMaterial(obj!.sky, texture.value!)
+        show()
+      }
+    },
+    { immediate: true },
+  )
+
+  // React to a model update.
+  watch(
+    () => [isMounted.value, allowRendering.value, model.value],
+    (nV) => {
+      clear()
+
+      if (nV.every(Boolean)) {
+        updateModel(obj!.model, model.value!)
         show()
       }
     },

@@ -13,6 +13,7 @@ import { storeToRefs } from 'pinia'
 import type { XRTargetRaySpace } from 'three'
 import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
+import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
@@ -29,6 +30,7 @@ export default function useImmersiveScene(
   onRender = (_width: number, _height: number) => {},
   dialog: ReactiveDialog,
   texture: Ref<Texture | null>,
+  model: Ref<GLTF | null>,
 ) {
   let obj: SceneObjects | undefined
   let reticulum: Reticulum | undefined
@@ -49,6 +51,7 @@ export default function useImmersiveScene(
     updateHotspots,
     updateHotspotDirections,
     updateSkyMaterial,
+    updateModel,
   } = useScene(true, renderer, dialog)
   const isMounted = ref<boolean>(false)
   const isVisible = ref<boolean>(false)
@@ -234,6 +237,20 @@ export default function useImmersiveScene(
 
       if (nV.every(Boolean)) {
         updateSkyMaterial(obj!.sky, texture.value!)
+        show()
+      }
+    },
+    { immediate: true },
+  )
+
+  // React to a model update.
+  watch(
+    () => [isMounted.value, model.value],
+    (nV) => {
+      clear()
+
+      if (nV.every(Boolean)) {
+        updateModel(obj!.model, model.value!)
         show()
       }
     },

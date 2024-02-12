@@ -15,8 +15,8 @@
   import { TaleDeckStoryType } from '@/models/TaleDeck/TaleDeck'
   import { computed, defineAsyncComponent } from 'vue'
 
-  const ViewShellPlanar = defineAsyncComponent(() => import(`../components/ViewShell/ViewShellPlanar.vue`))
-  const ViewShellSpherical = defineAsyncComponent(() => import(`../components/ViewShell/ViewShellSpherical.vue`))
+  const ViewShellPlanar = defineAsyncComponent(() => import('../components/ViewShell/ViewShellPlanar.vue'))
+  const ViewShellSpherical = defineAsyncComponent(() => import('../components/ViewShell/ViewShellSpherical.vue'))
 
   const { getFileEntry } = useTaleDeckApi()
 
@@ -68,6 +68,7 @@
               :dialog="dialog"
               :facets="[ViewShellFacet.Scene]"
               :height="900"
+              :model="scene.scene_model ? getFileEntry(scene.scene_model) : undefined"
               :width="1600"
             >
               <template #debug>
