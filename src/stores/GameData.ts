@@ -1,4 +1,6 @@
-import { defineStore } from 'pinia'
+import usePersistentStorage from '@/composables/PersistentStorage/PersistentStorage'
+import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
+import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
 import { StoreId } from '@/models/Store'
 import type {
   TaleDeckAudioOverview,
@@ -6,19 +8,20 @@ import type {
   TaleDeckSceneOverview,
   TaleDeckStory,
 } from '@/models/TaleDeck/TaleDeck'
+import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
-import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
-import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
 
 export const useGameDataStore = defineStore(StoreId.GameData, () => {
   const { storyParam, sceneParam } = useRouteRecord()
   const { getAudioList, getSceneList, getStoryEntryBySlug, getSceneEntryBySlug } = useTaleDeckApi()
-  // const { persistentRef } = usePersistentStorage(StoreId.TaleDeck)
+  const { persistentRef } = usePersistentStorage(StoreId.GameData)
 
   const storyEntry = ref<TaleDeckStory | null>(null)
   const sceneOverviewList = ref<Array<TaleDeckSceneOverview>>([])
   const sceneEntry = ref<TaleDeckScene | null>(null)
   const audioOverviewList = ref<Array<TaleDeckAudioOverview>>([])
+
+  const returnSceneId = persistentRef<number | null>('returnSceneId', null)
 
   // With persistent ref
   // const storyEntry = persistentRef<TaleDeckStory | null>('storyEntry', null, { customSerializerId: CustomSerializerId.Object })
@@ -36,6 +39,8 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
 
       sceneOverviewList.value = r1.data as Array<TaleDeckSceneOverview>
       audioOverviewList.value = r2.data as Array<TaleDeckAudioOverview>
+
+      returnSceneId.value = storyEntry.value?.tj_return_scene_id ?? null
     },
     { immediate: true },
   )
@@ -67,6 +72,10 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
 
         if (Array.isArray(data) && data.length > 0) {
           sceneEntry.value = data[0] as TaleDeckScene
+
+          if (storyEntry.value.tj_return_scene_id == null) {
+            returnSceneId.value = sceneEntry.value.id
+          }
         } else {
           // TODO: Handle no entries error
           sceneEntry.value = null
@@ -83,5 +92,6 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
     sceneOverviewList,
     sceneEntry,
     audioOverviewList,
+    returnSceneId,
   }
 })

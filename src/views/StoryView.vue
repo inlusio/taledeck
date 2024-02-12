@@ -1,28 +1,33 @@
-<script setup lang="ts">
-  import useDialog from '@/composables/Dialog/Dialog'
-  import { useRouter } from 'vue-router'
-  import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
-  import { RouteRecordId } from '@/models/RouteRecord/RouteRecord'
-  import useAudioController from '@/composables/AudioController/AudioController'
-  import { computed, ref, watch } from 'vue'
-  import type { CSSProperties } from 'vue'
+<script lang="ts" setup>
   import DotLoader from '@/components/DotLoader/DotLoader.vue'
+  import useAudioController from '@/composables/AudioController/AudioController'
+  import useDialog from '@/composables/Dialog/Dialog'
   import useGameStory from '@/composables/GameStory/GameStory'
-  import useTranslation from '@/composables/Translation/Translation'
+  import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
   import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
+  import useTranslation from '@/composables/Translation/Translation'
+  import { RouteRecordId } from '@/models/RouteRecord/RouteRecord'
   import type { TaleDeckSceneOverview } from '@/models/TaleDeck/TaleDeck'
+  import type { CSSProperties } from 'vue'
+  import { computed, ref, watch } from 'vue'
+  import { useRouter } from 'vue-router'
+
+  const i18n: Record<string, string> = {
+    story_continue_text: 'Story fortsetzen',
+    story_start_text: 'Story neustarten',
+  }
 
   const router = useRouter()
   const { t } = useTranslation()
   const { toRoute } = useRouteRecord()
   const { dialog, reset: resetDialog } = useDialog()
   const { reset: resetAudio } = useAudioController()
-  const { story, sceneOverviewList } = useGameStory()
+  const { story, sceneOverviewList, returnSceneId, resetStory } = useGameStory()
   const { getFileEntry } = useTaleDeckApi()
 
   const isLoaded = ref<boolean>(false)
-  const startScene = ref<TaleDeckSceneOverview>({ id: -1, scene_slug: 'intro' })
-  const returnScene = ref<TaleDeckSceneOverview>({ id: -1, scene_slug: 'map' })
+  const startScene = ref<TaleDeckSceneOverview | null>(null)
+  const returnScene = ref<TaleDeckSceneOverview | null>(null)
 
   const rootStyles = computed<CSSProperties>(() => {
     const img = story.value?.story_image
@@ -38,10 +43,10 @@
     async () => {
       if (story.value != null && sceneOverviewList.value.length > 0) {
         const startSceneEntry = sceneOverviewList.value.find(({ id }) => id === story.value?.tj_start_scene_id)
-        const returnSceneEntry = sceneOverviewList.value.find(({ id }) => id === story.value?.tj_return_scene_id)
+        const returnSceneEntry = sceneOverviewList.value.find(({ id }) => id === returnSceneId.value)
 
-        startScene.value = startSceneEntry || startScene.value
-        returnScene.value = returnSceneEntry || returnScene.value
+        startScene.value = startSceneEntry ?? startScene.value
+        returnScene.value = returnSceneEntry ?? returnScene.value
 
         isLoaded.value = true
       }
@@ -50,25 +55,28 @@
   )
 
   const onReset = () => {
+    resetStory()
     resetDialog()
     resetAudio()
 
-    router.push(
-      toRoute({
-        name: RouteRecordId.Scene,
-        params: { scene: startScene.value.scene_slug },
-      }),
-    )
+    if (startScene.value) {
+      router.push(
+        toRoute({
+          name: RouteRecordId.Scene,
+          params: { scene: startScene.value.scene_slug },
+        }),
+      )
+    }
   }
 </script>
 
 <template>
-  <main class="p-page-story s-layout-content" :style="rootStyles">
+  <main :style="rootStyles" class="p-page-story s-layout-content">
     <div class="s-layout-content__main">
       <div class="s-container s-container--primary">
         <div class="s-container__container p-page-story__main">
           <div class="p-page-story__content u-typography-root">
-            <div class="p-page-story__top" v-if="isLoaded">
+            <div v-if="isLoaded" class="p-page-story__top">
               <h1 class="p-page-story__title">
                 {{ story?.story_title }}
               </h1>
@@ -78,30 +86,45 @@
             </div>
             <div class="p-page-story__details">
               <!-- <pre style="font-size: 1rem" v-text="story" /> -->
-              <div class="p-page-story__actions" v-if="isLoaded">
+              <div v-if="isLoaded" class="p-page-story__actions">
                 <template v-if="dialog.hasStarted">
-                  <RouterLink
-                    class="u-reset btn btn--medium btn--highlight"
-                    :to="{ name: 'scene', params: { scene: returnScene?.scene_slug } }"
-                  >
-                    Story fortsetzen
-                  </RouterLink>
-                  <button @click="onReset" class="u-reset btn btn--medium btn--highlight">Story neustarten</button>
+                  <template v-if="startScene">
+                    <RouterLink
+                      :to="{ name: 'scene', params: { scene: returnScene?.scene_slug } }"
+                      class="u-reset btn btn--medium btn--highlight"
+                    >
+                      {{ i18n.story_continue_text }}
+                    </RouterLink>
+                  </template>
+                  <template v-else>
+                    <button class="u-reset btn btn--medium btn--highlight" disabled>
+                      {{ i18n.story_continue_text }}
+                    </button>
+                  </template>
+
+                  <button class="u-reset btn btn--medium btn--highlight" @click="onReset">Story neustarten</button>
                 </template>
                 <template v-else>
-                  <RouterLink
-                    class="u-reset btn btn--medium btn--highlight"
-                    :to="{ name: 'scene', params: { scene: startScene?.scene_slug } }"
-                  >
-                    Story starten
-                  </RouterLink>
+                  <template v-if="startScene?.scene_slug">
+                    <RouterLink
+                      :to="{ name: 'scene', params: { scene: startScene?.scene_slug } }"
+                      class="u-reset btn btn--medium btn--highlight"
+                    >
+                      {{ i18n.story_start_text }}
+                    </RouterLink>
+                  </template>
+                  <template v-else>
+                    <button class="u-reset btn btn--medium btn--highlight" disabled>
+                      {{ i18n.story_start_text }}
+                    </button>
+                  </template>
                 </template>
               </div>
-              <div class="p-page-story__loading" v-if="!isLoaded">
+              <div v-if="!isLoaded" class="p-page-story__loading">
                 <b>
                   {{ t('general.loading') }}
                 </b>
-                <button @click="onReset" class="u-reset btn btn--medium btn--highlight" disabled>
+                <button class="u-reset btn btn--medium btn--highlight" disabled @click="onReset">
                   <DotLoader :facets="['dark']" />
                 </button>
               </div>
@@ -113,7 +136,7 @@
   </main>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
   @use '@/assets/scss/util/color/color' as col;
   @use '@/assets/scss/base/typography/typography' as type;
 
