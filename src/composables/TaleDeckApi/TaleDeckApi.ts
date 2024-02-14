@@ -28,8 +28,8 @@ async function getAudioList(tjIds: Array<number>, storyId: number): Promise<Many
 /**
  * Get a TaleDeck FILE entry by id
  */
-function getFileEntry(tjFileId: string): string {
-  return `${import.meta.env.VITE_TALE_DECK_API_BASE_URL}assets/${tjFileId}`
+function getFileEntry(tjFileId?: string): string | undefined {
+  return tjFileId ? `${import.meta.env.VITE_TALE_DECK_API_BASE_URL}assets/${tjFileId}` : undefined
 }
 
 /**

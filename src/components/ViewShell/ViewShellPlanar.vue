@@ -25,7 +25,7 @@
 
   const props = withDefaults(defineProps<Props>(), {
     facets: () => [],
-    background: '',
+    background: undefined,
   })
 
   const { t } = useTranslation()

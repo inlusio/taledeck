@@ -5,7 +5,7 @@ import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
-import { Frustum, Matrix4, PerspectiveCamera, Texture, WebGLRenderer } from 'three'
+import { AnimationMixer, Clock, Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -17,6 +17,7 @@ interface InlineSceneEls {
   canvasEl: Ref<HTMLCanvasElement | null>
 }
 
+const clock = new Clock()
 const viewFrustum = new Frustum()
 const viewProjectionMatrix = new Matrix4()
 
@@ -32,6 +33,7 @@ export default function useInlineScene(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let controls: OrbitControls | undefined
   let reticulum: Reticulum | undefined
+  let mixer: AnimationMixer | undefined
 
   const isMounted = ref<boolean>(false)
   const isVisible = ref<boolean>(false)
@@ -42,10 +44,10 @@ export default function useInlineScene(
     createObjects,
     createReticulum,
     updateCamera,
-    updateSkyMaterial,
-    updateModel,
     updateHotspots,
     updateHotspotDirections,
+    updateModel,
+    updateSkyMaterial,
   } = useScene(false, renderer, dialog)
 
   const onCanvasResize = (entry: ResizeObserverEntry) => {
@@ -66,12 +68,14 @@ export default function useInlineScene(
     }
 
     reticulum?.update()
+
     renderer.value.render(obj.scene, obj.camera)
 
     if (wrapperEl.value == null) {
       return
     }
 
+    mixer?.update(clock.getDelta())
     updateFrustum()
     updateHotspotDirections(obj.hotspots, obj.camera)
 
@@ -178,12 +182,13 @@ export default function useInlineScene(
 
   // React to a model update.
   watch(
-    () => [isMounted.value, allowRendering.value, model.value],
+    () => [isMounted.value, allowRendering.value, model.value, scene.value],
     (nV) => {
       clear()
 
       if (nV.every(Boolean)) {
-        updateModel(obj!.model, model.value!)
+        const { scene_position_x: x, scene_position_y: y, scene_position_z: z } = scene.value!
+        mixer = updateModel(obj!.model, model.value!, new Vector3(x, y, z))
         show()
       }
     },

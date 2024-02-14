@@ -28,8 +28,8 @@
 
   const props = withDefaults(defineProps<Props>(), {
     facets: () => [],
-    background: '',
-    model: '',
+    background: undefined,
+    model: undefined,
   })
 
   const { isMounted } = useIsMounted()

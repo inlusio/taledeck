@@ -10,14 +10,15 @@ import { referenceSpaceType } from '@/models/Session/Session'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
-import type { XRTargetRaySpace } from 'three'
-import { Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
+import type { AnimationMixer, XRTargetRaySpace } from 'three'
+import { Clock, Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
 import type { Ref } from 'vue'
 import { ref, watch } from 'vue'
 
+const clock = new Clock()
 const cameraTargetPosition = new Vector3()
 const dialogBoxPosition = new Vector3()
 const viewFrustum = new Frustum()
@@ -35,6 +36,7 @@ export default function useImmersiveScene(
   let obj: SceneObjects | undefined
   let reticulum: Reticulum | undefined
   let controllers: Array<XRTargetRaySpace> = []
+  let mixer: AnimationMixer | undefined
 
   const immersiveSessionStore = useImmersiveSessionStore()
 
@@ -50,8 +52,8 @@ export default function useImmersiveScene(
     updateCamera,
     updateHotspots,
     updateHotspotDirections,
-    updateSkyMaterial,
     updateModel,
+    updateSkyMaterial,
   } = useScene(true, renderer, dialog)
   const isMounted = ref<boolean>(false)
   const isVisible = ref<boolean>(false)
@@ -80,6 +82,7 @@ export default function useImmersiveScene(
         context.value.viewport(x, y, width, height)
       }
 
+      mixer?.update(clock.getDelta())
       updateFrustum(view.projectionMatrix)
       updateHotspotDirections(obj!.hotspots, obj!.camera)
       renderScene()
@@ -245,12 +248,13 @@ export default function useImmersiveScene(
 
   // React to a model update.
   watch(
-    () => [isMounted.value, model.value],
+    () => [isMounted.value, model.value, scene.value],
     (nV) => {
       clear()
 
       if (nV.every(Boolean)) {
-        updateModel(obj!.model, model.value!)
+        const { scene_position_x: x, scene_position_y: y, scene_position_z: z } = scene.value!
+        mixer = updateModel(obj!.model, model.value!, new Vector3(x, y, z))
         show()
       }
     },

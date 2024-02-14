@@ -8,9 +8,9 @@ import { DialogResultType } from '@/models/DialogResult/DialogResult'
 import type { SceneDialogBox, SceneObjects } from '@/models/Scene/Scene'
 import { SCALE, TAR_WORLD_SIZE } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
-import type { XRTargetRaySpace } from 'three'
 import {
   AmbientLight,
+  AnimationMixer,
   BackSide,
   CanvasTexture,
   Color,
@@ -25,14 +25,16 @@ import {
   Scene,
   SphereGeometry,
   Texture,
+  Vector3,
   WebGLRenderer,
+  type XRTargetRaySpace,
 } from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import type { Ref } from 'vue'
 import { computed } from 'vue'
 
-export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRenderer | null>, dialog: ReactiveDialog) {
+export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRenderer | null>, dialog: ReactiveDialog) {
   const { getResultType } = useDialogResult()
   const { handleCommand } = useDialogCommand(dialog)
   const { canvas: hotspotEl } = useInlineHotspotTemplate()
@@ -103,7 +105,7 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
   }
 
   const createCamera = () => {
-    const result = new PerspectiveCamera(90, undefined, 0.1, TAR_WORLD_SIZE + 1)
+    const result = new PerspectiveCamera(90, undefined, 0.01, TAR_WORLD_SIZE + 1)
     result.position.set(0, 0, 0.01)
     result.rotation.order = 'YXZ'
 
@@ -239,13 +241,23 @@ export default function useScene(isImmersive: boolean, renderer: Ref<WebGLRender
     sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
   }
 
-  const updateModel = (model: Group, gltf: GLTF) => {
+  const updateModel = (model: Group, gltf: GLTF, position: Vector3) => {
     if (model == null || gltf == null) {
       throw new Error('Failed to load model!')
     }
 
     model.clear()
     model.add(gltf.scene)
+
+    model.position.set(position.x ?? 0, position.y ?? 0, position.z ?? 0)
+
+    const mixer = new AnimationMixer(gltf.scene)
+
+    if (gltf.animations.length) {
+      mixer.clipAction(gltf.animations[0]).play()
+    }
+
+    return mixer
   }
 
   const updateHotspots = (parent: Group, hotspots: Array<DialogHotspot>, reticulum?: Reticulum) => {
