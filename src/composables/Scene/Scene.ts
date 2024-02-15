@@ -246,9 +246,10 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
       throw new Error('Failed to load model!')
     }
 
+    gltf.scene.traverse((obj) => (obj.frustumCulled = false))
+
     model.clear()
     model.add(gltf.scene)
-
     model.position.set(position.x ?? 0, position.y ?? 0, position.z ?? 0)
 
     const mixer = new AnimationMixer(gltf.scene)
