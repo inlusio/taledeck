@@ -29,6 +29,7 @@
   })
 
   const { t } = useTranslation()
+  const { handleCommand } = useDialogCommand(props.dialog)
   const { bemAdd, bemFacets } = useBem('c-view-shell-planar', props, {})
   const { hotspots, isHotspotShown } = useDialogHotspot()
 
@@ -51,7 +52,6 @@
   }
 
   const onActionRequested = (commandData: Array<DialogResultCommandData> | undefined = []) => {
-    const { handleCommand } = useDialogCommand(props.dialog)
     commandData.forEach((command) => handleCommand(command))
   }
 

@@ -88,7 +88,7 @@
               <!-- <pre style="font-size: 1rem" v-text="story" /> -->
               <div v-if="isLoaded" class="p-page-story__actions">
                 <template v-if="dialog.hasStarted">
-                  <template v-if="startScene">
+                  <template v-if="returnScene?.scene_slug">
                     <RouterLink
                       :to="{ name: 'scene', params: { scene: returnScene?.scene_slug } }"
                       class="u-reset btn btn--medium btn--highlight"

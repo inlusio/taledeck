@@ -1,5 +1,6 @@
 <script lang="ts" setup>
   import useAudioController from '@/composables/AudioController/AudioController'
+  import useGameScene from '@/composables/GameScene/GameScene'
   import useGameStory from '@/composables/GameStory/GameStory'
   import useUiController from '@/composables/UiController/UiController'
   import useXrApiController from '@/composables/XrApiController/XrApiController'
@@ -8,6 +9,7 @@
   const { hasXr, hasImmersiveXr } = useXrApiController()
   const { allowAudio, audioChannels } = useAudioController()
   const { audioOverviewList, sceneOverviewList } = useGameStory()
+  const { scene, sceneSlug } = useGameScene()
 </script>
 
 <template>
@@ -19,12 +21,18 @@
       <pre class="c-debug-panel__item"><b>XR supported:</b> {{ hasXr ? 'true' : 'false' }}</pre>
       <pre class="c-debug-panel__item"><b>Immersive XR supported:</b> {{ hasImmersiveXr ? 'true' : 'false' }}</pre>
       <details class="c-debug-panel__details">
-        <summary><b>Audio channels:</b></summary>
-        <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />
+        <summary><b>Scene list:</b></summary>
+        <pre>{{ sceneOverviewList }}</pre>
       </details>
       <details class="c-debug-panel__details">
-        <summary><b>Scene List:</b></summary>
-        <pre>{{ sceneOverviewList }}</pre>
+        <summary><b>Scene details:</b></summary>
+        <pre><b>Slug:</b> {{ sceneSlug }}</pre>
+        <pre><b>Raw content:</b></pre>
+        <pre>{{ scene }}</pre>
+      </details>
+      <details class="c-debug-panel__details">
+        <summary><b>Audio channels:</b></summary>
+        <pre v-for="channel in audioChannels" :key="channel.label" v-text="channel" />
       </details>
       <details class="c-debug-panel__details">
         <summary><b>Audio List:</b></summary>
@@ -51,8 +59,9 @@
     left: 0;
     height: auto;
     max-height: 100%;
-    width: 320px;
+    max-width: calc(((100vw - 900px) / 2) - 40px);
     padding: 4px;
+    overflow-x: auto;
     overflow-y: auto;
     font-size: 1.2rem;
     color: col.$monochrome-white;
@@ -60,7 +69,7 @@
   }
 
   .c-debug-panel__details {
-    overflow: hidden;
+    cursor: default;
     padding: 0.5em 0.5em 0;
   }
 
