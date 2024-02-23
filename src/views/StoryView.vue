@@ -14,7 +14,8 @@
 
   const i18n: Record<string, string> = {
     story_continue_text: 'Story fortsetzen',
-    story_start_text: 'Story neustarten',
+    story_start_text: 'Story starten',
+    story_restart_text: 'Story neustarten',
   }
 
   const router = useRouter()
@@ -88,7 +89,7 @@
               <!-- <pre style="font-size: 1rem" v-text="story" /> -->
               <div v-if="isLoaded" class="p-page-story__actions">
                 <template v-if="dialog.hasStarted">
-                  <template v-if="returnScene?.scene_slug">
+                  <template v-if="returnScene">
                     <RouterLink
                       :to="{ name: 'scene', params: { scene: returnScene?.scene_slug } }"
                       class="u-reset btn btn--medium btn--highlight"
@@ -102,10 +103,12 @@
                     </button>
                   </template>
 
-                  <button class="u-reset btn btn--medium btn--highlight" @click="onReset">Story neustarten</button>
+                  <button class="u-reset btn btn--medium btn--highlight" @click="onReset">
+                    {{ i18n.story_restart_text }}
+                  </button>
                 </template>
                 <template v-else>
-                  <template v-if="startScene?.scene_slug">
+                  <template v-if="startScene">
                     <RouterLink
                       :to="{ name: 'scene', params: { scene: startScene?.scene_slug } }"
                       class="u-reset btn btn--medium btn--highlight"

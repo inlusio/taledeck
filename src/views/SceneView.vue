@@ -77,12 +77,9 @@
               <template #content="{ width, height }">
                 <div v-if="isDebug" class="s-container s-container--full-width">
                   <div class="s-container__container">
-                    <span>scene: {{ sceneSlug }}</span>
-                    <br />
                     <details>
-                      <summary>Raw content</summary>
-                      <pre>{{ scene }}</pre>
-                      <pre>{{ width }} / {{ height }}</pre>
+                      <pre><b>width: </b>{{ width }}</pre>
+                      <pre><b>height: </b>{{ height }}</pre>
                     </details>
                   </div>
                 </div>

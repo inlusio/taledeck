@@ -21,7 +21,7 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   const sceneEntry = ref<TaleDeckScene | null>(null)
   const audioOverviewList = ref<Array<TaleDeckAudioOverview>>([])
 
-  const returnSceneId = persistentRef<number | null>('returnSceneId', null)
+  const returnSceneId = persistentRef<number>('returnSceneId', 0)
 
   // With persistent ref
   // const storyEntry = persistentRef<TaleDeckStory | null>('storyEntry', null, { customSerializerId: CustomSerializerId.Object })
@@ -40,7 +40,9 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
       sceneOverviewList.value = r1.data as Array<TaleDeckSceneOverview>
       audioOverviewList.value = r2.data as Array<TaleDeckAudioOverview>
 
-      returnSceneId.value = storyEntry.value?.tj_return_scene_id ?? null
+      if (storyEntry.value.tj_return_scene_id != null) {
+        returnSceneId.value = storyEntry.value?.tj_return_scene_id
+      }
     },
     { immediate: true },
   )
