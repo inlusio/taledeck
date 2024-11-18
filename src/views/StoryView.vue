@@ -23,7 +23,7 @@
   const { toRoute } = useRouteRecord()
   const { dialog, reset: resetDialog } = useDialog()
   const { reset: resetAudio } = useAudioController()
-  const { story, sceneOverviewList, returnSceneId, resetStory } = useGameStory()
+  const { error, story, sceneOverviewList, returnSceneId, resetStory } = useGameStory()
   const { getFileEntry } = useTaleDeckApi()
 
   const isLoaded = ref<boolean>(false)
@@ -87,7 +87,7 @@
             </div>
             <div class="p-page-story__details">
               <!-- <pre style="font-size: 1rem" v-text="story" /> -->
-              <div v-if="isLoaded" class="p-page-story__actions">
+              <div v-if="isLoaded && !error" class="p-page-story__actions">
                 <template v-if="dialog.hasStarted">
                   <template v-if="returnScene">
                     <RouterLink
@@ -124,12 +124,17 @@
                 </template>
               </div>
               <div v-if="!isLoaded" class="p-page-story__loading">
-                <b>
-                  {{ t('general.loading') }}
-                </b>
-                <button class="u-reset btn btn--medium btn--highlight" disabled @click="onReset">
-                  <DotLoader :facets="['dark']" />
-                </button>
+                <template v-if="!error">
+                  <b>
+                    {{ t('general.loading') }}
+                  </b>
+                  <button class="u-reset btn btn--medium btn--highlight" disabled @click="onReset">
+                    <DotLoader :facets="['dark']" />
+                  </button>
+                </template>
+                <template v-else>
+                  {{ error }}
+                </template>
               </div>
             </div>
           </div>

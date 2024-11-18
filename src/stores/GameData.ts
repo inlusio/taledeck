@@ -16,6 +16,7 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   const { getAudioList, getSceneList, getStoryEntryBySlug, getSceneEntryBySlug } = useTaleDeckApi()
   const { persistentRef } = usePersistentStorage(StoreId.GameData)
 
+  const error = ref<string | null>(null)
   const storyEntry = ref<TaleDeckStory | null>(null)
   const sceneOverviewList = ref<Array<TaleDeckSceneOverview>>([])
   const sceneEntry = ref<TaleDeckScene | null>(null)
@@ -50,17 +51,25 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   watch(
     storyParam,
     async () => {
-      if (storyParam.value != null) {
+      error.value = null
+
+      if (storyParam.value == null) {
+        storyEntry.value = null
+        return
+      }
+
+      try {
         const { data } = await getStoryEntryBySlug(storyParam.value)
 
         if (Array.isArray(data) && data.length > 0) {
           storyEntry.value = data[0] as TaleDeckStory
         } else {
-          // TODO: Handle no entries error
-          storyEntry.value = null
+          throw new Error(`No data found for story slug "${storyParam.value}"!`)
         }
-      } else {
+      } catch (e) {
         storyEntry.value = null
+        error.value = e as unknown as string
+        console.error(e)
       }
     },
     { immediate: true },
@@ -90,6 +99,7 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
   )
 
   return {
+    error,
     storyEntry,
     sceneOverviewList,
     sceneEntry,

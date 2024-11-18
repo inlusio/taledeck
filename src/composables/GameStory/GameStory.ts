@@ -5,13 +5,14 @@ import type { Ref } from 'vue'
 
 export default function useGameStory() {
   const gameDataStore = useGameDataStore()
-  const { audioOverviewList, sceneOverviewList, storyEntry, returnSceneId } = storeToRefs(gameDataStore)
+  const { error, audioOverviewList, sceneOverviewList, storyEntry, returnSceneId } = storeToRefs(gameDataStore)
 
   const resetStory = () => {
     returnSceneId.value = 0
   }
 
   return {
+    error,
     story: storyEntry as Ref<TaleDeckStory | null>,
     sceneOverviewList: sceneOverviewList as Ref<Array<TaleDeckSceneOverview>>,
     audioOverviewList: audioOverviewList as Ref<Array<TaleDeckAudioOverview>>,
