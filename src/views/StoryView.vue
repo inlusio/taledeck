@@ -164,8 +164,11 @@
 
   .p-page-story__subtitle {
     @include type.h2;
-    display: block;
-    margin-bottom: 40px;
+
+    & {
+      display: block;
+      margin-bottom: 40px;
+    }
   }
 
   .p-page-story__intro {

@@ -17,6 +17,9 @@ html {
 body {
   @include font.base-regular;
   @include content.copy-medium;
-  color: col.$label-text;
+
+  & {
+    color: col.$label-text;
+  }
 }
 

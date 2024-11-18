@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   import useTranslation from '@/composables/Translation/Translation'
 
   const { t } = useTranslation()
@@ -25,7 +25,7 @@
   </main>
 </template>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
   @use '@/assets/scss/util/color/color' as col;
   @use '@/assets/scss/base/typography/typography' as type;
 
@@ -51,7 +51,10 @@
 
   .p-page-home__subtitle {
     @include type.h2;
-    display: block;
-    margin-bottom: 40px;
+
+    & {
+      display: block;
+      margin-bottom: 40px;
+    }
   }
 </style>

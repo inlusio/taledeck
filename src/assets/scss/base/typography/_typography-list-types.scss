@@ -46,7 +46,10 @@ $padding: ($icon-width + $icon-gutter);
 
 @mixin ol {
   @include list;
-  counter-reset: li;
+
+  & {
+    counter-reset: li;
+  }
 
   > li {
     &::before {

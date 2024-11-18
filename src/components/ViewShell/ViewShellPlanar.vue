@@ -128,7 +128,6 @@
 <style lang="scss" scoped>
   @use 'sass:color';
   @use 'sass:math';
-  @use '@nirazul/scss-utils' as utils;
   @use '@/assets/scss/util/color/color' as col;
   @use '@/assets/scss/util/transition' as trs;
 
@@ -154,12 +153,13 @@
     height: 100%;
   }
 
-  .c-view-shell-planar__background-shell {
-    @include utils.overlay;
-  }
-
+  .c-view-shell-planar__background-shell,
   .c-view-shell-planar__background-element {
-    @include utils.overlay;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .c-view-shell-planar__blur-image {
@@ -218,8 +218,12 @@
   }
 
   .c-view-shell-planar__responsive-shell {
-    @include utils.overlay;
     pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .c-view-shell-planar--scene {

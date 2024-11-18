@@ -155,7 +155,6 @@
 <style lang="scss" scoped>
   @use 'sass:color';
   @use 'sass:math';
-  @use '@nirazul/scss-utils' as utils;
   @use '@/assets/scss/util/color/color' as col;
   @use '@/assets/scss/util/transition' as trs;
 
@@ -178,12 +177,13 @@
     height: 100%;
   }
 
-  .c-view-shell-spherical__background-shell {
-    @include utils.overlay;
-  }
-
+  .c-view-shell-spherical__background-shell,
   .c-view-shell-spherical__background-element {
-    @include utils.overlay;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .c-view-shell-spherical__main-image {

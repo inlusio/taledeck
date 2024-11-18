@@ -60,7 +60,9 @@
 /// @param {List} $definitions - A list of grid definitions
 ///
 @mixin define-grid-root($definition) {
-  display: map.get(create-grid-root-config($definition), 'display');
+  & {
+    display: map.get(create-grid-root-config($definition), 'display');
+  }
 }
 
 /// Define a grid

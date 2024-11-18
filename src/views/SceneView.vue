@@ -96,8 +96,6 @@
 </template>
 
 <style lang="scss" scoped>
-  @use '@nirazul/scss-utils' as utils;
-
   .p-page-scene {
     display: flex;
     flex-flow: column nowrap;

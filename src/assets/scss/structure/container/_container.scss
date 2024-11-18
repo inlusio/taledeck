@@ -1,4 +1,3 @@
-// stylelint-disable scss/partial-no-import
-@import 'variants/container-dialog';
-@import 'variants/container-full-width';
-@import 'variants/container-primary';
+@forward 'variants/container-dialog' as dialog--*;
+@forward 'variants/container-full-width' as full-width--*;
+@forward 'variants/container-primary' as primary--*;

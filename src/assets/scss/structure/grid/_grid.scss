@@ -1,3 +1,2 @@
-// stylelint-disable scss/partial-no-import
-@import 'grid-aside';
-@import 'grid-primary';
+@forward 'grid-aside' as aside--*;
+@forward 'grid-primary' as primary--*;

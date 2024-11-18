@@ -34,11 +34,13 @@ body {
   // Make text selectable throughout the page
   @include utils.is-selectable(true);
 
-  // Remove default background colors in some browsers
-  background-color: col.$monochrome-white;
+  & {
+    // Remove default background colors in some browsers
+    background-color: col.$monochrome-white;
 
-  // IE10, 11 and Edge: Hide scrollbars when not in use
-  -ms-overflow-style: -ms-autohiding-scrollbar;
+    // IE10, 11 and Edge: Hide scrollbars when not in use
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
 }
 
 /// Fix box-sizing not being inherited correctly inside detail tag in Chrome 75+

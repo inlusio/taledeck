@@ -4,20 +4,29 @@
 ///
 @mixin large {
   @include type.button-large;
-  min-width: 120px;
-  padding: 25px 14px 23px;
+
+  & {
+    min-width: 120px;
+    padding: 25px 14px 23px;
+  }
 }
 
 @mixin medium {
   @include type.button-medium;
-  min-width: 120px;
-  padding: 15px 14px 13px;
+
+  & {
+    min-width: 120px;
+    padding: 15px 14px 13px;
+  }
 }
 
 @mixin small {
   @include type.button-small;
-  min-width: 120px;
-  padding: 10px 14px 8px;
+
+  & {
+    min-width: 120px;
+    padding: 10px 14px 8px;
+  }
 }
 
 @mixin icon-large {
