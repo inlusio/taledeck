@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script lang="ts" setup>
   import useBem from '@/composables/Bem/Bem'
   import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import { computed } from 'vue'
@@ -21,13 +21,12 @@
 </script>
 
 <template>
-  <div class="c-dot-loader" :class="rootClasses">
-    <div class="c-dot-loader__dot" v-for="dot in 3" :key="dot" />
+  <div :class="rootClasses" class="c-dot-loader">
+    <div v-for="dot in 3" :key="dot" class="c-dot-loader__dot" />
   </div>
 </template>
 
 <style lang="scss" scoped>
-  @use '@nirazul/scss-utils' as utils;
   @use '@/assets/scss/util/transition' as trs;
   @use '@/assets/scss/util/color/color' as col;
 
@@ -58,7 +57,9 @@
   }
 
   .c-dot-loader {
-    @include utils.is-visible(false, trs.$default-speed);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity trs.$default, visibility trs.$default-speed step-start;
     z-index: 10;
 
     position: absolute;
@@ -116,6 +117,8 @@
   }
 
   .c-dot-loader.c-dot-loader--is-active {
-    @include utils.is-visible(true, trs.$default-speed);
+    opacity: 1;
+    visibility: visible;
+    transition: opacity trs.$default, visibility trs.$default-speed step-end;
   }
 </style>
