@@ -105,7 +105,7 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
   }
 
   const createCamera = () => {
-    const result = new PerspectiveCamera(90, undefined, 0.01, TAR_WORLD_SIZE + 1)
+    const result = new PerspectiveCamera(90, undefined, 1e-2, 1e5)
     result.position.set(0, 0, 0.01)
     result.rotation.order = 'YXZ'
 
