@@ -1,15 +1,15 @@
-<script setup lang="ts">
+<script lang="ts" setup>
+  import useBem from '@/composables/Bem/Bem'
+  import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
+  import useDialogResult from '@/composables/DialogResult/DialogResult'
   import type {
     DialogResultContentData,
     DialogResultMetadata,
     DialogResultOptionEntryData,
     DialogResultOptionListData,
   } from '@/models/DialogResult/DialogResult'
-  import useDialogResult from '@/composables/DialogResult/DialogResult'
-  import { computed } from 'vue'
-  import useBem from '@/composables/Bem/Bem'
-  import type { UseBemProps } from '@/composables/Bem/BemFacetOptions'
   import { DialogResultOptionListFacet } from '@/models/DialogResultOptionListFacet/DialogResultOptionListFacet'
+  import { computed } from 'vue'
 
   interface Props extends DialogResultOptionListData, UseBemProps {
     facets?: Array<string>
@@ -75,8 +75,11 @@
 
   .c-dialog-result-option-list__btn {
     @include type.link;
-    text-align: left;
-    cursor: pointer;
+
+    & {
+      text-align: left;
+      cursor: pointer;
+    }
   }
 
   .c-dialog-result-option-list__character {
