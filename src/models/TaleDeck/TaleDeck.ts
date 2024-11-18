@@ -44,6 +44,7 @@ export interface TaleDeckScene extends TaleDeckCollection {
   tj_story_id: number
   tj_audio: Array<number>
   immersive_active: boolean
+  scene_use_camera_position: boolean
   look_at_theta?: number
   scene_model?: string
   scene_position_x?: number

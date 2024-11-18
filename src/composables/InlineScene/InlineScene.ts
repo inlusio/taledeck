@@ -5,7 +5,17 @@ import type { ReactiveDialog } from '@/models/Dialog/Dialog'
 import type { SceneObjects } from '@/models/Scene/Scene'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { useResizeObserver } from '@vueuse/core'
-import { AnimationMixer, Clock, Frustum, Matrix4, PerspectiveCamera, Texture, Vector3, WebGLRenderer } from 'three'
+import {
+  AnimationMixer,
+  Camera,
+  Clock,
+  Frustum,
+  Matrix4,
+  PerspectiveCamera,
+  Texture,
+  Vector3,
+  WebGLRenderer,
+} from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
@@ -182,13 +192,27 @@ export default function useInlineScene(
 
   // React to a model update.
   watch(
-    () => [isMounted.value, allowRendering.value, model.value, scene.value],
+    () => [isMounted.value, model.value, scene.value, allowRendering.value],
     (nV) => {
       clear()
 
       if (nV.every(Boolean)) {
-        const { scene_position_x: x, scene_position_y: y, scene_position_z: z } = scene.value!
-        mixer = updateModel(obj!.model, model.value!, new Vector3(x, y, z))
+        const camera: Camera | undefined = model.value!.cameras[0]
+        const {
+          scene_position_x: x,
+          scene_position_y: y,
+          scene_position_z: z,
+          scene_use_camera_position: useCameraPosition,
+        } = scene.value!
+        let position: Vector3 | undefined
+
+        if (useCameraPosition && camera != null) {
+          position = new Vector3(...camera.position).multiplyScalar(-1)
+        } else {
+          position = new Vector3(x, y, z)
+        }
+
+        mixer = updateModel(obj!.model, model.value!, position)
         show()
       }
     },

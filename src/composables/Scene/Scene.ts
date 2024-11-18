@@ -77,7 +77,7 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
 
   const createHotspot = (material: MeshBasicMaterial, hotspot: DialogHotspot) => {
     const { x, y, z, phi, theta, radius } = hotspot
-    const result = new Mesh(new PlaneGeometry(3 * SCALE, 3 * SCALE), material)
+    const result = new Mesh(new PlaneGeometry(0.3, 0.3), material)
 
     result.userData.hotspot = hotspot
 
@@ -105,8 +105,8 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
   }
 
   const createCamera = () => {
-    const result = new PerspectiveCamera(90, undefined, 1e-2, 1e5)
-    result.position.set(0, 0, 0.01)
+    const result = new PerspectiveCamera(90, undefined, 1e-2, TAR_WORLD_SIZE)
+    result.position.set(0, 0, 1e-2)
     result.rotation.order = 'YXZ'
 
     return result
@@ -121,7 +121,7 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
   }
 
   const createSky = () => {
-    const geometry = new SphereGeometry(TAR_WORLD_SIZE, 25, 25)
+    const geometry = new SphereGeometry(TAR_WORLD_SIZE - 1, 25, 25)
     return new Mesh(geometry)
   }
 
@@ -186,12 +186,12 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
 
   const createDialogBox = (): SceneDialogBox => {
     const cameraTarget = new Object3D()
-    cameraTarget.position.set(0, -4 * SCALE, -10 * SCALE)
+    cameraTarget.position.set(0, -0.4, -1)
 
     const box = new ThreeMeshUI.Block({
-      width: 10 * SCALE,
-      height: 2 * SCALE,
-      padding: 0.4 * SCALE,
+      width: 1,
+      height: 0.2,
+      padding: 0.04,
       justifyContent: 'center',
       textAlign: 'left',
       bestFit: 'shrink',
@@ -245,6 +245,12 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
     if (model == null || gltf == null) {
       throw new Error('Failed to load model!')
     }
+
+    console.log('---')
+    console.log(model)
+    console.log(gltf)
+    console.log(position)
+    console.log('---')
 
     gltf.scene.traverse((obj) => (obj.frustumCulled = false))
 

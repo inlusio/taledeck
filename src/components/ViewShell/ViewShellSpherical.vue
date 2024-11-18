@@ -122,6 +122,7 @@
     () => isImmersiveSceneReady.value,
     async (nV) => {
       if (nV) {
+        inlineScene.unmount()
         await immersiveScene.mount()
       } else {
         immersiveScene.unmount()

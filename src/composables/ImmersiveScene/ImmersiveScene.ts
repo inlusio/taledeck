@@ -10,8 +10,18 @@ import { referenceSpaceType } from '@/models/Session/Session'
 import { useImmersiveSessionStore } from '@/stores/ImmersiveSession'
 import Reticulum from '@/util/Reticulum/Reticulum'
 import { storeToRefs } from 'pinia'
-import type { AnimationMixer, XRTargetRaySpace } from 'three'
-import { Clock, Frustum, Group, Matrix4, Texture, Vector3, WebGLRenderer } from 'three'
+import {
+  type AnimationMixer,
+  Camera,
+  Clock,
+  Frustum,
+  Group,
+  Matrix4,
+  Texture,
+  Vector3,
+  WebGLRenderer,
+  type XRTargetRaySpace,
+} from 'three'
 import ThreeMeshUI from 'three-mesh-ui'
 import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
 import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
@@ -253,8 +263,22 @@ export default function useImmersiveScene(
       clear()
 
       if (nV.every(Boolean)) {
-        const { scene_position_x: x, scene_position_y: y, scene_position_z: z } = scene.value!
-        mixer = updateModel(obj!.model, model.value!, new Vector3(x, y, z))
+        const camera: Camera | undefined = model.value!.cameras[0]
+        const {
+          scene_position_x: x,
+          scene_position_y: y,
+          scene_position_z: z,
+          scene_use_camera_position: useCameraPosition,
+        } = scene.value!
+        let position: Vector3 | undefined
+
+        if (useCameraPosition && camera != null) {
+          position = new Vector3(...camera.position).multiplyScalar(-1)
+        } else {
+          position = new Vector3(x, y, z)
+        }
+
+        mixer = updateModel(obj!.model, model.value!, position)
         show()
       }
     },
