@@ -8,14 +8,22 @@
   import type { ReactiveDialog } from '@/models/Dialog/Dialog'
   import { toReactive } from '@vueuse/core'
   import { Texture, TextureLoader, Vector2 } from 'three'
-  import { type GLTF, GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+  import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+  import type { GLTF } from 'three/examples/jsm/loaders/GLTFLoader'
   import { computed, markRaw, onBeforeUnmount, ref, watch } from 'vue'
 
   const textureLoader = new TextureLoader()
   const textureDict: Record<string, Texture> = {}
 
   const modelLoader = new GLTFLoader()
+  const dracoLoader = new DRACOLoader()
   const modelDict: Record<string, GLTF> = {}
+
+  dracoLoader.setDecoderPath('/lib/draco/')
+  dracoLoader.preload()
+
+  modelLoader.setDRACOLoader(dracoLoader)
 
   interface Props extends UseBemProps {
     facets?: Array<string>

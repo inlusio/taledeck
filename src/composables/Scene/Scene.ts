@@ -246,12 +246,6 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
       throw new Error('Failed to load model!')
     }
 
-    console.log('---')
-    console.log(model)
-    console.log(gltf)
-    console.log(position)
-    console.log('---')
-
     gltf.scene.traverse((obj) => (obj.frustumCulled = false))
 
     model.clear()

@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test:unit": "vitest --environment jsdom --root src/",
     "type-check": "vue-tsc --noEmit -p tsconfig.vitest.json --composite false",
-    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore --ignore-pattern 'public/*'",
     "scripts:install": "npm --prefix ./scripts install",
     "scripts:use": "npm --prefix ./scripts run use",
     "watch": "echo 'nothing to watch'",
@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@directus/sdk": "^10.3.3",
+    "@loaders.gl/draco": "^4.3.2",
+    "@loaders.gl/gltf": "^4.3.2",
     "@nirazul/scss-mq": "^1.2.4",
     "@nirazul/scss-utils": "^2.0.0",
     "@vueuse/core": "^10.2.0",
