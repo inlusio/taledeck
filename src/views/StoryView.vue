@@ -30,6 +30,8 @@
   const startScene = ref<TaleDeckSceneOverview | null>(null)
   const returnScene = ref<TaleDeckSceneOverview | null>(null)
 
+  const testResponse = ref<Record<string, any> | null>(null)
+
   const rootStyles = computed<CSSProperties>(() => {
     const img = story.value?.story_image
     const url = img == null ? undefined : getFileEntry(img)
@@ -69,6 +71,36 @@
       )
     }
   }
+  /*
+  const onTest = async () => {
+    isLoaded.value = false
+
+    try {
+      if (!story.value?.story_slug) {
+        throw new Error('No story slug found!')
+      }
+
+      const response = await fetch('http://localhost:3000/api/scene', {
+        method: 'POST',
+        body: JSON.stringify({
+          storySlug: story.value.story_slug,
+          sceneSlug: 'home',
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to load story: ${response.status}`)
+      }
+
+      const body: TaledeckPocSceneListResponse = await response.json()
+      testResponse.value = body.data
+    } catch (error) {
+      console.log(error)
+    } finally {
+      isLoaded.value = true
+    }
+  }
+  */
 </script>
 
 <template>
@@ -122,7 +154,15 @@
                     </button>
                   </template>
                 </template>
+                <!--
+                <button class="u-reset btn btn--medium btn--highlight" @click="onTest">
+                  Story von Taledeck PoC laden
+                </button>
+                 -->
               </div>
+              <template v-if="testResponse">
+                <pre v-text="testResponse"></pre>
+              </template>
               <div v-if="!isLoaded" class="p-page-story__loading">
                 <template v-if="!error">
                   <b>

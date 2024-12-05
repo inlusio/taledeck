@@ -79,7 +79,7 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
     () => [sceneParam.value, storyEntry.value],
     async () => {
       if (sceneParam.value != null && storyEntry.value != null) {
-        const { data } = await getSceneEntryBySlug(sceneParam.value, storyEntry.value.id)
+        const { data } = await getSceneEntryBySlug(sceneParam.value, storyEntry.value.id, storyEntry.value.story_slug)
 
         if (Array.isArray(data) && data.length > 0) {
           sceneEntry.value = data[0] as TaleDeckScene

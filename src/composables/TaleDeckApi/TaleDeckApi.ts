@@ -1,8 +1,13 @@
+import useEnv from '@/composables/Env/Env'
 import type { TaleDeckAudioOverview, TaleDeckCollections, TaleDeckSceneOverview } from '@/models/TaleDeck/TaleDeck'
+import type { TaledeckPocSceneListResponse } from '@/models/TaledeckPoc/TaledeckPoc'
 import type { ManyItems } from '@directus/sdk'
 import { Directus } from '@directus/sdk'
+import { join } from 'node:path'
 
+const { viteTaledeckPocApiBaseUrl, viteTaledeckPocApiStorySlugs } = useEnv()
 const directus = new Directus<TaleDeckCollections>(import.meta.env.VITE_TALE_DECK_API_BASE_URL)
+const taledeckPoc = join(viteTaledeckPocApiBaseUrl, '/api')
 
 /**
  * Get a TaleDeck AUDIO entry by id
@@ -69,7 +74,34 @@ async function getSceneEntry(tjId: number) {
 /**
  * Get a TaleDeck SCENE entry of a certain STORY by slug
  */
-async function getSceneEntryBySlug(slug: string, storyId: number) {
+async function getSceneEntryBySlug(slug: string, storyId: number, storySlug: string) {
+  // New Taledeck PoC Handler:
+  if (viteTaledeckPocApiStorySlugs.includes(storySlug)) {
+    try {
+      const response = await fetch(join(taledeckPoc, '/scene'), {
+        method: 'POST',
+        body: JSON.stringify({
+          storySlug,
+          sceneSlug: slug,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`${response.status}: Failed to load story!`)
+      }
+
+      const result = (await response.json()) as TaledeckPocSceneListResponse
+
+      if (result.data.length === 0) {
+        throw new Error('Scene not found! Falling back to Directus API...')
+      }
+
+      return result
+    } catch (error) {
+      console.warn(error)
+    }
+  }
+
   return await directus.items('tj_scenes').readByQuery({
     filter: { scene_slug: { _eq: slug }, tj_story_id: { _eq: storyId } },
     limit: 1,
