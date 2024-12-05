@@ -7,7 +7,7 @@ import { join } from 'node:path'
 
 const { viteTaledeckPocApiBaseUrl, viteTaledeckPocApiStorySlugs } = useEnv()
 const directus = new Directus<TaleDeckCollections>(import.meta.env.VITE_TALE_DECK_API_BASE_URL)
-const getTaledeckPocApiUrl = (endpoint: string) => new URL(join(endpoint, '/api'), viteTaledeckPocApiBaseUrl)
+const getTaledeckPocApiUrl = (endpoint: string) => new URL(join('/api', endpoint), viteTaledeckPocApiBaseUrl)
 
 /**
  * Get a TaleDeck AUDIO entry by id
