@@ -178,12 +178,12 @@ export default function useInlineScene(
 
   // React to a texture update.
   watch(
-    () => [isMounted.value, allowRendering.value, texture.value],
-    (nV) => {
+    () => [isMounted.value, texture.value],
+    () => {
       clear()
 
-      if (nV.every(Boolean)) {
-        updateSkyMaterial(obj!.sky, texture.value!)
+      if (isMounted.value && obj?.sky != null) {
+        updateSkyMaterial(obj.sky, texture.value)
         show()
       }
     },
@@ -192,29 +192,37 @@ export default function useInlineScene(
 
   // React to a model update.
   watch(
-    () => [isMounted.value, model.value, scene.value, allowRendering.value],
-    (nV) => {
+    () => [isMounted.value, model.value, scene.value],
+    () => {
+      if (!isMounted.value) {
+        return
+      }
+
       clear()
 
-      if (nV.every(Boolean)) {
-        const camera: Camera | undefined = model.value!.cameras[0]
-        const {
-          scene_position_x: x,
-          scene_position_y: y,
-          scene_position_z: z,
-          scene_use_camera_position: useCameraPosition,
-        } = scene.value!
+      if (obj?.model != null && scene.value) {
         let position: Vector3 | undefined
 
-        if (useCameraPosition && camera != null) {
-          position = new Vector3(...camera.position).multiplyScalar(-1)
-        } else {
-          position = new Vector3(x, y, z)
+        if (model.value != null) {
+          const camera: Camera | undefined = model.value.cameras[0]
+          const {
+            scene_position_x: x,
+            scene_position_y: y,
+            scene_position_z: z,
+            scene_use_camera_position: useCameraPosition,
+          } = scene.value!
+
+          if (useCameraPosition && camera != null) {
+            position = new Vector3(...camera.position).multiplyScalar(-1)
+          } else {
+            position = new Vector3(x, y, z)
+          }
         }
 
-        mixer = updateModel(obj!.model, model.value!, position)
-        show()
+        mixer = updateModel(obj.model, model.value, position)
       }
+
+      show()
     },
     { immediate: true },
   )

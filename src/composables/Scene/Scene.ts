@@ -233,22 +233,31 @@ export default function useScene(_isImmersive: boolean, renderer: Ref<WebGLRende
     viewer.rotation.set(viewer.rotation.x, targetRot, viewer.rotation.z)
   }
 
-  const updateSkyMaterial = (sky: Mesh, texture: Texture) => {
-    if (sky == null || texture == null) {
+  const updateSkyMaterial = (sky: Mesh | null, texture: Texture | null) => {
+    if (sky == null) {
       throw new Error('Failed to load sky texture!')
     }
 
-    sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
+    sky.visible = !!texture
+
+    if (texture != null) {
+      sky.material = new MeshStandardMaterial({ map: texture, side: BackSide })
+    }
   }
 
-  const updateModel = (model: Group, gltf: GLTF, position: Vector3) => {
-    if (model == null || gltf == null) {
+  const updateModel = (model: Group, gltf: GLTF | null, position?: Vector3) => {
+    if (model == null) {
       throw new Error('Failed to load model!')
+    }
+
+    model.clear()
+
+    if (gltf == null || position == null) {
+      return
     }
 
     gltf.scene.traverse((obj) => (obj.frustumCulled = false))
 
-    model.clear()
     model.add(gltf.scene)
     model.position.set(position.x ?? 0, position.y ?? 0, position.z ?? 0)
 

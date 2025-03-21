@@ -87,8 +87,9 @@
   watch(
     () => props.background,
     async (url) => {
+      currentTexture.value = null
+
       if (url != null) {
-        currentTexture.value = null
         textureDict[url] = textureDict[url] ?? (await textureLoader.loadAsync(url))
         currentTexture.value = textureDict[url]
         currentTexture.value.center = new Vector2(0.5, 0.5)
@@ -103,8 +104,9 @@
   watch(
     () => props.model,
     async (url) => {
+      currentModel.value = null
+
       if (url != null) {
-        currentModel.value = null
         modelDict[url] = modelDict[url] ?? markRaw(await modelLoader.loadAsync(url))
         currentModel.value = modelDict[url]
       }
