@@ -16,7 +16,8 @@
     "scripts:use": "npm --prefix ./scripts run use",
     "watch": "echo 'nothing to watch'",
     "prepare": "husky install",
-    "test": "npm run lint && npm run type-check"
+    "test": "npm run lint && npm run type-check",
+    "start": "serve -s dist -l 8080"
   },
   "dependencies": {
     "@directus/sdk": "^10.3.3",
@@ -30,6 +31,7 @@
     "lodash-es": "^4.17.21",
     "pinia": "^2.0.30",
     "screenfull": "^6.0.2",
+    "serve": "^14.2.4",
     "string-args-parser": "^1.0.4",
     "superjson": "^1.12.2",
     "three": "^0.155.0",
