@@ -19,6 +19,11 @@
     "test": "npm run lint && npm run type-check",
     "start": "serve -s dist -l 8080"
   },
+
+  "engines": {
+    "node": "20.x"
+  },
+
   "dependencies": {
     "@directus/sdk": "^10.3.3",
     "@loaders.gl/draco": "^4.3.2",
