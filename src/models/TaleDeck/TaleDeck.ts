@@ -33,6 +33,8 @@ export interface TaleDeckStory extends TaleDeckCollection {
   tj_return_scene_id: number
   tj_scenes: Array<number>
   tj_audio: Array<number>
+  immersive_dialog_box_show: boolean
+  immersive_controllers_show: boolean
   immersive_dialog_box_move_threshold: number
 }
 

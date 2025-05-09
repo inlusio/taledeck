@@ -5,7 +5,7 @@ import type { ManyItems } from '@directus/sdk'
 import { Directus } from '@directus/sdk'
 import { join } from 'node:path'
 
-const { viteTaledeckPocApiBaseUrl, viteTaledeckPocApiStorySlugs } = useEnv()
+const { viteTaledeckPocApiBaseUrl, viteTaledeckLegacyStorySlugs } = useEnv()
 const directus = new Directus<TaleDeckCollections>(import.meta.env.VITE_TALE_DECK_API_BASE_URL)
 const getTaledeckPocApiUrl = (endpoint: string) => new URL(join('/api', endpoint), viteTaledeckPocApiBaseUrl)
 
@@ -76,7 +76,7 @@ async function getSceneEntry(tjId: number) {
  */
 async function getSceneEntryBySlug(slug: string, storyId: number, storySlug: string) {
   // New Taledeck PoC Handler:
-  if (viteTaledeckPocApiStorySlugs.includes(storySlug)) {
+  if (!viteTaledeckLegacyStorySlugs.includes(storySlug)) {
     try {
       const response = await fetch(getTaledeckPocApiUrl('/scene'), {
         method: 'POST',

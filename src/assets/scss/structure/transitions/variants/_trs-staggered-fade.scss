@@ -4,7 +4,7 @@
 .trs-staggered-fade {
   &-enter-active,
   &-leave-active {
-    transition: trs.$default-speed trs.$default-fn opacity;
+    transition: trs.$default-speed * 2 trs.$default-fn opacity;
   }
 
   &-enter-active {

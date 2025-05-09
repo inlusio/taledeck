@@ -153,7 +153,11 @@ export default function useImmersiveScene(
 
       const controllerModelFactory = new XRControllerModelFactory()
       const grip = r.xr.getControllerGrip(i)
-      grip.add(controllerModelFactory.createControllerModel(grip))
+
+      if (story.value?.immersive_controllers_show ?? true) {
+        grip.add(controllerModelFactory.createControllerModel(grip))
+      }
+
       parent.add(grip)
     }
 
@@ -314,7 +318,7 @@ export default function useImmersiveScene(
         throw new Error('Scene items are not yet initialized!')
       }
 
-      if (displayText.value != null) {
+      if (story.value?.immersive_dialog_box_show && displayText.value != null) {
         const characterContent = getCharacter(displayText.value.markup)
         const dialogContent = displayText.value.text
 
