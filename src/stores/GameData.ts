@@ -38,6 +38,7 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
       const { id, tj_scenes, tj_audio } = storyEntry.value
       const [r1, r2] = await Promise.all([getSceneList(tj_scenes, id), getAudioList(tj_audio, id)])
 
+      // TODO: Taledeck PoC still needs to implement the scene overview endpoint to ensure smooth transitions between scenes!
       sceneOverviewList.value = r1.data as Array<TaleDeckSceneOverview>
       audioOverviewList.value = r2.data as Array<TaleDeckAudioOverview>
 
