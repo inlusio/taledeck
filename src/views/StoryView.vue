@@ -2,7 +2,6 @@
   import DotLoader from '@/components/DotLoader/DotLoader.vue'
   import useAudioController from '@/composables/AudioController/AudioController'
   import useDialog from '@/composables/Dialog/Dialog'
-  import useEnv from '@/composables/Env/Env'
   import useGameStory from '@/composables/GameStory/GameStory'
   import useRouteRecord from '@/composables/RouteRecord/RouteRecord'
   import useTaleDeckApi from '@/composables/TaleDeckApi/TaleDeckApi'
@@ -19,13 +18,12 @@
     story_restart_text: 'Story neustarten',
   }
 
-  const { viteTaledeckLegacyStorySlugs } = useEnv()
   const router = useRouter()
   const { t } = useTranslation()
   const { toRoute } = useRouteRecord()
   const { dialog, reset: resetDialog } = useDialog()
   const { reset: resetAudio } = useAudioController()
-  const { error, story, sceneOverviewList, returnSceneId, resetStory } = useGameStory()
+  const { error, isLegacyStory, story, sceneOverviewList, returnSceneId, resetStory } = useGameStory()
   const { getFileEntry } = useTaleDeckApi()
 
   const isLoaded = ref<boolean>(false)
@@ -47,11 +45,11 @@
     () => [story.value, sceneOverviewList.value],
     async () => {
       if (story.value != null && Array.isArray(sceneOverviewList.value)) {
-        const { story_slug, tj_start_scene_id, tldck_start_scene_slug, tldck_return_scene_slug } = story.value
+        const { tj_start_scene_id, tldck_start_scene_slug, tldck_return_scene_slug } = story.value
         const startSceneEntry = sceneOverviewList.value.find(({ id }) => id === tj_start_scene_id)
         const returnSceneEntry = sceneOverviewList.value.find(({ id }) => id === returnSceneId.value)
 
-        if (viteTaledeckLegacyStorySlugs.includes(story_slug)) {
+        if (isLegacyStory.value) {
           startScene.value = startSceneEntry ?? startScene.value
           returnScene.value = returnSceneEntry ?? returnScene.value
         } else {
