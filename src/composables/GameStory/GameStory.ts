@@ -14,8 +14,8 @@ export default function useGameStory() {
   return {
     error,
     story: storyEntry as Ref<TaleDeckStory | null>,
-    sceneOverviewList: sceneOverviewList as Ref<Array<TaleDeckSceneOverview>>,
-    audioOverviewList: audioOverviewList as Ref<Array<TaleDeckAudioOverview>>,
+    sceneOverviewList: sceneOverviewList as Ref<Array<TaleDeckSceneOverview> | null>,
+    audioOverviewList: audioOverviewList as Ref<Array<TaleDeckAudioOverview> | null>,
     returnSceneId: returnSceneId as Ref<number>,
     resetStory,
   }

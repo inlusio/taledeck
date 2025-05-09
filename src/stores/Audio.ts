@@ -20,7 +20,7 @@ export const useAudioStore = defineStore(StoreId.Audio, () => {
   const audioContentLoaded = ref<boolean>(false)
 
   const load = async () => {
-    audioFiles.value = audioOverviewList.value.reduce((acc, { audio_slug, audio_file }) => {
+    audioFiles.value = (audioOverviewList.value ?? []).reduce((acc, { audio_slug, audio_file }) => {
       acc[audio_slug] = { id: audio_slug, file: getFileEntry(audio_file) as string }
       return acc
     }, {} as AudioFileContentDict)

@@ -18,9 +18,9 @@ export const useGameDataStore = defineStore(StoreId.GameData, () => {
 
   const error = ref<string | null>(null)
   const storyEntry = ref<TaleDeckStory | null>(null)
-  const sceneOverviewList = ref<Array<TaleDeckSceneOverview>>([])
+  const sceneOverviewList = ref<Array<TaleDeckSceneOverview> | null>(null)
   const sceneEntry = ref<TaleDeckScene | null>(null)
-  const audioOverviewList = ref<Array<TaleDeckAudioOverview>>([])
+  const audioOverviewList = ref<Array<TaleDeckAudioOverview> | null>(null)
 
   const returnSceneId = persistentRef<number>('returnSceneId', 0)
 

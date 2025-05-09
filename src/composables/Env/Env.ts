@@ -1,4 +1,9 @@
-export default function useEnv() {
+interface UseEnvReturnValue {
+  viteTaledeckPocApiBaseUrl: string
+  viteTaledeckLegacyStorySlugs: Array<string>
+}
+
+export default function useEnv(): UseEnvReturnValue {
   const { VITE_TALEDECK_POC_API_BASE_URL, VITE_TALEDECK_LEGACY_STORY_SLUGS } = import.meta.env
 
   return {

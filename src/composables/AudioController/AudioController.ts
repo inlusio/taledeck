@@ -15,7 +15,7 @@ export default function useAudioController() {
   watch(
     () => audioOverviewList.value,
     (nValue) => {
-      if (Object.keys(nValue).length > 0) {
+      if (Object.keys(nValue ?? []).length > 0) {
         load().then(() => {
           audioContentLoaded.value = true
         })

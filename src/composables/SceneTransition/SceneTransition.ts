@@ -12,7 +12,7 @@ export default function useSceneTransition() {
   watch(
     () => sceneParam.value,
     (nVal, oVal) => {
-      if ([nVal, oVal].every((v) => sceneOverviewList.value.some(({ scene_slug }) => scene_slug === v))) {
+      if ([nVal, oVal].every((v) => (sceneOverviewList.value ?? []).some(({ scene_slug }) => scene_slug === v))) {
         transitionName.value = 'trs-scene-fade'
         transitionMode.value = 'out-in'
       } else {

@@ -31,6 +31,8 @@ export interface TaleDeckStory extends TaleDeckCollection {
   story_type: TaleDeckStoryType
   tj_start_scene_id: number
   tj_return_scene_id: number
+  tldck_start_scene_slug: string
+  tldck_return_scene_slug: string
   tj_scenes: Array<number>
   tj_audio: Array<number>
   immersive_dialog_box_show: boolean
@@ -39,19 +41,20 @@ export interface TaleDeckStory extends TaleDeckCollection {
 }
 
 export interface TaleDeckScene extends TaleDeckCollection {
-  scene_image: string
-  scene_name: string
-  scene_slug: string
-  script: string
   tj_story_id: number
-  tj_audio: Array<number>
+  scene_slug: string
+  scene_name: string
+  scene_image: string
+  script: string
+  // Immersive
   immersive_active: boolean
-  scene_use_camera_position: boolean
   look_at_theta?: number
+  // Immersive Scene
   scene_model?: string
   scene_position_x?: number
   scene_position_y?: number
   scene_position_z?: number
+  scene_use_camera_position: boolean
 }
 
 export interface TaleDeckAudio extends TaleDeckCollection {
