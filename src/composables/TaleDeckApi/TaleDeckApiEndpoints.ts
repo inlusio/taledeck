@@ -15,7 +15,7 @@ export type TaleDeckApiEndpointDict = Record<TaleDeckApiEndpointId, TaleDeckApiE
 export const taleDeckApiEndpointList: TaleDeckApiEndpointList = [
   {
     id: TaleDeckApiEndpointId.GetStory,
-    collectionId: 'tj_stories',
+    collectionId: 'tldck_stories',
   },
   {
     id: TaleDeckApiEndpointId.GetScene,

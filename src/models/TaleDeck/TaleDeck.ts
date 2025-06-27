@@ -16,7 +16,7 @@ export interface TaleDeckCollection {
 }
 
 export type TaleDeckCollections = {
-  tj_stories: TaleDeckStory
+  tldck_stories: TaleDeckStory
   tj_scenes: TaleDeckScene
   tj_audio: TaleDeckAudio
   tj_translations: TaleDeckTranslation

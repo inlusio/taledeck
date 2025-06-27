@@ -41,14 +41,14 @@ function getFileEntry(tjFileId?: string): string | undefined {
  * Get a TaleDeck STORY entry by id
  */
 async function getStoryEntry(tjId: number) {
-  return await directus.items('tj_stories').readOne(tjId)
+  return await directus.items('tldck_stories').readOne(tjId)
 }
 
 /**
  * Get a TaleDeck STORY entry by slug
  */
 async function getStoryEntryBySlug(slug: string) {
-  return await directus.items('tj_stories').readByQuery({
+  return await directus.items('tldck_stories').readByQuery({
     filter: { story_slug: { _eq: slug } },
     limit: 1,
   })
@@ -58,7 +58,7 @@ async function getStoryEntryBySlug(slug: string) {
  * Get all TaleDeck STORY entries
  */
 async function getStoryList() {
-  return await directus.items('tj_stories').readByQuery({
+  return await directus.items('tldck_stories').readByQuery({
     filter: {},
     fields: ['id'],
   })
